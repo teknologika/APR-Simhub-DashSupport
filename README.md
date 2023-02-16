@@ -10,3 +10,5 @@
   <h2 align="center">
   Average Performance RACING - Simhub Dash Support</h2>
 </div>
+
+Welcome. This plugin supports the Simhub dashes created by Average Performance RACING.
