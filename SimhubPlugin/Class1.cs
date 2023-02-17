@@ -58,7 +58,6 @@ namespace APR.DashSupport {
 			}
 		}
 
-
 		public void GetSetupBias() {
 			var setupBias = "0.0";
 			if (GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.BrakePressureBias") != null) {
@@ -97,7 +96,38 @@ namespace APR.DashSupport {
 			}
 		}
 
+		public void UpdateTCValues() {
+			
+            switch (GetProp("DataCorePlugin.GameData.CarModel")) {
+				case "Ford GT GT3":
+				case "Audi R8 LMS":
+				case "BMW M4 GT3":
+				case "Lamborghini Hurracan GT3 EVO":
+				case "McLaren MP4-12C GT3":
+				case "Mercedes-AMG GT3 2020":
+				case "Porsche 911 GT3 R":
+					SetProp("TCLabelLowValue", "HI AID");
+					SetProp("TCLabelHighValue", "OFF");
+					if (GetProp("TCLevel") == 12) {
+						SetProp("TCIsOff", true);
+					}
+					break;
+				case "Ferrari 488 GT3 Evo 2020":
+				default:
+					SetProp("TCLabelHighValue", "HI AID");
+					SetProp("TCLabelLowValue", "OFF");
+					if (GetProp("TCLevel") == 1) {
+						SetProp("TCIsOff", true);
+					}
+					else {
+						SetProp("TCIsOff", false);
+					}
+					break;
+            }
 
+
+
+        }
 
 
 	}

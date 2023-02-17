@@ -52,6 +52,12 @@ namespace APR.DashSupport
             AddProp("ARBColourFront", "White");
             AddProp("ARBColourRear", "White");
 
+            AddProp("TCLabelHighValue", "HI AID");
+            AddProp("TCLabelLowValue", "OFF");
+            AddProp("TCIsOff", false);
+
+
+
         }
 
 
@@ -77,6 +83,7 @@ namespace APR.DashSupport
                     GetSetupBias();
                     UpdateFrontARBColour();
                     UpdateRearARBColour();
+                    UpdateTCValues();
 
                 }
             }
