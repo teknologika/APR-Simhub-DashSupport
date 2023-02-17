@@ -11,8 +11,13 @@ namespace APR.DashSupport
     /// </summary>
     public class DashPluginSettings :INotifyPropertyChanged
     {
-        public bool EnableRPMBrakeThrottle { get; set; } = true;
-
+        public bool EnableRPMBar { get; set; } = true;
+        public bool EnableBrakeAndThrottleBars { get; set; } = true;
+        public double BrakeTargetPercentage { get; set; } = 85;
+        public double BrakeMaxPercentage { get; set; } = 99.9;
+        public double BrakeTrailStartPercentage { get; set; } = 15;
+        public double BrakeTrailEndPercentage { get; set; } = 20;
+        public double PreferredBrakeBiasPercentage { get; set; } = 52.5;
 
         #region Property supporting UI refresh from code
         /*

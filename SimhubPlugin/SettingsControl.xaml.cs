@@ -7,7 +7,7 @@ namespace APR.DashSupport
     /// </summary>
     public partial class SettingsControl : UserControl
     {
-        public DashPlugin Plugin { get; }
+        public APRDashPlugin Plugin { get; }
 
         public SettingsControl()
         {
@@ -15,7 +15,7 @@ namespace APR.DashSupport
 
         }
 
-        public SettingsControl(DashPlugin plugin) : this()
+        public SettingsControl(APRDashPlugin plugin) : this()
         {
             this.Plugin = plugin;
         }

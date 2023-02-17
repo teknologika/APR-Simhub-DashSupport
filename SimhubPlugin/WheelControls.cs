@@ -2,7 +2,7 @@ using SimHub.Plugins;
 using System;
 
 namespace APR.DashSupport {
-    public partial class DashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
+    public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
         // Rotaries match GSI Wheel names
         private int menuRotary = 1;
