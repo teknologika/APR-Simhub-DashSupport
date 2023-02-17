@@ -15,21 +15,35 @@
                         <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="250"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="250"/>
                                     <ColumnDefinition Width="1*"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="1*" MinHeight="30"/>
                                     <RowDefinition Height="1*" MinHeight="30"/>
                                     <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
                                 </Grid.RowDefinitions>
-                                
-                                <TextBlock Grid.Row="0" Text="Show Brake and throttle bars" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                                <styles:SHToggleButton Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding EnableBrakeAndThrottleBars}" RenderTransformOrigin="0.45,0.2"/>
-                                <TextBlock Grid.Row="1" Text="Show RPM Bar" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                                <styles:SHToggleButton Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding EnableRPMBar}" RenderTransformOrigin="0.45,0.2"/>
-                                <TextBlock Grid.Row="2" Text="Show Brake and throttle bars" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                                <TextBox Grid.Row="2" Grid.Column="2"   HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="40" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTargetPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0}%}"/>
+
+                                <TextBlock Grid.Row="0" Text="Show Brake and throttle bars" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <styles:SHToggleButton Grid.Row="0" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding EnableBrakeAndThrottleBars}" RenderTransformOrigin="0.45,0.2"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Show RPM Bar" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <styles:SHToggleButton Grid.Row="0" Grid.Column="3"  HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding EnableRPMBar}" RenderTransformOrigin="0.45,0.2"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Target Brake Pecentage" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <TextBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTargetPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0.0}}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Peak Brake Pecentage" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <TextBox Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeMaxPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0.0}}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Trail Brake start Pecentage" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <TextBox Grid.Row="2" Grid.Column="1"   HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTrailStartPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0.0}}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Trail Brake end Percentage" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <TextBox Grid.Row="2" Grid.Column="3"   HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTrailEndPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0.0}}"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Preferred brake bias Percentage" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="18" Margin="1,8,0,0"></TextBlock>
+                                <TextBox Grid.Row="4" Grid.Column="1"   HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding PreferredBrakeBiasPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0.0}}" Margin="0,0,0,0"/>
                             </Grid>
                         </StackPanel>
                     </styles:SHSection>
