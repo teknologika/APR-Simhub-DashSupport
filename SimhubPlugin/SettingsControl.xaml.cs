@@ -5,20 +5,19 @@ namespace APR.DashSupport
     /// <summary>
     /// Logique d'interaction pour SettingsControlDemo.xaml
     /// </summary>
-    public partial class Settings : UserControl
+    public partial class SettingsControl : UserControl
     {
-        public APRDashPlugin Plugin { get; }
+        public DashPlugin Plugin { get; }
 
-        public Settings()
+        public SettingsControl()
         {
-            InitializeComponent();
+            InitializeComponent();           
+
         }
 
-        public Settings(APRDashPlugin plugin) : this()
+        public SettingsControl(DashPlugin plugin) : this()
         {
             this.Plugin = plugin;
         }
-
-
     }
 }

@@ -2,7 +2,7 @@ using SimHub.Plugins;
 using System;
 
 namespace APR.DashSupport {
-    public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
+    public partial class DashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
         public string MainMenuValue() {
             string selectedMenu;
             switch (this.menuRotary) {

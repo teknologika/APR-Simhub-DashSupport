@@ -8,9 +8,9 @@ namespace APR.DashSupport
     [PluginDescription("Support for APR Dashes and Overlays")]
     [PluginAuthor("Bruce McLeod")]
     [PluginName("APR Dash Support")]
-    public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2
+    public partial class DashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2
     {
-        public APRDashPluginSettings Settings;
+        public DashPluginSettings Settings;
 
         public PluginManager PluginManager { get; set; }
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
@@ -63,7 +63,7 @@ namespace APR.DashSupport
         /// <returns></returns>
         public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pluginManager)
         {
-            return new Settings(this);
+            return new SettingsControl(this) { DataContext = Settings};
         }
 
         /// <summary>
@@ -73,10 +73,12 @@ namespace APR.DashSupport
         /// <param name="pluginManager"></param>
         public void Init(PluginManager pluginManager)
         {
-            SimHub.Logging.Current.Info("Starting plugin");
+            SimHub.Logging.Current.Info("Starting APR plugin");
+          
 
             // Load settings
-            Settings = this.ReadCommonSettings<APRDashPluginSettings>("GeneralSettings", () => new APRDashPluginSettings());
+            Settings = this.ReadCommonSettings<DashPluginSettings>("GeneralSettings", () => new DashPluginSettings());
+            DebugMessage("EnableBars:" + Settings.EnableRPMBrakeThrottle.ToString());
 
             // Setup event handlers
             pluginManager.GameStateChanged += new PluginManager.GameRunningChangedDelegate(this.PluginManager_GameStateChanged);
@@ -84,6 +86,9 @@ namespace APR.DashSupport
             this.OnSessionChange(pluginManager);
 
             InitRotaries(pluginManager);
+
+            this.AttachDelegate("EnableRPMBrakeThrottle", () => Settings.EnableRPMBrakeThrottle);
+
             //InitRotaryButtons(pluginManager);
             //InitOtherButtons(pluginManager);
 
@@ -104,5 +109,6 @@ namespace APR.DashSupport
         private void OnSessionChange(PluginManager pluginManager) {
 
         }
+
     }
 }
