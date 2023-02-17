@@ -48,7 +48,8 @@ namespace APR.DashSupport
             pluginManager.AddProperty<string>("MainMenuSelected", this.GetType(), "none");
 
             AddProp("BrakeBarColour","Red");
-            AddProp("BrakeBiasSetup", 0.0);
+            AddProp("BrakeBiasColour", "black");
+            
         }
 
 
@@ -71,6 +72,7 @@ namespace APR.DashSupport
                 {
                     // Data updates go here
                     UpdateBrakeBarColour();
+                    GetSetupBias();
 
                 }
             }

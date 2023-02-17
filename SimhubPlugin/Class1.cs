@@ -9,31 +9,31 @@ namespace APR.DashSupport {
 		public void UpdateBrakeBarColour() {
 
 			var brakePercentage = (double)GetProp("DataCorePlugin.GameData.Brake");
-			string brakeBarColour = "red";
+			string brakeBarColour = "Red";
 			
 			if (brakePercentage < Settings.BrakeTrailStartPercentage) {
-				brakeBarColour = "red";
+				brakeBarColour = "Red";
 			}
 			else if (brakePercentage < Settings.BrakeTrailEndPercentage ) {
-				brakeBarColour = "magenta";
+				brakeBarColour = "Magenta";
 			}
 			else if (brakePercentage < Settings.BrakeTrailEndPercentage) {
-				brakeBarColour = "magenta";
+				brakeBarColour = "Magenta";
 			}
 			else if (brakePercentage <  Settings.BrakeTargetPercentage) {
-				brakeBarColour = "red";
+				brakeBarColour = "Red";
 			}
 			else if (brakePercentage <= Settings.BrakeMaxPercentage) {
-				brakeBarColour = "magenta";
+				brakeBarColour = "Magenta";
 			}
 			else {
-				brakeBarColour = "red";
+				brakeBarColour = "Red";
 			}
 			SetProp("BrakeBarColour", brakeBarColour);
 		}
 
 		public void GetSetupBias() {
-			var setupBias = 0.0;
+			var setupBias = "0.0";
 			if (GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.BrakePressureBias") != null) {
 				setupBias = GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.BrakePressureBias");
 			}
@@ -55,7 +55,19 @@ namespace APR.DashSupport {
 			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.General.BrakePressureBias") != null){
 				setupBias = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.General.BrakePressureBias");
 			}
-			SetProp("BrakeBiasSetup", setupBias);
+
+			Settings.SetupBrakeBiasPercentage = double.Parse(setupBias.Replace("%", ""));
+			double bias = GetProp("BrakeBias");
+
+			if (bias == Settings.SetupBrakeBiasPercentage) {
+				SetProp("BrakeBiasColour", "Green");
+			}
+			else if (bias == Settings.PreferredBrakeBiasPercentage) {
+				SetProp("BrakeBiasColour", "DeepSkyBlue");
+			}
+			else {
+				SetProp("BrakeBiasColour", "White");
+			}
 		}
 	}
 }

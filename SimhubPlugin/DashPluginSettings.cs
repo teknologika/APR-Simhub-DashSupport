@@ -18,6 +18,8 @@ namespace APR.DashSupport
         public double BrakeTrailStartPercentage { get; set; } = 15;
         public double BrakeTrailEndPercentage { get; set; } = 20;
         public double PreferredBrakeBiasPercentage { get; set; } = 52.5;
+        public double SetupBrakeBiasPercentage { get; set; } = 0.0;
+
 
         #region Property supporting UI refresh from code
         /*
