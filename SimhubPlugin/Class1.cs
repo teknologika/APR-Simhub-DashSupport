@@ -32,6 +32,33 @@ namespace APR.DashSupport {
 			SetProp("BrakeBarColour", brakeBarColour);
 		}
 
+		public void UpdateFrontARBColour() {
+
+			var inCar = (int)GetProp("GameRawData.Telemetry.dcAntiRollFront");
+			var inSetup = int.Parse(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBladeSetting"));
+
+			if (inCar == inSetup) {
+				SetProp("ARBColourFront", "Green");
+			}
+			else {
+				SetProp("ARBColourFront", "White");
+			}
+		}
+
+		public void UpdateRearARBColour() {
+
+			var inCar = (int)GetProp("GameRawData.Telemetry.dcAntiRollRear");
+			var inSetup = int.Parse(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBladeSetting"));
+
+			if (inCar == inSetup) {
+				SetProp("ARBColourRear", "Green");
+			}
+			else {
+				SetProp("ARBColourRear", "White");
+			}
+		}
+
+
 		public void GetSetupBias() {
 			var setupBias = "0.0";
 			if (GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.BrakePressureBias") != null) {
@@ -69,5 +96,9 @@ namespace APR.DashSupport {
 				SetProp("BrakeBiasColour", "White");
 			}
 		}
+
+
+
+
 	}
 }

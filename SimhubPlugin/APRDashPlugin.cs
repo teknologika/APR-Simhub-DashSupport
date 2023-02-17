@@ -49,7 +49,9 @@ namespace APR.DashSupport
 
             AddProp("BrakeBarColour","Red");
             AddProp("BrakeBiasColour", "black");
-            
+            AddProp("ARBColourFront", "White");
+            AddProp("ARBColourRear", "White");
+
         }
 
 
@@ -73,6 +75,8 @@ namespace APR.DashSupport
                     // Data updates go here
                     UpdateBrakeBarColour();
                     GetSetupBias();
+                    UpdateFrontARBColour();
+                    UpdateRearARBColour();
 
                 }
             }
