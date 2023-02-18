@@ -1,5 +1,6 @@
 ﻿using SimHub.Plugins;
 using System;
+using System.Globalization;
 
 namespace APR.DashSupport {
 	public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
@@ -368,6 +369,12 @@ namespace APR.DashSupport {
 			}
 
 
+
+		}
+
+		public void UpdatePopupPositions() {
+			SetProp("FuelPopupPercentage", Settings.FuelPopupPercentage/100);
+			SetProp("PitWindowPopupPercentage", Settings.PitWindowPopupPercentage/100);
 
 		}
 	}

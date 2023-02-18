@@ -20,6 +20,10 @@ namespace APR.DashSupport
         public double PreferredBrakeBiasPercentage { get; set; } = 52.5;
         public double SetupBrakeBiasPercentage { get; set; } = 0.0;
 
+        public bool EnablePitWindowPopup { get; set; } = true;
+        public double PitWindowPopupPercentage { get; set; } = 33;
+        public bool EnableFuelPopup { get; set; } = true;
+        public double FuelPopupPercentage { get; set; } = 66;
 
         #region Property supporting UI refresh from code
         /*

@@ -28,7 +28,6 @@ namespace APR.DashSupport
 
             // Load settings
             Settings = this.ReadCommonSettings<DashPluginSettings>("GeneralSettings", () => new DashPluginSettings());
-            DebugMessage("EnableBars:" + Settings.EnableBrakeAndThrottleBars.ToString());
 
             // Setup event handlers
             pluginManager.GameStateChanged += new PluginManager.GameRunningChangedDelegate(this.PluginManager_GameStateChanged);
@@ -39,6 +38,8 @@ namespace APR.DashSupport
 
             this.AttachDelegate("EnableBrakeAndThrottleBars", () => Settings.EnableBrakeAndThrottleBars);
             this.AttachDelegate("EnableRPMBar", () => Settings.EnableRPMBar);
+            this.AttachDelegate("EnablePitWindowPopup", () => Settings.EnablePitWindowPopup);
+            this.AttachDelegate("EnableFuelPopup", () => Settings.EnableFuelPopup);
 
             //InitRotaryButtons(pluginManager);
             //InitOtherButtons(pluginManager);
@@ -67,6 +68,14 @@ namespace APR.DashSupport
             AddProp("MAPLabel", "1");
             AddProp("MAPHighValueLabel", "RACE");
             AddProp("MAPLowValueLabel", "SAVE           SC");
+
+            AddProp("PitWindowMessage", "");
+            AddProp("PitWindowTextColour", "Transparent");
+            AddProp("pitWindowBackGroundColour", "Transparent");
+
+            AddProp("FuelPopupPercentage", Settings.FuelPopupPercentage);
+            AddProp("PitWindowPopupPercentage", Settings.PitWindowPopupPercentage);
+
         }
 
         /// <summary>
@@ -96,6 +105,8 @@ namespace APR.DashSupport
                     UpdateTCValues();
                     UpdateBrakeBarColour();
                     UpdateMAPValues();
+                    UpdatePitWindowMessage();
+                    UpdatePopupPositions();
 
                 }
             }
