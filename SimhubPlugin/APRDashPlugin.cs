@@ -47,18 +47,27 @@ namespace APR.DashSupport
             pluginManager.AddProperty<double>("Version", this.GetType(), 1.1);
             pluginManager.AddProperty<string>("MainMenuSelected", this.GetType(), "none");
 
-            AddProp("BrakeBarColour","Red");
+            AddProp("BrakeBarColour", "Red");
             AddProp("BrakeBiasColour", "black");
+
             AddProp("ARBColourFront", "White");
             AddProp("ARBColourRear", "White");
 
-            AddProp("TCLabelHighValue", "HI AID");
-            AddProp("TCLabelLowValue", "OFF");
+            AddProp("TCHighValueLabel", "HI AID");
+            AddProp("TCLowValueLabel", "OFF");
             AddProp("TCIsOff", false);
             AddProp("TCColour", "White");
-            AddProp("ABSColour", "White");
-        }
 
+            AddProp("ABSColour", "White");
+            AddProp("ABSHighValueLabel", "OFF");
+            AddProp("ABSLowValueLabel", "HI AID");
+            AddProp("ABSIsOff", false);
+
+            AddProp("MAPLabelColour", "White");
+            AddProp("MAPLabel", "1");
+            AddProp("MAPHighValueLabel", "RACE");
+            AddProp("MAPLowValueLabel", "SAVE           SC");
+        }
 
         /// <summary>
         /// Called one time per game data update, contains all normalized game data,
@@ -86,6 +95,7 @@ namespace APR.DashSupport
                     UpdateRearARBColour();
                     UpdateTCValues();
                     UpdateBrakeBarColour();
+                    UpdateMAPValues();
 
                 }
             }
