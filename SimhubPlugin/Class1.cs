@@ -10,17 +10,17 @@ namespace APR.DashSupport {
 
 			var brakePercentage = (double)GetProp("DataCorePlugin.GameData.Brake");
 			string brakeBarColour = "Red";
-			
+
 			if (brakePercentage < Settings.BrakeTrailStartPercentage) {
 				brakeBarColour = "Red";
 			}
-			else if (brakePercentage < Settings.BrakeTrailEndPercentage ) {
+			else if (brakePercentage < Settings.BrakeTrailEndPercentage) {
 				brakeBarColour = "Magenta";
 			}
 			else if (brakePercentage < Settings.BrakeTrailEndPercentage) {
 				brakeBarColour = "Magenta";
 			}
-			else if (brakePercentage <  Settings.BrakeTargetPercentage) {
+			else if (brakePercentage < Settings.BrakeTargetPercentage) {
 				brakeBarColour = "Red";
 			}
 			else if (brakePercentage <= Settings.BrakeMaxPercentage) {
@@ -34,8 +34,14 @@ namespace APR.DashSupport {
 
 		public void UpdateFrontARBColour() {
 
-			var inCar = (int)GetProp("GameRawData.Telemetry.dcAntiRollFront");
-			var inSetup = int.Parse(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBladeSetting"));
+			var inCar = 0;
+			if (GetProp("GameRawData.Telemetry.dcAntiRollFront") != null) {
+				inCar = (int)GetProp("GameRawData.Telemetry.dcAntiRollFront");
+			}
+			var inSetup = 0;
+			if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBladeSetting") != null) {
+				inSetup = (int)GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBladeSetting");
+			}
 
 			if (inCar == inSetup) {
 				SetProp("ARBColourFront", "Green");
@@ -47,9 +53,14 @@ namespace APR.DashSupport {
 
 		public void UpdateRearARBColour() {
 
-			var inCar = (int)GetProp("GameRawData.Telemetry.dcAntiRollRear");
-			var inSetup = int.Parse(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBladeSetting"));
-
+			var inCar = 0;
+			if (GetProp("GameRawData.Telemetry.dcAntiRollRear") != null) {
+				inCar = (int)GetProp("GameRawData.Telemetry.dcAntiRollRear");
+			}
+			var inSetup = 0;
+			if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBladeSetting") != null) {
+				inSetup = (int)GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBladeSetting");
+			}
 			if (inCar == inSetup) {
 				SetProp("ARBColourRear", "Green");
 			}
@@ -66,19 +77,19 @@ namespace APR.DashSupport {
 			else if (GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.BrakePressureBias") != null) {
 				setupBias = GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.BrakePressureBias");
 			}
-			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.BrakesDriveUnit.BrakeSpec.BrakePressureBias") != null){
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.BrakesDriveUnit.BrakeSpec.BrakePressureBias") != null) {
 				setupBias = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.BrakesDriveUnit.BrakeSpec.BrakePressureBias");
 			}
-			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.BrakePressureBias") != null){
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.BrakePressureBias") != null) {
 				setupBias = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.BrakePressureBias");
 			}
-			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarDials.BrakePressureBias") != null){
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarDials.BrakePressureBias") != null) {
 				setupBias = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarDials.BrakePressureBias");
 			}
-			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.BrakesDriveUnit.BrakeSpec.BrakePressureBias") != null){
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.BrakesDriveUnit.BrakeSpec.BrakePressureBias") != null) {
 				setupBias = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.BrakesDriveUnit.BrakeSpec.BrakePressureBias");
 			}
-			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.General.BrakePressureBias") != null){
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.General.BrakePressureBias") != null) {
 				setupBias = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.General.BrakePressureBias");
 			}
 
@@ -95,6 +106,57 @@ namespace APR.DashSupport {
 				SetProp("BrakeBiasColour", "White");
 			}
 		}
+
+		public void GetSetupTC() {
+			string setupVal = "";
+			if (GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.TcSetting") != null) {
+				string[] splitter = GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.TCSetting").Split(' ');
+				setupVal = Convert.ToString(splitter[0]);
+			}
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.TcSetting") != null) {
+				string[] splitter = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.TcSetting").Split(' ');
+				setupVal = Convert.ToString(splitter[0]);
+			}
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarDials.TractionControlSetting") != null) {
+				string[] splitter = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarDials.TractionControlSetting").Split(' ');
+				setupVal = Convert.ToString(splitter[0]);
+			}
+			string tc = Convert.ToString(GetProp("DataCorePlugin.GameData.TCLevel"));
+			if (tc == setupVal) {
+				SetProp("TCColour", "Green");
+			}
+			else {
+				SetProp("TCColour", "White");
+			}
+		}
+
+		public void GetSetupABS() {
+
+			string setupVal = "";
+
+			if (GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.AbsSetting") != null) {
+				string[] splitter = GetProp("GameRawData.SessionData.CarSetup.Chassis.BrakesInCar.AbsSetting").Split(' ');
+				setupVal = Convert.ToString(splitter[0]);
+			}
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.AbsSetting") != null) {
+				string[] splitter = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.AbsSetting").Split(' ');
+				setupVal = Convert.ToString(splitter[0]);
+
+			}
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarDials.AbsSetting") != null) {
+				string[] splitter = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarDials.AbsSetting").Split(' ');
+				setupVal = Convert.ToString(splitter[0]);
+			}
+
+			string absLevel = Convert.ToString(GetProp("DataCorePlugin.GameData.ABSLevel"));
+			if (absLevel == setupVal) {
+				SetProp("ABSColour", "Green");
+			}
+			else {
+				SetProp("ABSColour", "White");
+			}
+		}
+	
 
 		public void UpdateTCValues() {
 			
@@ -124,8 +186,6 @@ namespace APR.DashSupport {
 					}
 					break;
             }
-
-
 
         }
 

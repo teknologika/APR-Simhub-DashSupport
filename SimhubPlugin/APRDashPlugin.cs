@@ -55,9 +55,8 @@ namespace APR.DashSupport
             AddProp("TCLabelHighValue", "HI AID");
             AddProp("TCLabelLowValue", "OFF");
             AddProp("TCIsOff", false);
-
-
-
+            AddProp("TCColour", "White");
+            AddProp("ABSColour", "White");
         }
 
 
@@ -79,11 +78,14 @@ namespace APR.DashSupport
                 if (data.OldData != null && data.NewData != null)
                 {
                     // Data updates go here
-                    UpdateBrakeBarColour();
+                    
                     GetSetupBias();
+                    GetSetupTC();
+                    GetSetupABS();
                     UpdateFrontARBColour();
                     UpdateRearARBColour();
                     UpdateTCValues();
+                    UpdateBrakeBarColour();
 
                 }
             }
