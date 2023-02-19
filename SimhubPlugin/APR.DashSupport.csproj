@@ -35,9 +35,17 @@
       <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\GameReaderCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ICarsReader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\ICarsReader.dll</HintPath>
+    </Reference>
     <Reference Include="InputManagerCS, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\InputManagerCS.dll</HintPath>
+    </Reference>
+    <Reference Include="iRacingSDK, Version=1.0.8448.28323, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\iRacingSDK.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

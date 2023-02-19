@@ -2,6 +2,8 @@
 using SimHub.Plugins;
 using System;
 using System.Windows.Media;
+using IRacingReader;
+using iRacingSDK;
 
 namespace APR.DashSupport
 {
@@ -11,6 +13,11 @@ namespace APR.DashSupport
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2
     {
         public DashPluginSettings Settings;
+
+        DataSampleEx irData;
+       
+        
+
 
         public PluginManager PluginManager { get; set; }
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
@@ -95,8 +102,9 @@ namespace APR.DashSupport
                 // Make sure we are getting a telemetry feed
                 if (data.OldData != null && data.NewData != null)
                 {
-                    // Data updates go here
-                    
+                    //Gaining access to raw data
+                    if (data?.NewData?.GetRawDataObject() is DataSampleEx) { irData = data.NewData.GetRawDataObject() as DataSampleEx; }
+
                     GetSetupBias();
                     GetSetupTC();
                     GetSetupABS();
