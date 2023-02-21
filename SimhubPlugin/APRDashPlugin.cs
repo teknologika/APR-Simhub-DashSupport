@@ -83,6 +83,10 @@ namespace APR.DashSupport
             AddProp("FuelPopupPercentage", Settings.FuelPopupPercentage);
             AddProp("PitWindowPopupPercentage", Settings.PitWindowPopupPercentage);
 
+            AddProp("LaunchBitePointAdjusted", 0);
+            AddProp("LaunchPreferFullThrottleStarts", Settings.PreferFullThrottleStarts);
+            AddProp("LaunchUsingDualClutchPaddles", Settings.LaunchUsingDualClutchPaddles);
+
         }
 
         /// <summary>
@@ -105,6 +109,15 @@ namespace APR.DashSupport
                     //Gaining access to raw data
                     if (data?.NewData?.GetRawDataObject() is DataSampleEx) { irData = data.NewData.GetRawDataObject() as DataSampleEx; }
 
+                    float[] times = irData.Telemetry.CarIdxF2Time;
+                    for (int i = 0; i < times.Length; i++) {
+                        if (times[i] > 0) {
+                            DebugMessage("Position: " + i + " Gap:" + times[i]);
+                        }
+
+                    }
+
+
                     GetSetupBias();
                     GetSetupTC();
                     GetSetupABS();
@@ -113,8 +126,11 @@ namespace APR.DashSupport
                     UpdateTCValues();
                     UpdateBrakeBarColour();
                     UpdateMAPValues();
+                    UpdateBitePointRecommendation();
                     UpdatePitWindowMessage();
                     UpdatePopupPositions();
+
+                   
 
                 }
             }

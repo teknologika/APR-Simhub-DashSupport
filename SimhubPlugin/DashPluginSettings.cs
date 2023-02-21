@@ -24,7 +24,9 @@ namespace APR.DashSupport
         public double PitWindowPopupPercentage { get; set; } = 33;
         public bool EnableFuelPopup { get; set; } = true;
         public double FuelPopupPercentage { get; set; } = 66;
-
+        public bool PreferFullThrottleStarts { get; set; } = false;
+        public bool AdjustBiteRecommendationForTrackTemp { get; set; } = false;
+        public bool LaunchUsingDualClutchPaddles { get; set; } = false;
         #region Property supporting UI refresh from code
         /*
         private string _FilePath;

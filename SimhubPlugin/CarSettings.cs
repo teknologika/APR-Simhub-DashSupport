@@ -367,15 +367,41 @@ namespace APR.DashSupport {
 					}
 					break;
 			}
-
-
-
 		}
 
 		public void UpdatePopupPositions() {
 			SetProp("FuelPopupPercentage", Settings.FuelPopupPercentage/100);
 			SetProp("PitWindowPopupPercentage", Settings.PitWindowPopupPercentage/100);
 
+		}
+
+		public void UpdateBitePointRecommendation() {
+			int value = Convert.ToInt16(GetProp("DahlDesign.LaunchBitePoint"));
+            if (!Settings.LaunchUsingDualClutchPaddles) {
+				value = value + 2;
+            }
+
+			if (Settings.PreferFullThrottleStarts) {
+				value = value + 2;
+			}
+			SetProp("LaunchPreferFullThrottleStarts", Settings.PreferFullThrottleStarts);
+			SetProp("LaunchUsingDualClutchPaddles", Settings.LaunchUsingDualClutchPaddles);
+
+			if (Settings.AdjustBiteRecommendationForTrackTemp) {
+				double temp = Convert.ToDouble(GetProp("DataCorePlugin.GameData.RoadTemperature"));
+				if (temp > 25) {
+					value = value +1 ;
+				}
+                else if (temp > 30){
+					value = value + 2;
+				}
+				else if (temp > 40) {
+					value = value + 3;
+				}
+			}
+			SetProp("LaunchBitePointAdjusted", value);
+
+			if (Settings.Lau)
 		}
 	}
 }

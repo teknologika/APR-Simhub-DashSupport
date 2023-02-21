@@ -29,6 +29,8 @@
                                     <RowDefinition Height="1*" MinHeight="30"/>
                                     <RowDefinition Height="1*" MinHeight="30"/>
                                     <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Text="Show Brake and throttle bars" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
@@ -53,6 +55,12 @@
                                 <styles:SHToggleButton Grid.Row="7" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding EnableFuelPopup}" RenderTransformOrigin="0.45,0.2"/>
                                 <TextBlock Grid.Row="7" Grid.Column="2" Text="Percentage around track to show" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
                                 <TextBox Grid.Row="7" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding FuelPopupPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0'%'}}"/>
+                                <TextBlock Grid.Row="8" Grid.Column="0" Text="Prefer full throttle starts" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <styles:SHToggleButton Grid.Row="8" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding PreferFullThrottleStarts}" RenderTransformOrigin="0.45,0.2"/>
+                                <TextBlock Grid.Row="8" Grid.Column="2" Text="Adjust Bite point for track temperature" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <styles:SHToggleButton Grid.Row="8" Grid.Column="3"  HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding AdjustBiteRecommendationForTrackTemp}" RenderTransformOrigin="0.45,0.2"/>
+                                <TextBlock Grid.Row="9" Grid.Column="0" Text="Using dualclutch paddles for starts" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <styles:SHToggleButton Grid.Row="9" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding LaunchUsingDualClutchPaddles}" RenderTransformOrigin="0.45,0.2"/>
 
                             </Grid>
                         </StackPanel>
