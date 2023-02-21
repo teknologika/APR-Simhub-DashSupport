@@ -401,7 +401,6 @@ namespace APR.DashSupport {
 			}
 			SetProp("LaunchBitePointAdjusted", value);
 
-			if (Settings.Lau)
 		}
 	}
 }
