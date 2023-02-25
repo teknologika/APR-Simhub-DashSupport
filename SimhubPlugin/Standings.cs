@@ -33,7 +33,6 @@ namespace APR.DashSupport {
         // Championship Standings
     }
 
-
     internal class CarClass {
         public int CarClassID { get; set; } = 0;
         public string CarClassName { get; set; } = string.Empty;
