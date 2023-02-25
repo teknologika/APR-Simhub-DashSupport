@@ -96,6 +96,7 @@
       <DependentUpon>SettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="CustomControls.cs" />
+    <Compile Include="Standings.cs" />
     <Compile Include="WheelControls.cs" />
   </ItemGroup>
   <ItemGroup>

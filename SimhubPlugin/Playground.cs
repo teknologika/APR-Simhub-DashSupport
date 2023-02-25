@@ -43,10 +43,6 @@ namespace APR.DashSupport {
 
         }
 
-
-
-
-
         public static void Sample() {
             var iracing = new iRacingConnection();
 

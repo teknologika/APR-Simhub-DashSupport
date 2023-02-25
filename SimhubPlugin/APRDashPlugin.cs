@@ -7,6 +7,7 @@ using iRacingSDK;
 
 namespace APR.DashSupport
 {
+
     [PluginDescription("Support for APR Dashes and Overlays")]
     [PluginAuthor("Bruce McLeod")]
     [PluginName("APR Dash Support")]
@@ -16,9 +17,6 @@ namespace APR.DashSupport
 
         DataSampleEx irData;
        
-        
-
-
         public PluginManager PluginManager { get; set; }
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
         public string LeftMenuTitle => "APR Dash Support";
@@ -47,6 +45,9 @@ namespace APR.DashSupport
             this.AttachDelegate("EnableRPMBar", () => Settings.EnableRPMBar);
             this.AttachDelegate("EnablePitWindowPopup", () => Settings.EnablePitWindowPopup);
             this.AttachDelegate("EnableFuelPopup", () => Settings.EnableFuelPopup);
+
+            this.AttachDelegate("DriverNameStyle_0", () => Settings.DriverNameStyle_0);
+            this.AttachDelegate("DriverNameStyle_1", () => Settings.DriverNameStyle_1);
 
             //InitRotaryButtons(pluginManager);
             //InitOtherButtons(pluginManager);
@@ -87,6 +88,21 @@ namespace APR.DashSupport
             AddProp("LaunchPreferFullThrottleStarts", Settings.PreferFullThrottleStarts);
             AddProp("LaunchUsingDualClutchPaddles", Settings.LaunchUsingDualClutchPaddles);
 
+            // Add Standings Properties
+            if (Settings.EnableStandings) {
+                AddProp("Standings.test", Settings.DriverNameStyle);
+
+                int length = 63; // number of cars
+                for (int i = 0; i < length; i++) {
+                    AddProp("Standings.test", Settings.DriverNameStyle);
+                }
+
+
+
+            }
+
+            
+
         }
 
         /// <summary>
@@ -100,6 +116,16 @@ namespace APR.DashSupport
         /// <param name="data">Current game data, including current and previous data frame.</param>
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
+            if (Settings.SettingsUpdated) {
+                
+                // Update Standings Properties
+                if (Settings.EnableStandings) {
+                    Settings.DriverNameStyle = Settings.DriverNameStyle_0 ? 0 : Settings.DriverNameStyle_1 ? 1 : Settings.DriverNameStyle_2 ? 2 : Settings.DriverNameStyle_3 ? 3 : (Settings.DriverNameStyle_4 ? 1 : 4);
+                    SetProp("Standings.test", Settings.DriverNameStyle);
+                }
+                Settings.SettingsUpdated = false;
+            }
+
             // Confirm the sim is up and running at it is iRacing
             if (data.GameRunning && data.GameName == "IRacing")
             {
@@ -129,9 +155,12 @@ namespace APR.DashSupport
                     UpdateBitePointRecommendation();
                     UpdatePitWindowMessage();
                     UpdatePopupPositions();
-
                    
 
+
+                    
+
+                    
                 }
             }
 

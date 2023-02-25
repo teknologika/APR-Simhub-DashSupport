@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
 namespace APR.DashSupport
 {
@@ -27,6 +28,46 @@ namespace APR.DashSupport
         public bool PreferFullThrottleStarts { get; set; } = false;
         public bool AdjustBiteRecommendationForTrackTemp { get; set; } = false;
         public bool LaunchUsingDualClutchPaddles { get; set; } = false;
+
+        
+        // Settings to support standings
+        
+        public bool EnableStandings { get; set; } = false;
+        public int SlideOutDelay { get; set; } = 20;
+        public bool Multiclass { get; set; } = false;
+        public int NumberOfMulticlassDrivers { get; set; } = 3;
+        public bool ShowCarClassName { get; set; } = false;
+
+        public int DriverNameStyle { get; set; } = 0;
+        public bool SettingsUpdated { get; set; } = false;
+        public bool DriverNameStyle_0 { get; set; } = true;
+        public bool DriverNameStyle_1 { get; set; } = false;
+        public bool DriverNameStyle_2 { get; set; } = false;
+        public bool DriverNameStyle_3 { get; set; } = false;
+        public bool DriverNameStyle_4 { get; set; } = false;
+
+
+        public enum DriverNameFormat
+         {
+
+            Full_Name,
+            Firstname_Lastname,
+            Lastname_Firstname,
+            F_Lastname,
+            Firstname_L,
+            Firstname,
+            Lastname,
+            FIR,
+            LAS
+        }
+
+
+
+
+       
+    
+
+
         #region Property supporting UI refresh from code
         /*
         private string _FilePath;
