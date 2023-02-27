@@ -55,7 +55,7 @@ namespace APR.DashSupport {
                 float[] times = tele.CarIdxF2Time;
                 for (int i = 0; i < times.Length; i++) {
                     if (times[i] > 0) {
-                        Trace.WriteLine("Position - " + i + "Time: " + times[i]);
+                       // Trace.WriteLine("Position - " + i + "Time: " + times[i]);
                     }
 
                 }

@@ -3,6 +3,7 @@ using iRacingSDK;
 using SimHub.Plugins;
 using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Status;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
+using SimHub.Plugins.OutputPlugins.GraphicalDash.Models.BuiltIn;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,8 +27,44 @@ namespace APR.DashSupport {
 
         TimeSpan globalClock = TimeSpan.FromTicks(DateTime.Now.Ticks);
         // Break the track into 60 sections for calculating gaps and delta times
-        public int TrackSections { get; } = 60;
+        int trackSections { get; } = 60;
+        List<double> realGapOpponentDelta = new List<double> { };
+        List<double> realGapOpponentRelative = new List<double> { };
 
+        List<List<TimeSpan>> realGapPoints = new List<List<TimeSpan>> { };
+        List<List<bool>> realGapLocks = new List<List<bool>> { };
+        List<List<bool>> realGapChecks = new List<List<bool>> { };
+
+        public void Initalize() {
+
+
+            realGapLocks.Clear();
+            realGapChecks.Clear();
+            realGapPoints.Clear();
+            realGapOpponentDelta.Clear();
+
+            for (int u = 0; u < trackSections; u++) {
+                List<bool> locks = new List<bool> { };
+                List<bool> checks = new List<bool> { };
+                List<TimeSpan> points = new List<TimeSpan> { };
+
+                for (int i = 0; i < 64; i++) {
+                    locks.Add(false);
+                    checks.Add(false);
+                    points.Add(TimeSpan.FromSeconds(0));
+                }
+
+                realGapLocks.Add(locks);
+                realGapChecks.Add(checks);
+                realGapPoints.Add(points);
+            }
+
+            for (int i = 0; i < 64; i++) {
+                realGapOpponentDelta.Add(0);
+                realGapOpponentRelative.Add(0);
+            }
+
+        }
 
         public void UpdateStandingsNameSetting() { 
             if (Settings.SettingsUpdated) {
@@ -61,6 +98,9 @@ namespace APR.DashSupport {
 
 
         public void AddStandingsRelatedProperties() {
+
+            Initalize();
+
         }
 
         public void UpdateStandingsRelatedProperties(ref GameData data) {
@@ -71,160 +111,181 @@ namespace APR.DashSupport {
             // Add Standings Properties
             if (Settings.EnableStandings) {
 
-                // only update once per second
-                if (frameCounter == 30) {
-                    SessionData._DriverInfo._Drivers[] competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
-                    for (int i = 0; i < competitiors.Length; i++) {
-                
-                        RaceCar car = new RaceCar();
-                        car.CarIDx = i;
-                        car.CarClass = competitiors[i].CarClassID;
-                        car.Driver.DriverFullName = competitiors[i].UserName;
-                        car.Driver.DriverCustomerID = competitiors[i].UserID;
+                SessionData._DriverInfo._Drivers[] competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
+                CompetingCars = new List<RaceCar>();
+                for (int i = 0; i < competitiors.Length; i++) {
 
-                        // chop up the drivers name(s)
-                        // TODO: Don't store everything, just chop once and store what we need ... maybe
-                        string[] names = car.Driver.DriverFullName.Split(' ');
-                        int numberOfNames = names.Length;
-                        if (numberOfNames > 0) {
+                    RaceCar car = new RaceCar();
+                    car.CarIDx = i;
+                    car.CarClass = competitiors[i].CarClassID;
+                    car.Driver.DriverFullName = competitiors[i].UserName;
+                    car.Driver.DriverCustomerID = competitiors[i].UserID;
 
-                            car.Driver.DriverFirstName = car.Driver.DriverFullName.Split(' ')[0];
-                            car.Driver.DriverLastName = car.Driver.DriverFullName.Split(' ')[numberOfNames - 1];
+                    // chop up the drivers name(s)
+                    // TODO: Don't store everything, just chop once and store what we need ... maybe
+                    string[] names = car.Driver.DriverFullName.Split(' ');
+                    int numberOfNames = names.Length;
+                    if (numberOfNames > 0) {
 
-                            car.Driver.DriverFirstNameShort = car.Driver.DriverFullName.Substring(0, 3).ToUpper();
-                            car.Driver.DriverLastNameShort = car.Driver.DriverLastName.Substring(0, 3).ToUpper();
+                        car.Driver.DriverFirstName = car.Driver.DriverFullName.Split(' ')[0];
+                        car.Driver.DriverLastName = car.Driver.DriverFullName.Split(' ')[numberOfNames - 1];
 
-                            car.Driver.DriverFirstNameInitial = car.Driver.DriverFirstName.Substring(0, 1).ToUpper();
-                            car.Driver.DriverLastNameInitial = car.Driver.DriverLastName.Substring(0, 1).ToUpper();
+                        car.Driver.DriverFirstNameShort = car.Driver.DriverFullName.Substring(0, 3).ToUpper();
+                        car.Driver.DriverLastNameShort = car.Driver.DriverLastName.Substring(0, 3).ToUpper();
 
-                            UpdateStandingsNameSetting();
+                        car.Driver.DriverFirstNameInitial = car.Driver.DriverFirstName.Substring(0, 1).ToUpper();
+                        car.Driver.DriverLastNameInitial = car.Driver.DriverLastName.Substring(0, 1).ToUpper();
 
-                            // Update the driver's display name
-                            switch (Settings.DriverNameStyle) {
+                        UpdateStandingsNameSetting();
 
-                                case 0: // Firstname Middle Lastname
-                                    car.Driver.DriverDisplayName = car.Driver.DriverFullName;
-                                    break;
+                        // Update the driver's display name
+                        switch (Settings.DriverNameStyle) {
 
-                                case 1: // Firstname Lastname
-                                    car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastName;
-                                    break;
+                            case 0: // Firstname Middle Lastname
+                                car.Driver.DriverDisplayName = car.Driver.DriverFullName;
+                                break;
 
-                                case 2: // Lastname, Firstname
-                                    car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstName;
-                                    break;
+                            case 1: // Firstname Lastname
+                                car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastName;
+                                break;
 
-                                case 3: // F. Lastname
-                                    car.Driver.DriverDisplayName = car.Driver.DriverFirstNameInitial + ". " + car.Driver.DriverLastName;
-                                    break;
+                            case 2: // Lastname, Firstname
+                                car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstName;
+                                break;
 
-                                case 4: // Firstname L.
-                                    car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastNameInitial + ". ";
-                                    break;
+                            case 3: // F. Lastname
+                                car.Driver.DriverDisplayName = car.Driver.DriverFirstNameInitial + ". " + car.Driver.DriverLastName;
+                                break;
 
-                                case 5: // Lastname, F.
-                                    car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstNameInitial + ". ";
-                                    break;
+                            case 4: // Firstname L.
+                                car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastNameInitial + ". ";
+                                break;
 
-                                case 6: // LAS
-                                    car.Driver.DriverDisplayName = car.Driver.DriverLastNameShort;
-                                    break;
+                            case 5: // Lastname, F.
+                                car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstNameInitial + ". ";
+                                break;
 
-                                default: //   Firstname Middle Lastname
+                            case 6: // LAS
+                                car.Driver.DriverDisplayName = car.Driver.DriverLastNameShort;
+                                break;
 
-                                    car.Driver.DriverDisplayName = car.Driver.DriverFullName;
-                                    break;
-                            }
+                            default: //   Firstname Middle Lastname
+
+                                car.Driver.DriverDisplayName = car.Driver.DriverFullName;
+                                break;
                         }
+                    }
 
-                        // Get Position
-                        car.Position = irData.Telemetry.CarIdxPosition[i];
-                        car.PositionInClass = irData.Telemetry.CarIdxClassPosition[i];
-                        car.Lap = irData.Telemetry.CarIdxLap[i];
-                        car.LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[i];
+                    // Get Position
+                    car.Position = irData.Telemetry.CarIdxPosition[i];
+                    car.PositionInClass = irData.Telemetry.CarIdxClassPosition[i];
+                    car.Lap = irData.Telemetry.CarIdxLap[i];
+                    car.LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[i];
 
-                        bool isLeader = car.Position == 1;
-                        bool isClassLeader = car.PositionInClass == 1;
+                    bool isLeader = car.Position == 1;
+                    bool isClassLeader = car.PositionInClass == 1;
 
-                        // Get the best lap times
-                        object _bestlaptimes = null;
-                        float[] bestlapTimes = null;
-                        irData.Telemetry.TryGetValue("CarIdxBestLapTime", out _bestlaptimes);
-                        if (_bestlaptimes.GetType() == typeof(float[])) {
-                            bestlapTimes = _bestlaptimes as float[];
-                            if (bestlapTimes != null) {
-                                if (bestlapTimes[i] >= 0) {
-                                    car.BestLap = bestlapTimes[i];
+                    // Get the best lap times
+                    object _bestlaptimes = null;
+                    float[] bestlapTimes = null;
+                    irData.Telemetry.TryGetValue("CarIdxBestLapTime", out _bestlaptimes);
+                    if (_bestlaptimes.GetType() == typeof(float[])) {
+                        bestlapTimes = _bestlaptimes as float[];
+                        if (bestlapTimes != null) {
+                            if (bestlapTimes[i] >= 0) {
+                                car.BestLap = bestlapTimes[i];
 
-                                    // If this is the overall leader, get their best lap for gap calcs
-                                    if (isLeader) {
-                                        LeaderBestLap = car.BestLap;
-                                    }
-                                    if (isClassLeader) {
-                                        //TODO: Add class stuff here
-                                    }
+                                // If this is the overall leader, get their best lap for gap calcs
+                                if (isLeader) {
+                                    LeaderBestLap = car.BestLap;
+                                }
+                                if (isClassLeader) {
+                                    //TODO: Add class stuff here
                                 }
                             }
                         }
+                    }
 
-                        // get the last lap times
-                        object _lastlaptimes = null;
-                        float[] lastlapTimes = null;
-                        irData.Telemetry.TryGetValue("CarIdxLastLapTime", out _lastlaptimes);
-                        if (_bestlaptimes.GetType() == typeof(float[])) {
-                            lastlapTimes = _lastlaptimes as float[];
-                            if (lastlapTimes != null) {
-                                if (lastlapTimes[i] >= 0) {
-                                    car.LastLap = lastlapTimes[i];
+                    // get the last lap times
+                    object _lastlaptimes = null;
+                    float[] lastlapTimes = null;
+                    irData.Telemetry.TryGetValue("CarIdxLastLapTime", out _lastlaptimes);
+                    if (_lastlaptimes.GetType() == typeof(float[])) {
+                        lastlapTimes = _lastlaptimes as float[];
+                        if (lastlapTimes != null) {
+                            if (lastlapTimes[i] >= 0) {
+                                car.LastLap = lastlapTimes[i];
 
-                                    // If this is the overall leader, get their last lap for gap calcs
-                                    if (isLeader) {
-                                        LeaderLastLap = car.LastLap;
-                                    }
-                                    if (car.PositionInClass == 1) {
-                                        //TODO: Add class stuff here
-                                    }
+                                // If this is the overall leader, get their last lap for gap calcs
+                                if (isLeader) {
+                                    LeaderLastLap = car.LastLap;
+                                }
+                                if (car.PositionInClass == 1) {
+                                    //TODO: Add class stuff here
                                 }
                             }
                         }
+                    }
 
-                        // calculate the expected for the leader
-                        double leaderExpectedLapTime = (LeaderLastLap * 2 + LeaderBestLap) / 3;
-                        if (LeaderLastLap == 0) {
-                            leaderExpectedLapTime = LeaderBestLap * 1.01;
-                        }
-                        if (LeaderBestLap == 0) {
-                            leaderExpectedLapTime = LeaderLastLap;
-                        }
-
-                        // grab the current pace of the leader because we can :-)
-                        //TimeSpan leaderPace = TimeSpan.FromSeconds(leaderExpectedLapTime);
+                    // calculate the expected for the leader
+                    double leaderExpectedLapTime = (LeaderLastLap * 2 + LeaderBestLap) / 3;
+                    if (LeaderLastLap == 0) {
+                        leaderExpectedLapTime = LeaderBestLap * 1.01;
+                    }
+                    if (LeaderBestLap == 0) {
+                        leaderExpectedLapTime = LeaderLastLap;
+                    }
 
 
-                        // get the lap and position for the current car
-                        int myLap = car.Lap;
+                    // calculate the expected for the current car
+                    car.EstimatedLapTime = (car.LastLap * 2 + car.BestLap) / 3;
+                    if (LeaderLastLap == 0) {
+                        leaderExpectedLapTime = LeaderBestLap * 1.01;
+                    }
+                    if (LeaderBestLap == 0) {
+                        leaderExpectedLapTime = LeaderLastLap;
+                    }
+
+                    // grab the current pace of the leader because we can :-)
+                    //TimeSpan leaderPace = TimeSpan.FromSeconds(leaderExpectedLapTime);
 
 
+                    // get the lap and position for the current car
+                    int myLap = car.Lap;
+                    int myDistIndex = ((int)((car.LapDistancePercent * trackSections) * 100)) / 100;
+                    if (myDistIndex >= trackSections) {
+                        myDistIndex = trackSections - 1;
+                    }
+                    int myPrevIndex = myDistIndex - 1;
+                    if (myPrevIndex == -1) {
+                        myPrevIndex = trackSections - 1;
+                    }
+                    if (myDistIndex < 0) {
+                        myDistIndex = 0;
+                        myPrevIndex = 0;
+                    }
 
-                        car.IntervalGapDelayed = irData.Telemetry.CarIdxF2Time[i];
-                        //Checking if this CarID is in world
-                        if ((int)irData.Telemetry.CarIdxTrackSurface[i] != -1 && irData.Telemetry.CarIdxLap[i] > 0) {
 
-                            // if the car is the leader, they have a 0 interval
-                            if (car.Position == 1) {
-                                car.IntervalGap = 0;
-                            }
-                            // if the car is not the leader, get
-                            else {
+                    car.IntervalGapDelayed = irData.Telemetry.CarIdxF2Time[i];
+
+                    irData.Telemetry.TryGetValue("SessionState", out object rawSessionState);
+                    int sessionState = Convert.ToInt32(rawSessionState);
+                    if (sessionState == 4 && bestlapTimes != null) {
+                        for (int j = 0; j < 64; j++) {
+                            //Checking if this CarID is in world
+                            if ((int)irData.Telemetry.CarIdxTrackSurface[j] != -1 && irData.Telemetry.CarIdxLap[j] > 0) {
+
                                 // Distance index, dividing track position into sections
                                 // Dahl Design Plugin - iRacing.cs around line 6100 ish
-                                int distIndex = ((int)((car.LapDistancePercent * TrackSections) * 100)) / 100;
-                                if (distIndex >=TrackSections) {
-                                    distIndex = TrackSections - 1;
+
+
+                                int distIndex = ((int)((car.LapDistancePercent * trackSections) * 100)) / 100;
+                                if (distIndex >= trackSections) {
+                                    distIndex = trackSections - 1;
                                 }
                                 int distPrevIndex = distIndex - 1;
                                 if (distPrevIndex == -1) {
-                                    distPrevIndex = TrackSections - 1;
+                                    distPrevIndex = trackSections - 1;
                                 }
 
                                 if (distIndex < 0) {
@@ -232,23 +293,82 @@ namespace APR.DashSupport {
                                     distPrevIndex = 0;
                                 }
 
-                                
+                                int lap = irData.Telemetry.CarIdxLap[j];
+
+                                // Check the position ahead is still ahead on track
+                                double posdiff = car.LapDistancePercent - irData.Telemetry.CarIdxLapDistPct[j];
+                                double lapdiff = myLap - lap + posdiff;
+                                int truncdiff = ((int)((lapdiff) * 100)) / 100;
+
+                                //Checking if car is in front.
+                                if ((posdiff < 0 && posdiff > -0.5) || posdiff > 0.5) {
+                                    if (!realGapLocks[distIndex][j] && !realGapChecks[distIndex][j])  //Car arriving at unchecked, closed gate. Opening, snapshotting global clock, setting check. Unchecking previous gate. 
+                                    {
+                                        realGapPoints[distIndex][j] = globalClock;
+                                        realGapLocks[distIndex][j] = true;
+                                        realGapChecks[distIndex][j] = true;
+                                        realGapChecks[distPrevIndex][j] = false;
+                                    }
+
+                                    if (realGapLocks[myDistIndex][j]) //If I just arrived at an open gate , close it and post delta.
+                                    {
+                                        double delta = realGapPoints[myDistIndex][j].TotalSeconds - globalClock.TotalSeconds;
+
+                                        realGapOpponentRelative[j] = delta;
+
+                                        if (lapdiff < -1) {
+                                            delta = delta - truncdiff * car.EstimatedLapTime;
+                                        }
+                                        else if (lapdiff > 0) {
+                                            delta = car.BestLap + delta + truncdiff * car.BestLap;
+                                        }
+
+                                        realGapOpponentDelta[j] = delta;
+                                        realGapLocks[myDistIndex][j] = false;
+                                        car.IntervalGap = delta;
+                                    }
+
+                                }
+
+                                else//Assume the car is behind
+                                {
+                                    if (!realGapLocks[myDistIndex][j] && !realGapChecks[myDistIndex][j]) //If I just arrived at a unchecked, closed gate, open and snapshot global clock, checking. Unchecking previous gate.
+                                    {
+                                        realGapPoints[myDistIndex][j] = globalClock;
+                                        realGapLocks[myDistIndex][j] = true;
+                                        realGapChecks[myDistIndex][j] = true;
+                                        realGapChecks[myPrevIndex][j] = false;
+                                    }
+
+                                    //Calculating the total race distance to this car
 
 
+                                    if (realGapLocks[distIndex][j]) //If car just arrived at an open gate, close it and post delta. 
+                                    {
+                                        double delta = globalClock.TotalSeconds - realGapPoints[distIndex][j].TotalSeconds;
 
-                                //CarIdxBestLapTime
+                                        realGapOpponentRelative[j] = delta;
+
+                                        if (lapdiff < 0) {
+                                            delta = delta - car.EstimatedLapTime - truncdiff * car.EstimatedLapTime;
+                                        }
+                                        else if (lapdiff > 1) {
+                                            delta = delta + truncdiff * car.BestLap;
+                                        }
+
+                                        realGapOpponentDelta[j] = delta;
+                                        realGapLocks[distIndex][j] = false;
+
+                                        car.IntervalGap = delta;
+                                    }
+
+                                }
+
                             }
+                            //CarIdxBestLapTime
                         }
-
-
-
-
-
-
-                        CompetingCars.Add(car);
                     }
-
-
+                    CompetingCars.Insert(i, car);
                 }
 
 
@@ -332,7 +452,7 @@ namespace APR.DashSupport {
         public double CurrentSector2Time { get; set; } = 0;
         public double CurrentSector3Time { get; set; } = 0;
         public int CurrentSectorNumber { get; set; } = 0;
-        public int EstimatedLapTime { get; set; } = 0;
+        public double EstimatedLapTime { get; set; } = 0;
         public double IntervalGap { get; set; } = 0;
         public double IntervalGapDelayed { get; set; } = 0;
         public double LapDistancePercent { get; set; } = 0;
