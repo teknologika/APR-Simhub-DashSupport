@@ -4,6 +4,7 @@ using System;
 using System.Windows.Media;
 using IRacingReader;
 using iRacingSDK;
+using System.Diagnostics.Eventing.Reader;
 
 namespace APR.DashSupport
 {
@@ -14,6 +15,7 @@ namespace APR.DashSupport
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2
     {
         public DashPluginSettings Settings;
+        public int frameCounter = 0;
 
         DataSampleEx irData;
        
@@ -49,8 +51,7 @@ namespace APR.DashSupport
             this.AttachDelegate("DriverNameStyle_0", () => Settings.DriverNameStyle_0);
             this.AttachDelegate("DriverNameStyle_1", () => Settings.DriverNameStyle_1);
 
-            //InitRotaryButtons(pluginManager);
-            //InitOtherButtons(pluginManager);
+
 
 
             pluginManager.AddProperty<double>("Version", this.GetType(), 1.1);
@@ -88,20 +89,15 @@ namespace APR.DashSupport
             AddProp("LaunchPreferFullThrottleStarts", Settings.PreferFullThrottleStarts);
             AddProp("LaunchUsingDualClutchPaddles", Settings.LaunchUsingDualClutchPaddles);
 
-            // Add Standings Properties
-            if (Settings.EnableStandings) {
-                AddProp("Standings.test", Settings.DriverNameStyle);
-
-                int length = 63; // number of cars
-                for (int i = 0; i < length; i++) {
-                    AddProp("Standings.test", Settings.DriverNameStyle);
-                }
 
 
-
-            }
-
+           AddStandingsRelatedProperties();
             
+
+            //InitRotaryButtons(pluginManager);
+            //InitOtherButtons(pluginManager);
+
+
 
         }
 
@@ -116,15 +112,15 @@ namespace APR.DashSupport
         /// <param name="data">Current game data, including current and previous data frame.</param>
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
-            if (Settings.SettingsUpdated) {
-                
-                // Update Standings Properties
-                if (Settings.EnableStandings) {
-                    Settings.DriverNameStyle = Settings.DriverNameStyle_0 ? 0 : Settings.DriverNameStyle_1 ? 1 : Settings.DriverNameStyle_2 ? 2 : Settings.DriverNameStyle_3 ? 3 : (Settings.DriverNameStyle_4 ? 1 : 4);
-                    SetProp("Standings.test", Settings.DriverNameStyle);
-                }
-                Settings.SettingsUpdated = false;
+            //use a frame counter to not update everything every frame
+            // as this is iRacing, this loop runs 60x per second
+            frameCounter++;
+
+            // reset the counter every 60hz
+            if (frameCounter > 59) {
+                frameCounter = 0;
             }
+
 
             // Confirm the sim is up and running at it is iRacing
             if (data.GameRunning && data.GameName == "IRacing")
@@ -135,34 +131,37 @@ namespace APR.DashSupport
                     //Gaining access to raw data
                     if (data?.NewData?.GetRawDataObject() is DataSampleEx) { irData = data.NewData.GetRawDataObject() as DataSampleEx; }
 
-                    float[] times = irData.Telemetry.CarIdxF2Time;
-                    for (int i = 0; i < times.Length; i++) {
-                        if (times[i] > 0) {
-                            DebugMessage("Position: " + i + " Gap:" + times[i]);
-                        }
-
+                    if (frameCounter == 2) {
+                        UpdateStandingsRelatedProperties(ref data);
                     }
 
+                    if (frameCounter == 3) {
+                        float[] times = irData.Telemetry.CarIdxF2Time;
+                        for (int i = 0; i < times.Length; i++) {
+                            if (times[i] > 0) {
+                                DebugMessage("Position: " + i + " Gap:" + times[i]);
+                            }
 
-                    GetSetupBias();
-                    GetSetupTC();
-                    GetSetupABS();
-                    UpdateFrontARBColour();
-                    UpdateRearARBColour();
-                    UpdateTCValues();
-                    UpdateBrakeBarColour();
-                    UpdateMAPValues();
-                    UpdateBitePointRecommendation();
-                    UpdatePitWindowMessage();
-                    UpdatePopupPositions();
-                   
+                        }
+                    }
 
+                    if (frameCounter == 4) {
 
-                    
-
-                    
+                        GetSetupBias();
+                        GetSetupTC();
+                        GetSetupABS();
+                        UpdateFrontARBColour();
+                        UpdateRearARBColour();
+                        UpdateTCValues();
+                        UpdateBrakeBarColour();
+                        UpdateMAPValues();
+                        UpdateBitePointRecommendation();
+                        UpdatePitWindowMessage();
+                        UpdatePopupPositions();
+                    }
                 }
             }
+
 
             pluginManager.SetPropertyValue("MainMenuSelected", this.GetType(), (object)MainMenuValue());
             

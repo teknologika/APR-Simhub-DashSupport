@@ -8,37 +8,7 @@
              xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins" d:DataContext="{d:DesignInstance Type=local:DashPluginSettings}" d:DesignHeight="720" d:DesignWidth="800">
 
     <styles:SHTabControl x:Name="tabcontrol">
-        <styles:SHTabItem Header="Standings">
-            <ScrollViewer>
-                <StackPanel>
-                    <styles:SHSection Title="Standings">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="250"/>
-                                <ColumnDefinition Width="250"/>
-                                <ColumnDefinition Width="250"/>
-                                <ColumnDefinition Width="1*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="1*" MinHeight="30"/>
-                                <RowDefinition Height="1*" MinHeight="30"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Enable Standings" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                            <styles:SHToggleButton Grid.Row="0" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding EnableStandings}" RenderTransformOrigin="0.45,0.2"/>
 
-                            <TextBlock Grid.Row="1" Text="Driver Name Style" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                            <ComboBox Grid.Row="1" Grid.Column="1" SelectionChanged="ChangeSettingDriverNameStyle_Click" HorizontalAlignment="Left" VerticalAlignment="Center" Width="200" Margin="0,10,-15,0">
-                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_0}">Firstname Lastname</ComboBoxItem>
-                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_1}">Lastname Firstname</ComboBoxItem>
-                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_2}">F. Lastname</ComboBoxItem>
-                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_3}">Lastname, F.</ComboBoxItem>
-                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_4}">LAS</ComboBoxItem>
-                            </ComboBox>
-                        </Grid>
-                    </styles:SHSection>
-                </StackPanel>
-            </ScrollViewer>
-        </styles:SHTabItem>
         <styles:SHTabItem Header="Dash settings">
             <ScrollViewer>
                 <StackPanel>
@@ -99,6 +69,42 @@
                 </StackPanel>
             </ScrollViewer>
         </styles:SHTabItem>
+
+        <styles:SHTabItem Header="Standings">
+            <ScrollViewer>
+                <StackPanel>
+                    <styles:SHSection Title="Standings">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="250"/>
+                                <ColumnDefinition Width="250"/>
+                                <ColumnDefinition Width="250"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1*" MinHeight="30"/>
+                                <RowDefinition Height="1*" MinHeight="30"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Enable Standings" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="0" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding EnableStandings}" RenderTransformOrigin="0.45,0.2"/>
+
+                            <TextBlock Grid.Row="1" Text="Driver Name Style" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <ComboBox Grid.Row="1" Grid.Column="1" SelectionChanged="SettingsUpdated_Click" HorizontalAlignment="Left" VerticalAlignment="Center" Width="200" Margin="0,10,-15,0">
+                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_0}">Firstname Middle Lastname</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_1}">Firstname Lastname</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_2}">Lastname, Firstname</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_3}">F. Lastname</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_4}">Firstname L.</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_5}">Lastname, F.</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_6}">LAS</ComboBoxItem>
+                            </ComboBox>
+                        </Grid>
+                    </styles:SHSection>
+                </StackPanel>
+            </ScrollViewer>
+        </styles:SHTabItem>
+        
+
     </styles:SHTabControl>
 </UserControl>
 <!--

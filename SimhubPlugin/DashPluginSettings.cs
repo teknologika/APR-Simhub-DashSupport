@@ -12,6 +12,7 @@ namespace APR.DashSupport
     /// </summary>
     public class DashPluginSettings :INotifyPropertyChanged
     {
+
         public bool EnableRPMBar { get; set; } = true;
         public bool EnableBrakeAndThrottleBars { get; set; } = true;
         public double BrakeTargetPercentage { get; set; } = 85;
@@ -45,21 +46,8 @@ namespace APR.DashSupport
         public bool DriverNameStyle_2 { get; set; } = false;
         public bool DriverNameStyle_3 { get; set; } = false;
         public bool DriverNameStyle_4 { get; set; } = false;
-
-
-        public enum DriverNameFormat
-         {
-
-            Full_Name,
-            Firstname_Lastname,
-            Lastname_Firstname,
-            F_Lastname,
-            Firstname_L,
-            Firstname,
-            Lastname,
-            FIR,
-            LAS
-        }
+        public bool DriverNameStyle_5 { get; set; } = false;
+        public bool DriverNameStyle_6 { get; set; } = false;
 
 
 

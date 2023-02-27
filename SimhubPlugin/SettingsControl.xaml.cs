@@ -24,6 +24,6 @@ namespace APR.DashSupport
  
         }
 
-        public void ChangeSettingDriverNameStyle_Click(object sender, System.Windows.RoutedEventArgs e) =>  Settings.SettingsUpdated = true;
+        public void SettingsUpdated_Click(object sender, System.Windows.RoutedEventArgs e) =>  Settings.SettingsUpdated = true;
     }
 }

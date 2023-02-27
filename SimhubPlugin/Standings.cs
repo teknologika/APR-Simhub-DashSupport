@@ -1,13 +1,279 @@
-﻿using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
+﻿using GameReaderCommon;
+using iRacingSDK;
+using SimHub.Plugins;
+using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Status;
+using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Markup.Localizer;
 
 namespace APR.DashSupport {
-    internal class Standings {
+
+    public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
+
+        public List<RaceCar> CompetingCars { get; set; } = new List<RaceCar>();
+        public double LeaderLastLap { get; set; } = 0;
+        public double LeaderBestLap { get; set; } = 0;
+        public int LeaderCurrentLap { get; set; } = 0;
+        public double LeaderTrackPosition { get; set; } = 0;
+
+
+        TimeSpan globalClock = TimeSpan.FromTicks(DateTime.Now.Ticks);
+        // Break the track into 60 sections for calculating gaps and delta times
+        public int TrackSections { get; } = 60;
+
+
+        public void UpdateStandingsNameSetting() { 
+            if (Settings.SettingsUpdated) {
+                if (Settings.DriverNameStyle_0) {
+                    Settings.DriverNameStyle = 0;
+                }
+                else if (Settings.DriverNameStyle_1) {
+                    Settings.DriverNameStyle = 1;
+                }
+                else if (Settings.DriverNameStyle_2) {
+                    Settings.DriverNameStyle = 2;
+                }
+                else if (Settings.DriverNameStyle_3) {
+                    Settings.DriverNameStyle = 3;
+                }
+                else if (Settings.DriverNameStyle_4) {
+                    Settings.DriverNameStyle = 4;
+                }
+                else if (Settings.DriverNameStyle_5) {
+                    Settings.DriverNameStyle = 5;
+                }
+                else if (Settings.DriverNameStyle_6) {
+                    Settings.DriverNameStyle = 6;
+                }
+                else {
+                    Settings.DriverNameStyle = 0;
+                }
+                Settings.SettingsUpdated = false;
+            }
+        }
+
+
+        public void AddStandingsRelatedProperties() {
+        }
+
+        public void UpdateStandingsRelatedProperties(ref GameData data) {
+
+            // The cars are all stored in the iRacing Data structures in CarIDx order
+            // lets start by getting all the drivers and putting their info into a list of cars
+
+            // Add Standings Properties
+            if (Settings.EnableStandings) {
+
+                // only update once per second
+                if (frameCounter == 30) {
+                    SessionData._DriverInfo._Drivers[] competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
+                    for (int i = 0; i < competitiors.Length; i++) {
+                
+                        RaceCar car = new RaceCar();
+                        car.CarIDx = i;
+                        car.CarClass = competitiors[i].CarClassID;
+                        car.Driver.DriverFullName = competitiors[i].UserName;
+                        car.Driver.DriverCustomerID = competitiors[i].UserID;
+
+                        // chop up the drivers name(s)
+                        // TODO: Don't store everything, just chop once and store what we need ... maybe
+                        string[] names = car.Driver.DriverFullName.Split(' ');
+                        int numberOfNames = names.Length;
+                        if (numberOfNames > 0) {
+
+                            car.Driver.DriverFirstName = car.Driver.DriverFullName.Split(' ')[0];
+                            car.Driver.DriverLastName = car.Driver.DriverFullName.Split(' ')[numberOfNames - 1];
+
+                            car.Driver.DriverFirstNameShort = car.Driver.DriverFullName.Substring(0, 3).ToUpper();
+                            car.Driver.DriverLastNameShort = car.Driver.DriverLastName.Substring(0, 3).ToUpper();
+
+                            car.Driver.DriverFirstNameInitial = car.Driver.DriverFirstName.Substring(0, 1).ToUpper();
+                            car.Driver.DriverLastNameInitial = car.Driver.DriverLastName.Substring(0, 1).ToUpper();
+
+                            UpdateStandingsNameSetting();
+
+                            // Update the driver's display name
+                            switch (Settings.DriverNameStyle) {
+
+                                case 0: // Firstname Middle Lastname
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFullName;
+                                    break;
+
+                                case 1: // Firstname Lastname
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastName;
+                                    break;
+
+                                case 2: // Lastname, Firstname
+                                    car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstName;
+                                    break;
+
+                                case 3: // F. Lastname
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFirstNameInitial + ". " + car.Driver.DriverLastName;
+                                    break;
+
+                                case 4: // Firstname L.
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastNameInitial + ". ";
+                                    break;
+
+                                case 5: // Lastname, F.
+                                    car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstNameInitial + ". ";
+                                    break;
+
+                                case 6: // LAS
+                                    car.Driver.DriverDisplayName = car.Driver.DriverLastNameShort;
+                                    break;
+
+                                default: //   Firstname Middle Lastname
+
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFullName;
+                                    break;
+                            }
+                        }
+
+                        // Get Position
+                        car.Position = irData.Telemetry.CarIdxPosition[i];
+                        car.PositionInClass = irData.Telemetry.CarIdxClassPosition[i];
+                        car.Lap = irData.Telemetry.CarIdxLap[i];
+                        car.LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[i];
+
+                        bool isLeader = car.Position == 1;
+                        bool isClassLeader = car.PositionInClass == 1;
+
+                        // Get the best lap times
+                        object _bestlaptimes = null;
+                        float[] bestlapTimes = null;
+                        irData.Telemetry.TryGetValue("CarIdxBestLapTime", out _bestlaptimes);
+                        if (_bestlaptimes.GetType() == typeof(float[])) {
+                            bestlapTimes = _bestlaptimes as float[];
+                            if (bestlapTimes != null) {
+                                if (bestlapTimes[i] >= 0) {
+                                    car.BestLap = bestlapTimes[i];
+
+                                    // If this is the overall leader, get their best lap for gap calcs
+                                    if (isLeader) {
+                                        LeaderBestLap = car.BestLap;
+                                    }
+                                    if (isClassLeader) {
+                                        //TODO: Add class stuff here
+                                    }
+                                }
+                            }
+                        }
+
+                        // get the last lap times
+                        object _lastlaptimes = null;
+                        float[] lastlapTimes = null;
+                        irData.Telemetry.TryGetValue("CarIdxLastLapTime", out _lastlaptimes);
+                        if (_bestlaptimes.GetType() == typeof(float[])) {
+                            lastlapTimes = _lastlaptimes as float[];
+                            if (lastlapTimes != null) {
+                                if (lastlapTimes[i] >= 0) {
+                                    car.LastLap = lastlapTimes[i];
+
+                                    // If this is the overall leader, get their last lap for gap calcs
+                                    if (isLeader) {
+                                        LeaderLastLap = car.LastLap;
+                                    }
+                                    if (car.PositionInClass == 1) {
+                                        //TODO: Add class stuff here
+                                    }
+                                }
+                            }
+                        }
+
+                        // calculate the expected for the leader
+                        double leaderExpectedLapTime = (LeaderLastLap * 2 + LeaderBestLap) / 3;
+                        if (LeaderLastLap == 0) {
+                            leaderExpectedLapTime = LeaderBestLap * 1.01;
+                        }
+                        if (LeaderBestLap == 0) {
+                            leaderExpectedLapTime = LeaderLastLap;
+                        }
+
+                        // grab the current pace of the leader because we can :-)
+                        //TimeSpan leaderPace = TimeSpan.FromSeconds(leaderExpectedLapTime);
+
+
+                        // get the lap and position for the current car
+                        int myLap = car.Lap;
+
+
+
+                        car.IntervalGapDelayed = irData.Telemetry.CarIdxF2Time[i];
+                        //Checking if this CarID is in world
+                        if ((int)irData.Telemetry.CarIdxTrackSurface[i] != -1 && irData.Telemetry.CarIdxLap[i] > 0) {
+
+                            // if the car is the leader, they have a 0 interval
+                            if (car.Position == 1) {
+                                car.IntervalGap = 0;
+                            }
+                            // if the car is not the leader, get
+                            else {
+                                // Distance index, dividing track position into sections
+                                // Dahl Design Plugin - iRacing.cs around line 6100 ish
+                                int distIndex = ((int)((car.LapDistancePercent * TrackSections) * 100)) / 100;
+                                if (distIndex >=TrackSections) {
+                                    distIndex = TrackSections - 1;
+                                }
+                                int distPrevIndex = distIndex - 1;
+                                if (distPrevIndex == -1) {
+                                    distPrevIndex = TrackSections - 1;
+                                }
+
+                                if (distIndex < 0) {
+                                    distIndex = 0;
+                                    distPrevIndex = 0;
+                                }
+
+                                
+
+
+
+                                //CarIdxBestLapTime
+                            }
+                        }
+
+
+
+
+
+
+                        CompetingCars.Add(car);
+                    }
+
+
+                }
+
+
+
+                //   if (GameData.PlayerName == irData.SessionData.DriverInfo.CompetingDrivers[i].UserName) {
+                //  myClassColor = irData.SessionData.DriverInfo.CompetingDrivers[i].CarClassColor;
+                //   myClassColorIndex = classColors.IndexOf(myClassColor);
+                //   myIR = Convert.ToInt32(irData.SessionData.DriverInfo.CompetingDrivers[i].IRating);
+                //   break;
+                // }
+
+            }
+
+            //AddProp("Standings.test", Settings.DriverNameStyle);
+
+           // int length = 63; // number of cars
+           // for (int i = 0; i < length; i++) {
+           //   AddProp("Standings.test" + i.ToString(), Settings.DriverNameStyle);
+           //  }
+
+        }
+
+    }
+
+    public class Standings {
         public int CurrentlyObservedDriver { get; set; } = 0;
 
         public string BattleBoxDisplayString { get; set; } = string.Empty;
@@ -19,9 +285,12 @@ namespace APR.DashSupport {
         public int EstimatedOvertakeLaps { get; set; } = 0;
         public double EstimatedOvertakePercentage { get; set; } = 0.0;
 
+
+
+
     }
 
-    internal class Championship {
+    public class Championship {
         // Leadercar
         // Leader Photo
         // Leader team
@@ -33,21 +302,29 @@ namespace APR.DashSupport {
         // Championship Standings
     }
 
-    internal class CarClass {
+    public class CarClass {
         public int CarClassID { get; set; } = 0;
         public string CarClassName { get; set; } = string.Empty;
         public string CarClassColour { get; set; } = string.Empty;
         public string CarClassDisplayName { get; set; } = string.Empty;
     }
 
-    internal class RaceCar {
+    public class RaceCar {
 
-        public string CarClass { get; set; } = string.Empty;
+        public RaceCar() {
+            this.Driver = new Driver();
+
+        }
+
+        public int CarIDx { get; set; } = int.MinValue;
+
+        public long CarClass { get; set; } = long.MinValue;
         public Driver Driver { get; set; } = null;
-        public Team Team { get; set; } = null;
 
         // Lap timing info
         public double BestLap { get; set; } = 0;
+        public double LastLap { get; set; } = 0;
+        public int Lap { get; set; } = 0;
         public double BestLapSector1 { get; set; } = 0;
         public double BestLapSector2 { get; set; } = 0;
         public double BestLapSector3 { get; set; } = 0;
@@ -62,6 +339,7 @@ namespace APR.DashSupport {
         public int LapsBehindLeader { get; set; } = 0;
         public int LapsBehindNext { get; set; } = 0;
         public int Position { get; set; } = 0;
+        public int PositionInClass { get; set; } = 0;
         public int PositionsGainedLost { get; set; } = 0;
         public int SpeedCurrent { get; set; } = 0;
         public int SpeedMax { get; set; } = 0;
@@ -89,11 +367,12 @@ namespace APR.DashSupport {
     }
 
     // Holds driver information
-    internal class Driver {
-        public int DriverID { get; set; } = 0;
+    public class Driver {
+        public long DriverCustomerID { get; set; } = 0;
         public string DriverFullName { get; set; } = string.Empty;
         public string DriverFirstName { get; set; } = string.Empty;
         public string DriverFirstNameInitial { get; set; } = string.Empty;
+        public string DriverFirstNameShort { get; set; } = string.Empty;
         public string DriverLastName { get; set; } = string.Empty;
         public string DriverLastNameInitial { get; set; } = string.Empty;
         public string DriverLastNameShort { get; set; } = string.Empty;
@@ -101,9 +380,11 @@ namespace APR.DashSupport {
         public int DriverSafetyRating { get; set; } = 0;
         public string Nationality { get; set; } = string.Empty;
 
+        public string DriverDisplayName { get; set; } = string.Empty;
+
     }
 
     // Used for teams races
-    internal class Team {}
+    //internal class Team {}
 
 }
