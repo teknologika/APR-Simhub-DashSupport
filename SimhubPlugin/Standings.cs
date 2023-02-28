@@ -389,25 +389,32 @@ namespace APR.DashSupport {
         public TrackSector[] Sections;
                 
         public TrackSections() {
-           
-            // Please NOTE this is dodgy, but we always assume that the sector is
-            // the array position + 1 to save us a loop on ever retrieval
+
+            // 60 sections numbered from from 0 to 59
             Sections = new TrackSector[NumberOfSections];
             for (int i = 0; i < Sections.Length; i++) {
-                Sections[i] = new TrackSector(i+1);
+                Sections[i] = new TrackSector(i);
             }
         }
 
         public void UpdateTimeForSectionAtPercentage(double trackDistancePercentage, double CurrentElapsedLapTime)
         {
             // we might need to reset here, but for now, let's just keep rolling and overwriting
-
-
- 
+            int currentSection = Id(trackDistancePercentage);
+            if (currentSection == 0) {
+                Sections[currentSection].TrackSectionTime = CurrentElapsedLapTime;
+            }
+            else {
+                double timeCurrentlySaved = 0;
+                for (int i = 0; i < currentSection -1; i++) {
+                    timeCurrentlySaved = timeCurrentlySaved + Sections[i].TrackSectionTime;
+                }
+                Sections[currentSection].TrackSectionTime = CurrentElapsedLapTime - timeCurrentlySaved;
+            }
         }
 
         public double GetTimeInSection (int section) {
-            return double.MinValue;
+            return Sections[section].TrackSectionTime;
         }
 
         public void Reset() {
