@@ -2,6 +2,7 @@
 using iRacingSDK;
 using SimHub.Plugins;
 using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Status;
+using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models.BuiltIn;
 using System;
@@ -66,7 +67,7 @@ namespace APR.DashSupport {
 
         }
 
-        public void UpdateStandingsNameSetting() { 
+        public void UpdateStandingsNameSetting() {
             if (Settings.SettingsUpdated) {
                 if (Settings.DriverNameStyle_0) {
                     Settings.DriverNameStyle = 0;
@@ -260,10 +261,10 @@ namespace APR.DashSupport {
 
             //AddProp("Standings.test", Settings.DriverNameStyle);
 
-           // int length = 63; // number of cars
-           // for (int i = 0; i < length; i++) {
-           //   AddProp("Standings.test" + i.ToString(), Settings.DriverNameStyle);
-           //  }
+            // int length = 63; // number of cars
+            // for (int i = 0; i < length; i++) {
+            //   AddProp("Standings.test" + i.ToString(), Settings.DriverNameStyle);
+            //  }
 
         }
 
@@ -382,5 +383,81 @@ namespace APR.DashSupport {
 
     // Used for teams races
     //internal class Team {}
+
+    public class TrackSections {
+        static int NumberOfSections = 60;
+        public TrackSector[] Sections;
+                
+        public TrackSections() {
+           
+            // Please NOTE this is dodgy, but we always assume that the sector is
+            // the array position + 1 to save us a loop on ever retrieval
+            Sections = new TrackSector[NumberOfSections];
+            for (int i = 0; i < Sections.Length; i++) {
+                Sections[i] = new TrackSector(i+1);
+            }
+        }
+
+        public void UpdateTimeForSectionAtPercentage(double trackDistancePercentage, double CurrentElapsedLapTime)
+        {
+            // we might need to reset here, but for now, let's just keep rolling and overwriting
+
+
+ 
+        }
+
+        public double GetTimeInSection (int section) {
+            return double.MinValue;
+        }
+
+        public void Reset() {
+            for (int i = 0; i < Sections.Length; i++) {
+                Sections[i].Reset();
+            }
+        }
+
+        // Return the tracksector for a given percentage around the track
+        public int Id(double PercentAroundTrack) {
+
+            // reurn the sector where we will be for a given percentate
+            // this calc works because we use a staic number of track sections
+            return Convert.ToInt32(PercentAroundTrack / (100 / NumberOfSections));
+        }
+
+        public int Tracksector(int TrackSection) {
+            if (TrackSection < (NumberOfSections / 3)) {
+                return 1;
+            }
+            else if (TrackSection < ((NumberOfSections / 3) * 2)) {
+                return 2;
+            }
+            else {
+                return 3;
+            }
+        }
+
+
+
+
+    }
+
+    public class TrackSector {
+        // We are hardcoded to NumberOfSections
+        static int NumberOfSections = 60;
+        public TrackSector(int trackSectionID) {
+           
+        }
+        
+        
+
+
+        public int TrackSectionID { get; set; }
+        public double TrackDistancePercent { get; set; }
+        public double TrackSectionTime { get; set; }
+       
+        public void Reset() {
+            TrackSectionTime = 0;
+        }
+    }
 
 }
