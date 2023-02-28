@@ -1,5 +1,8 @@
-﻿using GameReaderCommon;
+﻿using FMOD;
+using GameReaderCommon;
+using IRacingReader;
 using iRacingSDK;
+using MahApps.Metro.Controls;
 using SimHub.Plugins;
 using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Status;
 using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
@@ -19,53 +22,11 @@ namespace APR.DashSupport {
 
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
-        public List<RaceCar> CompetingCars { get; set; } = new List<RaceCar>();
+        public List<RaceCar> CompetingCars = new List<RaceCar>();
         public double LeaderLastLap { get; set; } = 0;
         public double LeaderBestLap { get; set; } = 0;
         public int LeaderCurrentLap { get; set; } = 0;
         public double LeaderTrackPosition { get; set; } = 0;
-
-
-        TimeSpan globalClock = TimeSpan.FromTicks(DateTime.Now.Ticks);
-        // Break the track into 60 sections for calculating gaps and delta times
-        int trackSections { get; } = 60;
-        List<double> realGapOpponentDelta = new List<double> { };
-        List<double> realGapOpponentRelative = new List<double> { };
-
-        List<List<TimeSpan>> realGapPoints = new List<List<TimeSpan>> { };
-        List<List<bool>> realGapLocks = new List<List<bool>> { };
-        List<List<bool>> realGapChecks = new List<List<bool>> { };
-
-        public void Initalize() {
-
-
-            realGapLocks.Clear();
-            realGapChecks.Clear();
-            realGapPoints.Clear();
-            realGapOpponentDelta.Clear();
-
-            for (int u = 0; u < trackSections; u++) {
-                List<bool> locks = new List<bool> { };
-                List<bool> checks = new List<bool> { };
-                List<TimeSpan> points = new List<TimeSpan> { };
-
-                for (int i = 0; i < 64; i++) {
-                    locks.Add(false);
-                    checks.Add(false);
-                    points.Add(TimeSpan.FromSeconds(0));
-                }
-
-                realGapLocks.Add(locks);
-                realGapChecks.Add(checks);
-                realGapPoints.Add(points);
-            }
-
-            for (int i = 0; i < 64; i++) {
-                realGapOpponentDelta.Add(0);
-                realGapOpponentRelative.Add(0);
-            }
-
-        }
 
         public void UpdateStandingsNameSetting() {
             if (Settings.SettingsUpdated) {
@@ -100,7 +61,6 @@ namespace APR.DashSupport {
 
         public void AddStandingsRelatedProperties() {
 
-            Initalize();
 
         }
 
@@ -239,13 +199,21 @@ namespace APR.DashSupport {
 
 
                     // calculate the expected for the current car
-                    car.EstimatedLapTime = (car.LastLap * 2 + car.BestLap) / 3;
+                    // Andreas Dahl's Foruyla
+                    //car.EstimatedLapTime = (car.LastLap * 2 + car.BestLap) / 3;
+
+                    // this is iRacing's formula - Estimated time to reach current location on track
+                    car.EstimatedLapTime = irData.Telemetry.CarIdxEstTime[i];
+
                     if (LeaderLastLap == 0) {
                         leaderExpectedLapTime = LeaderBestLap * 1.01;
                     }
                     if (LeaderBestLap == 0) {
                         leaderExpectedLapTime = LeaderLastLap;
                     }
+
+                    car.UpdateGapTiming(ref CompetingCars, ref irData);
+
 
                     CompetingCars.Insert(i, car);
                 }
@@ -308,15 +276,67 @@ namespace APR.DashSupport {
 
     public class RaceCar {
 
+        public TrackSections track;
+
         public RaceCar() {
             this.Driver = new Driver();
-
+            this.track = new TrackSections();
         }
+
+        public void UpdateGapTiming(ref List<RaceCar> CompetingCars, ref DataSampleEx irData) {
+
+            // loop through the cars
+            for (int i = 0; i < CompetingCars.Count; i++) {
+                // TODO : check the car is on track
+
+                // Get the current TrackDistancePercent
+
+                EstimatedLapTime = irData.Telemetry.CarIdxEstTime[i];
+
+                // Get the current lap elapsed time
+                EstimatedLapTime = irData.Telemetry.CarIdxEstTime[i];
+                LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[i];
+
+                if (LapDistancePercent > 0) {
+
+                    CurrentTrackSection = TrackSections.GetATrackSectionForAGivenPercentageAroundTrack(LapDistancePercent);
+
+                    // if the current section time is 0, sector time is the current lap time
+                    if (CurrentTrackSection == 0) {
+                        CompetingCars[i].track.Sections[CurrentTrackSection].TrackSectionTime = EstimatedLapTime;
+                    }
+
+                    // if the section is > 1, the current sector time is the current lap time,
+                    // minus all the previous sections added up
+                    else {
+                        // Add all the previous track sections
+                        double cumulativeLapTime = 0;
+                        for (int j = 0; j < CurrentTrackSection - 1; j++) {
+                            cumulativeLapTime = cumulativeLapTime + track.Sections[j].TrackSectionTime;
+                        }
+                        
+                        CompetingCars[i].track.Sections[CurrentTrackSection].TrackSectionTime = EstimatedLapTime - cumulativeLapTime;
+                    }
+                }
+            }
+        }
+
+
+
+            
+
+            
+
+            //  update the sector time by adding up all the secctions in the current sector
+            // All cars sectors should now be updated
+        
 
         public int CarIDx { get; set; } = int.MinValue;
 
         public long CarClass { get; set; } = long.MinValue;
         public Driver Driver { get; set; } = null;
+        public int CurrentTrackSection { get; private set; } = 0;
+
 
         // Lap timing info
         public double BestLap { get; set; } = 0;
@@ -400,7 +420,7 @@ namespace APR.DashSupport {
         public void UpdateTimeForSectionAtPercentage(double trackDistancePercentage, double CurrentElapsedLapTime)
         {
             // we might need to reset here, but for now, let's just keep rolling and overwriting
-            int currentSection = Id(trackDistancePercentage);
+            int currentSection = GetATrackSectionForAGivenPercentageAroundTrack(trackDistancePercentage);
             if (currentSection == 0) {
                 Sections[currentSection].TrackSectionTime = CurrentElapsedLapTime;
             }
@@ -424,11 +444,13 @@ namespace APR.DashSupport {
         }
 
         // Return the tracksector for a given percentage around the track
-        public int Id(double PercentAroundTrack) {
+        public static int GetATrackSectionForAGivenPercentageAroundTrack(double PercentAroundTrack) {
 
             // reurn the sector where we will be for a given percentate
             // this calc works because we use a staic number of track sections
-            return Convert.ToInt32(PercentAroundTrack / (100 / NumberOfSections));
+            double div = (100.0000 / Convert.ToDouble(NumberOfSections));
+            int pct = Convert.ToInt32(Math.Floor( ( (PercentAroundTrack * 100) / div) ));
+            return pct;
         }
 
         public int Tracksector(int TrackSection) {
