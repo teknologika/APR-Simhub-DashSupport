@@ -89,9 +89,7 @@ namespace APR.DashSupport
             AddProp("LaunchPreferFullThrottleStarts", Settings.PreferFullThrottleStarts);
             AddProp("LaunchUsingDualClutchPaddles", Settings.LaunchUsingDualClutchPaddles);
 
-
-
-           AddStandingsRelatedProperties();
+            AddStandingsRelatedProperties();
             
 
             //InitRotaryButtons(pluginManager);
@@ -131,18 +129,19 @@ namespace APR.DashSupport
                     //Gaining access to raw data
                     if (data?.NewData?.GetRawDataObject() is DataSampleEx) { irData = data.NewData.GetRawDataObject() as DataSampleEx; }
 
+                    // TODO: Add logic to reset everything when the session changes
+                    bool sessionStartSetupCompleted = false;
+                    if(!sessionStartSetupCompleted) {
+                        InitStandings();
+                        sessionStartSetupCompleted = true;
+                    }
+
                     if (frameCounter == 2) {
                         UpdateStandingsRelatedProperties(ref data);
                     }
 
                     if (frameCounter == 3) {
-                        float[] times = irData.Telemetry.CarIdxF2Time;
-                        for (int i = 0; i < times.Length; i++) {
-                            if (times[i] > 0) {
-                                DebugMessage("Position: " + i + " Gap:" + times[i]);
-                            }
 
-                        }
                     }
 
                     if (frameCounter == 4) {

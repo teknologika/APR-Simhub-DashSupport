@@ -10,8 +10,10 @@ using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models.BuiltIn;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -23,10 +25,14 @@ namespace APR.DashSupport {
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
         public List<RaceCar> CompetingCars = new List<RaceCar>();
+        public int LeaderIdx = 0;
+        public List<int> ClassLeaderIdx = new List<int>();
         public double LeaderLastLap { get; set; } = 0;
+        public double LeaderExpectedLapTime { get; set; } = 0;
         public double LeaderBestLap { get; set; } = 0;
         public int LeaderCurrentLap { get; set; } = 0;
-        public double LeaderTrackPosition { get; set; } = 0;
+        public double LeaderTrackDistancePercent { get; set; } = 0;
+
 
         public void UpdateStandingsNameSetting() {
             if (Settings.SettingsUpdated) {
@@ -58,29 +64,103 @@ namespace APR.DashSupport {
             }
         }
 
+        public void UpdateGapTiming() {
 
+
+
+            // loop through the cars
+            for (int i = 0; i < CompetingCars.Count; i++) {
+                // TODO : check the car is on track
+
+                // Get the current TrackDistancePercent
+                CompetingCars[i].EstimatedLapTime = irData.Telemetry.CarIdxEstTime[i];
+
+                // Get the current lap elapsed time
+                CompetingCars[i].EstimatedLapTime = irData.Telemetry.CarIdxEstTime[i];
+                CompetingCars[i].LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[i];
+
+                CompetingCars[i].Position = irData.Telemetry.CarIdxPosition[i];
+                CompetingCars[i].PositionInClass = irData.Telemetry.CarIdxClassPosition[i];
+
+                bool SimpleGap = true; //TODO: Make this a config setting
+                if (SimpleGap) {
+                    if (CompetingCars[i].Position < 2) {
+                        CompetingCars[i].GapBehindLeader = 0;
+                        CompetingCars[i].IntervalGap = 0;
+                    }
+                    else {
+
+                        double leaderTime = LeaderExpectedLapTime * LeaderTrackDistancePercent;
+                        double mytime = CompetingCars[i].EstimatedLapTime * CompetingCars[i].LapDistancePercent;
+                        double deltaTimeInSeconds; ;
+                        // if I am on the lead lap, the gap is the leaders pace * percentge around track - my pace * percentage around track.
+                        if (LeaderLastLap == CompetingCars[i].Lap) {
+                            deltaTimeInSeconds = leaderTime - mytime;
+                        }
+                        // if I am not on the lead lap, add the extra laps at the leaders pace as well.
+                        else {
+                            deltaTimeInSeconds = leaderTime - mytime + (CompetingCars[i].LapsBehindLeader * LeaderExpectedLapTime);
+                        }
+                        CompetingCars[i].GapBehindLeader = deltaTimeInSeconds;
+                    }
+
+                }
+                else {
+
+
+                    if (CompetingCars[i].LapDistancePercent > 0) {
+
+                        CompetingCars[i].CurrentTrackSection = TrackSections.GetATrackSectionForAGivenPercentageAroundTrack(CompetingCars[i].LapDistancePercent);
+
+                        // if the current section time is 0, sector time is the current lap time
+                        if (CompetingCars[i].CurrentTrackSection == 0) {
+                            CompetingCars[i].track.Sections[CompetingCars[i].CurrentTrackSection].TrackSectionTime = CompetingCars[i].EstimatedLapTime;
+                        }
+
+                        // if the section is > 1, the current sector time is the current lap time,
+                        // minus all the previous sections added up
+                        else {
+                            // Add all the previous track sections
+                            double cumulativeLapTime = 0;
+                            for (int j = 0; j < CompetingCars[i].CurrentTrackSection - 1; j++) {
+                                cumulativeLapTime = cumulativeLapTime + CompetingCars[i].track.Sections[j].TrackSectionTime;
+                            }
+
+                            CompetingCars[i].track.Sections[CompetingCars[i].CurrentTrackSection].TrackSectionTime = CompetingCars[i].EstimatedLapTime - cumulativeLapTime;
+                           
+                        }
+                    }
+                }
+               
+            }
+
+            List<RaceCar> SortedPositions = CompetingCars.OrderBy(o => o.Position).ToList();
+            for (int i = 0; i < SortedPositions.Count; i++) {
+
+                Trace.WriteLine("Driver = " + SortedPositions[i].Driver.DriverFullName + " Position - " + SortedPositions[i].Position + " Time: " + SortedPositions[i].GapBehindLeader);
+            }
+        }
         public void AddStandingsRelatedProperties() {
-
-
         }
 
-        public void UpdateStandingsRelatedProperties(ref GameData data) {
 
-            // The cars are all stored in the iRacing Data structures in CarIDx order
-            // lets start by getting all the drivers and putting their info into a list of cars
-
-            // Add Standings Properties
+        public void InitStandings() {
             if (Settings.EnableStandings) {
-
                 SessionData._DriverInfo._Drivers[] competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
                 CompetingCars = new List<RaceCar>();
                 for (int i = 0; i < competitiors.Length; i++) {
 
                     RaceCar car = new RaceCar();
-                    car.CarIDx = i;
+                    car.CarIDx = Convert.ToInt32(competitiors[i].CarIdx);
+                    if (car.CarIDx != i) {
+                        DebugMessage("Warning IDs do not match!!");
+                    }
+
                     car.CarClass = competitiors[i].CarClassID;
+
                     car.Driver.DriverFullName = competitiors[i].UserName;
                     car.Driver.DriverCustomerID = competitiors[i].UserID;
+
 
                     // chop up the drivers name(s)
                     // TODO: Don't store everything, just chop once and store what we need ... maybe
@@ -136,15 +216,32 @@ namespace APR.DashSupport {
                                 break;
                         }
                     }
+                    CompetingCars.Add(car);
+                }
+            }
+        }
+
+        public void UpdateStandingsRelatedProperties(ref GameData data) {
+
+            // The cars are all stored in the iRacing Data structures in CarIDx order
+            // lets start by getting all the drivers and putting their info into a list of cars
+
+            // Add Standings Properties
+            if (Settings.EnableStandings) {
+                int i = 0;
+
+                // Loop 1 update everything
+                foreach (var car in CompetingCars) {
 
                     // Get Position
                     car.Position = irData.Telemetry.CarIdxPosition[i];
+                    if (car.Position == 1) {
+                        LeaderIdx = car.CarIDx;
+                    }
+
                     car.PositionInClass = irData.Telemetry.CarIdxClassPosition[i];
                     car.Lap = irData.Telemetry.CarIdxLap[i];
                     car.LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[i];
-
-                    bool isLeader = car.Position == 1;
-                    bool isClassLeader = car.PositionInClass == 1;
 
                     // Get the best lap times
                     object _bestlaptimes = null;
@@ -157,12 +254,10 @@ namespace APR.DashSupport {
                                 car.BestLap = bestlapTimes[i];
 
                                 // If this is the overall leader, get their best lap for gap calcs
-                                if (isLeader) {
-                                    LeaderBestLap = car.BestLap;
+                                if (LeaderIdx == car.CarIDx) {
+                                    LeaderCurrentLap = car.Lap;
                                 }
-                                if (isClassLeader) {
-                                    //TODO: Add class stuff here
-                                }
+                                // TODO: Class leader logic goes here
                             }
                         }
                     }
@@ -178,23 +273,23 @@ namespace APR.DashSupport {
                                 car.LastLap = lastlapTimes[i];
 
                                 // If this is the overall leader, get their last lap for gap calcs
-                                if (isLeader) {
+ 
+                                if (LeaderIdx == car.CarIDx) {
                                     LeaderLastLap = car.LastLap;
+                                    LeaderCurrentLap = car.Lap;
                                 }
-                                if (car.PositionInClass == 1) {
-                                    //TODO: Add class stuff here
-                                }
+                                // TODO: Class leader logic goes here
                             }
                         }
                     }
 
                     // calculate the expected for the leader
-                    double leaderExpectedLapTime = (LeaderLastLap * 2 + LeaderBestLap) / 3;
+                    LeaderExpectedLapTime = (LeaderLastLap * 2 + LeaderBestLap) / 3;
                     if (LeaderLastLap == 0) {
-                        leaderExpectedLapTime = LeaderBestLap * 1.01;
+                        LeaderExpectedLapTime = LeaderBestLap * 1.01;
                     }
                     if (LeaderBestLap == 0) {
-                        leaderExpectedLapTime = LeaderLastLap;
+                        LeaderExpectedLapTime = LeaderLastLap;
                     }
 
 
@@ -204,289 +299,237 @@ namespace APR.DashSupport {
 
                     // this is iRacing's formula - Estimated time to reach current location on track
                     car.EstimatedLapTime = irData.Telemetry.CarIdxEstTime[i];
+                  
 
-                    if (LeaderLastLap == 0) {
-                        leaderExpectedLapTime = LeaderBestLap * 1.01;
-                    }
-                    if (LeaderBestLap == 0) {
-                        leaderExpectedLapTime = LeaderLastLap;
-                    }
-
-                    car.UpdateGapTiming(ref CompetingCars, ref irData);
-
-
-                    CompetingCars.Insert(i, car);
+                    i++;
                 }
 
-                //   if (GameData.PlayerName == irData.SessionData.DriverInfo.CompetingDrivers[i].UserName) {
-                //  myClassColor = irData.SessionData.DriverInfo.CompetingDrivers[i].CarClassColor;
-                //   myClassColorIndex = classColors.IndexOf(myClassColor);
-                //   myIR = Convert.ToInt32(irData.SessionData.DriverInfo.CompetingDrivers[i].IRating);
-                //   break;
-                // }
+                // After the Loop calculate everything
+
+                LeaderTrackDistancePercent = CompetingCars[LeaderIdx].LapDistancePercent;
+                UpdateGapTiming();
+
 
             }
 
-            //AddProp("Standings.test", Settings.DriverNameStyle);
+        }
 
-            // int length = 63; // number of cars
-            // for (int i = 0; i < length; i++) {
-            //   AddProp("Standings.test" + i.ToString(), Settings.DriverNameStyle);
-            //  }
+        public class Standings {
+            public int CurrentlyObservedDriver { get; set; } = 0;
+
+            public string BattleBoxDisplayString { get; set; } = string.Empty;
+            public double BattleBoxGap { get; set; }
+            public int BattleBoxDriver1Position { get; set; } = 0;
+            public int BattleBoxDriver2Position { get; set; } = 0;
+            public string BattleBoxDriver1Name { get; set; } = string.Empty;
+            public string BattleBoxDriver2Name { get; set; } = string.Empty;
+            public int EstimatedOvertakeLaps { get; set; } = 0;
+            public double EstimatedOvertakePercentage { get; set; } = 0.0;
+
+
+
 
         }
 
-    }
+        public class Championship {
+            // Leadercar
+            // Leader Photo
+            // Leader team
+            // Championship name
+            // Next event
+            // Current round number
+            // Championship Sponsor
 
-    public class Standings {
-        public int CurrentlyObservedDriver { get; set; } = 0;
-
-        public string BattleBoxDisplayString { get; set; } = string.Empty;
-        public double BattleBoxGap { get; set; }
-        public int BattleBoxDriver1Position { get; set; } = 0;
-        public int BattleBoxDriver2Position { get; set; } = 0;
-        public string BattleBoxDriver1Name { get; set; } = string.Empty;
-        public string BattleBoxDriver2Name { get; set; } = string.Empty;
-        public int EstimatedOvertakeLaps { get; set; } = 0;
-        public double EstimatedOvertakePercentage { get; set; } = 0.0;
-
-
-
-
-    }
-
-    public class Championship {
-        // Leadercar
-        // Leader Photo
-        // Leader team
-        // Championship name
-        // Next event
-        // Current round number
-        // Championship Sponsor
-
-        // Championship Standings
-    }
-
-    public class CarClass {
-        public int CarClassID { get; set; } = 0;
-        public string CarClassName { get; set; } = string.Empty;
-        public string CarClassColour { get; set; } = string.Empty;
-        public string CarClassDisplayName { get; set; } = string.Empty;
-    }
-
-    public class RaceCar {
-
-        public TrackSections track;
-
-        public RaceCar() {
-            this.Driver = new Driver();
-            this.track = new TrackSections();
+            // Championship Standings
         }
 
-        public void UpdateGapTiming(ref List<RaceCar> CompetingCars, ref DataSampleEx irData) {
+        public class CarClass {
+            public int CarClassID { get; set; } = 0;
+            public string CarClassName { get; set; } = string.Empty;
+            public string CarClassColour { get; set; } = string.Empty;
+            public string CarClassDisplayName { get; set; } = string.Empty;
+        }
 
-            // loop through the cars
-            for (int i = 0; i < CompetingCars.Count; i++) {
-                // TODO : check the car is on track
+        public class RaceCar {
 
-                // Get the current TrackDistancePercent
+            public TrackSections track;
 
-                EstimatedLapTime = irData.Telemetry.CarIdxEstTime[i];
-
-                // Get the current lap elapsed time
-                EstimatedLapTime = irData.Telemetry.CarIdxEstTime[i];
-                LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[i];
-
-                if (LapDistancePercent > 0) {
-
-                    CurrentTrackSection = TrackSections.GetATrackSectionForAGivenPercentageAroundTrack(LapDistancePercent);
-
-                    // if the current section time is 0, sector time is the current lap time
-                    if (CurrentTrackSection == 0) {
-                        CompetingCars[i].track.Sections[CurrentTrackSection].TrackSectionTime = EstimatedLapTime;
-                    }
-
-                    // if the section is > 1, the current sector time is the current lap time,
-                    // minus all the previous sections added up
-                    else {
-                        // Add all the previous track sections
-                        double cumulativeLapTime = 0;
-                        for (int j = 0; j < CurrentTrackSection - 1; j++) {
-                            cumulativeLapTime = cumulativeLapTime + track.Sections[j].TrackSectionTime;
-                        }
-                        
-                        CompetingCars[i].track.Sections[CurrentTrackSection].TrackSectionTime = EstimatedLapTime - cumulativeLapTime;
-                    }
-                }
+            public RaceCar() {
+                this.Driver = new Driver();
+                this.track = new TrackSections();
             }
-        }
 
 
 
-            
 
-            
+
+
 
             //  update the sector time by adding up all the secctions in the current sector
             // All cars sectors should now be updated
-        
-
-        public int CarIDx { get; set; } = int.MinValue;
-
-        public long CarClass { get; set; } = long.MinValue;
-        public Driver Driver { get; set; } = null;
-        public int CurrentTrackSection { get; private set; } = 0;
 
 
-        // Lap timing info
-        public double BestLap { get; set; } = 0;
-        public double LastLap { get; set; } = 0;
-        public int Lap { get; set; } = 0;
-        public double BestLapSector1 { get; set; } = 0;
-        public double BestLapSector2 { get; set; } = 0;
-        public double BestLapSector3 { get; set; } = 0;
-        public double CurrentSector1Time { get; set; } = 0;
-        public double CurrentSector2Time { get; set; } = 0;
-        public double CurrentSector3Time { get; set; } = 0;
-        public int CurrentSectorNumber { get; set; } = 0;
-        public double EstimatedLapTime { get; set; } = 0;
-        public double IntervalGap { get; set; } = 0;
-        public double IntervalGapDelayed { get; set; } = 0;
-        public double LapDistancePercent { get; set; } = 0;
-        public int LapsBehindLeader { get; set; } = 0;
-        public int LapsBehindNext { get; set; } = 0;
-        public int Position { get; set; } = 0;
-        public int PositionInClass { get; set; } = 0;
-        public int PositionsGainedLost { get; set; } = 0;
-        public int SpeedCurrent { get; set; } = 0;
-        public int SpeedMax { get; set; } = 0;
-        public double TimeBehindLeader { get; set; } = 0;
-        public double TimeBehindNext { get; set; } = 0;
-        public int TotalLaps { get; set; } = 0;
-        public int LapsDown { get; set; } = 0;
+            public int CarIDx { get; set; } = int.MinValue;
+
+            public long CarClass { get; set; } = long.MinValue;
+            public Driver Driver { get; set; } = null;
+            public int CurrentTrackSection { get; set; } = 0;
 
 
-        // Pit info
-        public bool PitInPitBox { get; set; } = false;
-        public int PitInPitLane { get; set; } = 0;
-        public int PitLastLapPitted { get; set; } = 0;
-        public int PitLastStopDuration { get; set; } = 0;
-
-        public int PitCount { get; set; } = 0;
+            // Lap timing info
+            public double BestLap { get; set; } = 0;
+            public double LastLap { get; set; } = 0;
+            public int Lap { get; set; } = 0;
 
 
-        // Flags
-        public bool HasFinished { get; set; } = false;
-        public bool HasRetired { get; set; } = false;
-        public bool HasBlueFlag { get; set; } = false;
-        public bool HasOfftrack { get; set; } = false;
-        public int IncidentCount { get; set; } = 0;
-    }
 
-    // Holds driver information
-    public class Driver {
-        public long DriverCustomerID { get; set; } = 0;
-        public string DriverFullName { get; set; } = string.Empty;
-        public string DriverFirstName { get; set; } = string.Empty;
-        public string DriverFirstNameInitial { get; set; } = string.Empty;
-        public string DriverFirstNameShort { get; set; } = string.Empty;
-        public string DriverLastName { get; set; } = string.Empty;
-        public string DriverLastNameInitial { get; set; } = string.Empty;
-        public string DriverLastNameShort { get; set; } = string.Empty;
-        public int DriverIRating { get; set; } = 0;
-        public int DriverSafetyRating { get; set; } = 0;
-        public string Nationality { get; set; } = string.Empty;
+            public double BestLapSector1 { get; set; } = 0;
+            public double BestLapSector2 { get; set; } = 0;
+            public double BestLapSector3 { get; set; } = 0;
+            public double CurrentSector1Time { get; set; } = 0;
+            public double CurrentSector2Time { get; set; } = 0;
+            public double CurrentSector3Time { get; set; } = 0;
+            public int CurrentSectorNumber { get; set; } = 0;
+            public double EstimatedLapTime { get; set; } = 0;
 
-        public string DriverDisplayName { get; set; } = string.Empty;
+            public double IntervalGap { get; set; } = 0;
+            public double IntervalGapDelayed { get; set; } = 0;
+            public double LapDistancePercent { get; set; } = 0;
+            public int LapsBehindLeader { get; set; } = 0;
+            public double GapBehindLeader { get; set; } = 0;
+            public int LapsBehindNext { get; set; } = 0;
+            public int Position { get; set; } = 0;
+            public int PositionInClass { get; set; } = 0;
+            public int PositionsGainedLost { get; set; } = 0;
+            public int SpeedCurrent { get; set; } = 0;
+            public int SpeedMax { get; set; } = 0;
+            public double TimeBehindLeader { get; set; } = 0;
+            public double TimeBehindNext { get; set; } = 0;
+            public int TotalLaps { get; set; } = 0;
+            public int LapsDown { get; set; } = 0;
 
-    }
 
-    // Used for teams races
-    //internal class Team {}
+            // Pit info
+            public bool PitInPitBox { get; set; } = false;
+            public int PitInPitLane { get; set; } = 0;
+            public int PitLastLapPitted { get; set; } = 0;
+            public int PitLastStopDuration { get; set; } = 0;
 
-    public class TrackSections {
-        static int NumberOfSections = 60;
-        public TrackSector[] Sections;
-                
-        public TrackSections() {
+            public int PitCount { get; set; } = 0;
 
-            // 60 sections numbered from from 0 to 59
-            Sections = new TrackSector[NumberOfSections];
-            for (int i = 0; i < Sections.Length; i++) {
-                Sections[i] = new TrackSector(i);
-            }
+
+            // Flags
+            public bool HasFinished { get; set; } = false;
+            public bool HasRetired { get; set; } = false;
+            public bool HasBlueFlag { get; set; } = false;
+            public bool HasOfftrack { get; set; } = false;
+            public int IncidentCount { get; set; } = 0;
         }
 
-        public void UpdateTimeForSectionAtPercentage(double trackDistancePercentage, double CurrentElapsedLapTime)
-        {
-            // we might need to reset here, but for now, let's just keep rolling and overwriting
-            int currentSection = GetATrackSectionForAGivenPercentageAroundTrack(trackDistancePercentage);
-            if (currentSection == 0) {
-                Sections[currentSection].TrackSectionTime = CurrentElapsedLapTime;
-            }
-            else {
-                double timeCurrentlySaved = 0;
-                for (int i = 0; i < currentSection -1; i++) {
-                    timeCurrentlySaved = timeCurrentlySaved + Sections[i].TrackSectionTime;
+        // Holds driver information
+        public class Driver {
+            public long DriverCustomerID { get; set; } = 0;
+            public string DriverFullName { get; set; } = string.Empty;
+            public string DriverFirstName { get; set; } = string.Empty;
+            public string DriverFirstNameInitial { get; set; } = string.Empty;
+            public string DriverFirstNameShort { get; set; } = string.Empty;
+            public string DriverLastName { get; set; } = string.Empty;
+            public string DriverLastNameInitial { get; set; } = string.Empty;
+            public string DriverLastNameShort { get; set; } = string.Empty;
+            public int DriverIRating { get; set; } = 0;
+            public int DriverSafetyRating { get; set; } = 0;
+            public string Nationality { get; set; } = string.Empty;
+
+            public string DriverDisplayName { get; set; } = string.Empty;
+
+        }
+
+        // Used for teams races
+        //internal class Team {}
+
+        public class TrackSections {
+            static int NumberOfSections = 60;
+            public TrackSector[] Sections;
+
+            public TrackSections() {
+
+                // 60 sections numbered from from 0 to 59
+                Sections = new TrackSector[NumberOfSections];
+                for (int i = 0; i < Sections.Length; i++) {
+                    Sections[i] = new TrackSector(i);
                 }
-                Sections[currentSection].TrackSectionTime = CurrentElapsedLapTime - timeCurrentlySaved;
             }
+
+            public void UpdateTimeForSectionAtPercentage(double trackDistancePercentage, double CurrentElapsedLapTime) {
+                // we might need to reset here, but for now, let's just keep rolling and overwriting
+                int currentSection = GetATrackSectionForAGivenPercentageAroundTrack(trackDistancePercentage);
+                if (currentSection == 0) {
+                    Sections[currentSection].TrackSectionTime = CurrentElapsedLapTime;
+                }
+                else {
+                    double timeCurrentlySaved = 0;
+                    for (int i = 0; i < currentSection - 1; i++) {
+                        timeCurrentlySaved = timeCurrentlySaved + Sections[i].TrackSectionTime;
+                    }
+                    Sections[currentSection].TrackSectionTime = CurrentElapsedLapTime - timeCurrentlySaved;
+                }
+            }
+
+            public double GetTimeInSection(int section) {
+                return Sections[section].TrackSectionTime;
+            }
+
+            public void Reset() {
+                for (int i = 0; i < Sections.Length; i++) {
+                    Sections[i].Reset();
+                }
+            }
+
+            // Return the tracksector for a given percentage around the track
+            public static int GetATrackSectionForAGivenPercentageAroundTrack(double PercentAroundTrack) {
+
+                // reurn the sector where we will be for a given percentate
+                // this calc works because we use a staic number of track sections
+                double div = (100.0000 / Convert.ToDouble(NumberOfSections));
+                int pct = Convert.ToInt32(Math.Floor(((PercentAroundTrack * 100) / div)));
+                return pct;
+            }
+
+            public int Tracksector(int TrackSection) {
+                if (TrackSection < (NumberOfSections / 3)) {
+                    return 1;
+                }
+                else if (TrackSection < ((NumberOfSections / 3) * 2)) {
+                    return 2;
+                }
+                else {
+                    return 3;
+                }
+            }
+
+
+
+
         }
 
-        public double GetTimeInSection (int section) {
-            return Sections[section].TrackSectionTime;
-        }
+        public class TrackSector {
+            // We are hardcoded to NumberOfSections
+            static int NumberOfSections = 60;
+            public TrackSector(int trackSectionID) {
 
-        public void Reset() {
-            for (int i = 0; i < Sections.Length; i++) {
-                Sections[i].Reset();
+            }
+
+
+
+
+            public int TrackSectionID { get; set; }
+            public double TrackDistancePercent { get; set; }
+            public double TrackSectionTime { get; set; }
+
+            public void Reset() {
+                TrackSectionTime = 0;
             }
         }
-
-        // Return the tracksector for a given percentage around the track
-        public static int GetATrackSectionForAGivenPercentageAroundTrack(double PercentAroundTrack) {
-
-            // reurn the sector where we will be for a given percentate
-            // this calc works because we use a staic number of track sections
-            double div = (100.0000 / Convert.ToDouble(NumberOfSections));
-            int pct = Convert.ToInt32(Math.Floor( ( (PercentAroundTrack * 100) / div) ));
-            return pct;
-        }
-
-        public int Tracksector(int TrackSection) {
-            if (TrackSection < (NumberOfSections / 3)) {
-                return 1;
-            }
-            else if (TrackSection < ((NumberOfSections / 3) * 2)) {
-                return 2;
-            }
-            else {
-                return 3;
-            }
-        }
-
-
-
 
     }
-
-    public class TrackSector {
-        // We are hardcoded to NumberOfSections
-        static int NumberOfSections = 60;
-        public TrackSector(int trackSectionID) {
-           
-        }
-        
-        
-
-
-        public int TrackSectionID { get; set; }
-        public double TrackDistancePercent { get; set; }
-        public double TrackSectionTime { get; set; }
-       
-        public void Reset() {
-            TrackSectionTime = 0;
-        }
-    }
-
 }
