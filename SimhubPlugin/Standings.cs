@@ -23,6 +23,8 @@ using System.Windows.Markup.Localizer;
 namespace APR.DashSupport {
 
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
+        static int iRacingMaxCars = 63;
+
 
         public List<RaceCar> CompetingCars = new List<RaceCar>();
         public int LeaderIdx = 0;
@@ -33,6 +35,11 @@ namespace APR.DashSupport {
         public int LeaderCurrentLap { get; set; } = 0;
         public double LeaderTrackDistancePercent { get; set; } = 0;
 
+        public List<RaceCar> CompetingCarsSortedbyPosition {
+            get {
+                return CompetingCars.OrderBy(o => o.Position).ToList();
+            }
+        }
 
         public void UpdateStandingsNameSetting() {
             if (Settings.SettingsUpdated) {
@@ -133,90 +140,100 @@ namespace APR.DashSupport {
                 }
                
             }
-
-            List<RaceCar> SortedPositions = CompetingCars.OrderBy(o => o.Position).ToList();
-            for (int i = 0; i < SortedPositions.Count; i++) {
-
-                Trace.WriteLine("Driver = " + SortedPositions[i].Driver.DriverFullName + " Position - " + SortedPositions[i].Position + " Time: " + SortedPositions[i].GapBehindLeader);
-            }
         }
-        public void AddStandingsRelatedProperties() {
-        }
+
 
 
         public void InitStandings() {
             if (Settings.EnableStandings) {
-                SessionData._DriverInfo._Drivers[] competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
-                CompetingCars = new List<RaceCar>();
-                for (int i = 0; i < competitiors.Length; i++) {
-
-                    RaceCar car = new RaceCar();
-                    car.CarIDx = Convert.ToInt32(competitiors[i].CarIdx);
-                    if (car.CarIDx != i) {
-                        DebugMessage("Warning IDs do not match!!");
-                    }
-
-                    car.CarClass = competitiors[i].CarClassID;
-
-                    car.Driver.DriverFullName = competitiors[i].UserName;
-                    car.Driver.DriverCustomerID = competitiors[i].UserID;
 
 
-                    // chop up the drivers name(s)
-                    // TODO: Don't store everything, just chop once and store what we need ... maybe
-                    string[] names = car.Driver.DriverFullName.Split(' ');
-                    int numberOfNames = names.Length;
-                    if (numberOfNames > 0) {
+                SessionData._DriverInfo._Drivers[] competitiors = competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
 
-                        car.Driver.DriverFirstName = car.Driver.DriverFullName.Split(' ')[0];
-                        car.Driver.DriverLastName = car.Driver.DriverFullName.Split(' ')[numberOfNames - 1];
+                if (competitiors != null) {
+                    CompetingCars = new List<RaceCar>();
+                    for (int i = 0; i < competitiors.Length; i++) {
 
-                        car.Driver.DriverFirstNameShort = car.Driver.DriverFullName.Substring(0, 3).ToUpper();
-                        car.Driver.DriverLastNameShort = car.Driver.DriverLastName.Substring(0, 3).ToUpper();
-
-                        car.Driver.DriverFirstNameInitial = car.Driver.DriverFirstName.Substring(0, 1).ToUpper();
-                        car.Driver.DriverLastNameInitial = car.Driver.DriverLastName.Substring(0, 1).ToUpper();
-
-                        UpdateStandingsNameSetting();
-
-                        // Update the driver's display name
-                        switch (Settings.DriverNameStyle) {
-
-                            case 0: // Firstname Middle Lastname
-                                car.Driver.DriverDisplayName = car.Driver.DriverFullName;
-                                break;
-
-                            case 1: // Firstname Lastname
-                                car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastName;
-                                break;
-
-                            case 2: // Lastname, Firstname
-                                car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstName;
-                                break;
-
-                            case 3: // F. Lastname
-                                car.Driver.DriverDisplayName = car.Driver.DriverFirstNameInitial + ". " + car.Driver.DriverLastName;
-                                break;
-
-                            case 4: // Firstname L.
-                                car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastNameInitial + ". ";
-                                break;
-
-                            case 5: // Lastname, F.
-                                car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstNameInitial + ". ";
-                                break;
-
-                            case 6: // LAS
-                                car.Driver.DriverDisplayName = car.Driver.DriverLastNameShort;
-                                break;
-
-                            default: //   Firstname Middle Lastname
-
-                                car.Driver.DriverDisplayName = car.Driver.DriverFullName;
-                                break;
+                        RaceCar car = new RaceCar();
+                        car.CarIDx = Convert.ToInt32(competitiors[i].CarIdx);
+                        if (car.CarIDx != i) {
+                            DebugMessage("Warning IDs do not match!!");
                         }
+
+                        car.CarClass = competitiors[i].CarClassID;
+
+                        car.Driver.DriverFullName = competitiors[i].UserName;
+                        car.Driver.DriverCustomerID = competitiors[i].UserID;
+                        car.CarNumber = (int)(competitiors[i].CarNumberRaw);
+                        // car.CarNumberDesignString = competitiors[i].CarNumberDesignStr;
+
+                        //TODO: Make this a flag that can be set to ignore these in standings
+                        // car.CarIsPaceCart = competitiors[i].CarIsPaceCar;
+                        // car.IsAi = competitiors[i].CarIsAI;
+                        car.Driver.DriverIRating = competitiors[i].IRating;
+                        car.Driver.DriverSafetyRating = competitiors[i].LicString;
+                        car.Driver.DriverLicenseLevel = competitiors[i].LicLevel;
+                        car.Driver.Nationality = competitiors[i].ClubName;
+
+
+
+                        // chop up the drivers name(s)
+                        // TODO: Don't store everything, just chop once and store what we need ... maybe
+                        string[] names = car.Driver.DriverFullName.Split(' ');
+                        int numberOfNames = names.Length;
+                        if (numberOfNames > 0) {
+
+                            car.Driver.DriverFirstName = car.Driver.DriverFullName.Split(' ')[0];
+                            car.Driver.DriverLastName = car.Driver.DriverFullName.Split(' ')[numberOfNames - 1];
+
+                            car.Driver.DriverFirstNameShort = car.Driver.DriverFullName.Substring(0, 3).ToUpper();
+                            car.Driver.DriverLastNameShort = car.Driver.DriverLastName.Substring(0, 3).ToUpper();
+
+                            car.Driver.DriverFirstNameInitial = car.Driver.DriverFirstName.Substring(0, 1).ToUpper();
+                            car.Driver.DriverLastNameInitial = car.Driver.DriverLastName.Substring(0, 1).ToUpper();
+
+                            UpdateStandingsNameSetting();
+
+                            // Update the driver's display name
+                            switch (Settings.DriverNameStyle) {
+
+                                case 0: // Firstname Middle Lastname
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFullName;
+                                    break;
+
+                                case 1: // Firstname Lastname
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastName;
+                                    break;
+
+                                case 2: // Lastname, Firstname
+                                    car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstName;
+                                    break;
+
+                                case 3: // F. Lastname
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFirstNameInitial + ". " + car.Driver.DriverLastName;
+                                    break;
+
+                                case 4: // Firstname L.
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastNameInitial + ". ";
+                                    break;
+
+                                case 5: // Lastname, F.
+                                    car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstNameInitial + ". ";
+                                    break;
+
+                                case 6: // LAS
+                                    car.Driver.DriverDisplayName = car.Driver.DriverLastNameShort;
+                                    break;
+
+                                default: //   Firstname Middle Lastname
+
+                                    car.Driver.DriverDisplayName = car.Driver.DriverFullName;
+                                    break;
+                            }
+                        }
+                        CompetingCars.Add(car);
+
                     }
-                    CompetingCars.Add(car);
                 }
             }
         }
@@ -309,9 +326,32 @@ namespace APR.DashSupport {
                 LeaderTrackDistancePercent = CompetingCars[LeaderIdx].LapDistancePercent;
                 UpdateGapTiming();
 
+                foreach (var car in CompetingCarsSortedbyPosition) {
+                    string iString = string.Format("{0:00}", car.Position);
+                    SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
+                    SetProp("Standings.Overall.Position" + iString + ".Number", car.CarNumber);
+                    SetProp("Standings.Overall.Position" + iString + ".DriverName", car.Driver.DriverDisplayName);
+                    SetProp("Standings.Overall.Position" + iString + ".GapToLeader", car.GapBehindLeader);
+                    SetProp("Standings.Overall.Position" + iString + ".GapToCarAhead", car.IntervalGap);
+                    SetProp("Standings.Overall.Position" + iString + ".IsInPit", car.PitInPitLane);
 
+                }
             }
 
+        }
+
+        public void AddStandingsRelatedProperties() {
+            if (Settings.EnableStandings) {
+                for (int i = 1; i < iRacingMaxCars + 1; i++) {
+                    string iString = string.Format("{0:00}", i);
+                    AddProp("Standings.Overall.Position" + iString + ".Position", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".Number", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".DriverName", string.Empty);
+                    AddProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".GapToCarAhead", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".IsInPit", 0);
+                }
+            }
         }
 
         public class Standings {
@@ -325,9 +365,6 @@ namespace APR.DashSupport {
             public string BattleBoxDriver2Name { get; set; } = string.Empty;
             public int EstimatedOvertakeLaps { get; set; } = 0;
             public double EstimatedOvertakePercentage { get; set; } = 0.0;
-
-
-
 
         }
 
@@ -370,7 +407,7 @@ namespace APR.DashSupport {
 
 
             public int CarIDx { get; set; } = int.MinValue;
-
+            public int CarNumber { get; set; } = int.MinValue;   
             public long CarClass { get; set; } = long.MinValue;
             public Driver Driver { get; set; } = null;
             public int CurrentTrackSection { get; set; } = 0;
@@ -436,8 +473,9 @@ namespace APR.DashSupport {
             public string DriverLastName { get; set; } = string.Empty;
             public string DriverLastNameInitial { get; set; } = string.Empty;
             public string DriverLastNameShort { get; set; } = string.Empty;
-            public int DriverIRating { get; set; } = 0;
-            public int DriverSafetyRating { get; set; } = 0;
+            public long DriverIRating { get; set; } = 0;
+            public string DriverSafetyRating { get; set; } = string.Empty;
+            public long DriverLicenseLevel { get; set; } = 0;
             public string Nationality { get; set; } = string.Empty;
 
             public string DriverDisplayName { get; set; } = string.Empty;

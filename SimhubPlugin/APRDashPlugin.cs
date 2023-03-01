@@ -53,7 +53,6 @@ namespace APR.DashSupport
 
 
 
-
             pluginManager.AddProperty<double>("Version", this.GetType(), 1.1);
             pluginManager.AddProperty<string>("MainMenuSelected", this.GetType(), "none");
 
@@ -89,13 +88,10 @@ namespace APR.DashSupport
             AddProp("LaunchPreferFullThrottleStarts", Settings.PreferFullThrottleStarts);
             AddProp("LaunchUsingDualClutchPaddles", Settings.LaunchUsingDualClutchPaddles);
 
-            AddStandingsRelatedProperties();
-            
-
             //InitRotaryButtons(pluginManager);
             //InitOtherButtons(pluginManager);
 
-
+            AddStandingsRelatedProperties();
 
         }
 
