@@ -95,6 +95,7 @@ namespace APR.DashSupport {
                 CompetingCars[i].Position = irData.Telemetry.CarIdxPosition[i];
                 CompetingCars[i].PositionInClass = irData.Telemetry.CarIdxClassPosition[i];
 
+
                 bool SimpleGap = true; //TODO: Make this a config setting
                 if (SimpleGap) {
                     if (CompetingCars[i].Position < 2) {
@@ -158,7 +159,7 @@ namespace APR.DashSupport {
                 if (competitiors != null) {
                     CompetingCars = new List<RaceCar>();
                     for (int i = 0; i < competitiors.Length; i++) {
-                        if (competitiors[i].CarClassID > 0)
+                        if (competitiors[i].CarNumberRaw > -1)
                         {
 
                             RaceCar car = new RaceCar();
@@ -342,7 +343,17 @@ namespace APR.DashSupport {
                 LeaderTrackDistancePercent = CompetingCars[LeaderIdx].LapDistancePercent;
                 UpdateGapTiming();
 
+                double PreviousGap = 0;
                 foreach (var car in CompetingCarsSortedbyGapToLeader) {
+                    if (car.Position == 1) {
+                        car.GapBehindLeader = 0;
+                    }
+                    else {
+                        car.IntervalGap = PreviousGap - car.GapBehindLeader;
+                        PreviousGap = car.GapBehindLeader;
+                    }
+
+
                     string iString = string.Format("{0:00}", car.Position);
                     SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
                     SetProp("Standings.Overall.Position" + iString + ".Number", car.CarNumber);
@@ -350,6 +361,8 @@ namespace APR.DashSupport {
                     SetProp("Standings.Overall.Position" + iString + ".GapToLeader", car.GapBehindLeader);
                     SetProp("Standings.Overall.Position" + iString + ".GapToCarAhead", car.IntervalGap);
                     SetProp("Standings.Overall.Position" + iString + ".IsInPit", car.PitInPitLane);
+                    SetProp("Standings.Overall.Position" + iString + ".BestLap", car.BestLap);
+                    SetProp("Standings.Overall.Position" + iString + ".LastLap", car.LastLap);
 
                 }
             }
@@ -366,6 +379,8 @@ namespace APR.DashSupport {
                     AddProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
                     AddProp("Standings.Overall.Position" + iString + ".GapToCarAhead", 0);
                     AddProp("Standings.Overall.Position" + iString + ".IsInPit", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".BestLap", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".LastLap", 0);
                 }
             }
         }
