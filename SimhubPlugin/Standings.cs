@@ -192,8 +192,6 @@ namespace APR.DashSupport {
             }
         }
 
-
-
         public void InitStandings() {
             if (Settings.EnableStandings) {
 
@@ -401,7 +399,6 @@ namespace APR.DashSupport {
                         
                     }
 
-
                     string iString = string.Format("{0:00}", car.Position);
                     SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
                     SetProp("Standings.Overall.Position" + iString + ".Number", car.CarNumber);
@@ -412,6 +409,7 @@ namespace APR.DashSupport {
                     SetProp("Standings.Overall.Position" + iString + ".BestLap", car.BestLap);
                     SetProp("Standings.Overall.Position" + iString + ".LastLap", car.LastLap);
 
+                    
                 }
             }
 
@@ -447,18 +445,7 @@ namespace APR.DashSupport {
 
         }
 
-        public class Championship {
-            // Leadercar
-            // Leader Photo
-            // Leader team
-            // Championship name
-            // Next event
-            // Current round number
-            // Championship Sponsor
-
-            // Championship Standings
-        }
-
+        
         public class CarClass {
             public int CarClassID { get; set; } = 0;
             public string CarClassName { get; set; } = string.Empty;
@@ -477,16 +464,6 @@ namespace APR.DashSupport {
                 this.track = new TrackSections();
             }
 
-
-
-
-
-
-
-            //  update the sector time by adding up all the secctions in the current sector
-            // All cars sectors should now be updated
-
-
             public int CarIDx { get; set; } = int.MinValue;
             public int CarNumber { get; set; } = int.MinValue;   
             public long CarClass { get; set; } = long.MinValue;
@@ -500,14 +477,6 @@ namespace APR.DashSupport {
             public int Lap { get; set; } = 0;
 
 
-
-            public double BestLapSector1 { get; set; } = 0;
-            public double BestLapSector2 { get; set; } = 0;
-            public double BestLapSector3 { get; set; } = 0;
-            public double CurrentSector1Time { get; set; } = 0;
-            public double CurrentSector2Time { get; set; } = 0;
-            public double CurrentSector3Time { get; set; } = 0;
-            public int CurrentSectorNumber { get; set; } = 0;
             public double EstimatedLapTime { get; set; } = 0;
 
             public double IntervalGap { get; set; } = 0;
@@ -518,30 +487,11 @@ namespace APR.DashSupport {
             public int LapsBehindNext { get; set; } = 0;
             public int Position { get; set; } = 0;
             public int PositionInClass { get; set; } = 0;
-            public int PositionsGainedLost { get; set; } = 0;
-            public int SpeedCurrent { get; set; } = 0;
-            public int SpeedMax { get; set; } = 0;
-            public double TimeBehindLeader { get; set; } = 0;
-            public double TimeBehindNext { get; set; } = 0;
-            public int TotalLaps { get; set; } = 0;
-            public int LapsDown { get; set; } = 0;
 
-
-            // Pit info
-            public bool PitInPitBox { get; set; } = false;
+            //Pit info
             public int PitInPitLane { get; set; } = 0;
-            public int PitLastLapPitted { get; set; } = 0;
-            public int PitLastStopDuration { get; set; } = 0;
-
-            public int PitCount { get; set; } = 0;
 
 
-            // Flags
-            public bool HasFinished { get; set; } = false;
-            public bool HasRetired { get; set; } = false;
-            public bool HasBlueFlag { get; set; } = false;
-            public bool HasOfftrack { get; set; } = false;
-            public int IncidentCount { get; set; } = 0;
         }
 
         // Holds driver information
@@ -562,9 +512,6 @@ namespace APR.DashSupport {
             public string DriverDisplayName { get; set; } = string.Empty;
 
         }
-
-        // Used for teams races
-        //internal class Team {}
 
         public class TrackSections {
             static int NumberOfSections = 60;
@@ -650,5 +597,52 @@ namespace APR.DashSupport {
             }
         }
 
+
+        /* Currently not used
+        
+        public double BestLapSector1 { get; set; } = 0;
+        public double BestLapSector2 { get; set; } = 0;
+        public double BestLapSector3 { get; set; } = 0;
+        public double CurrentSector1Time { get; set; } = 0;
+        public double CurrentSector2Time { get; set; } = 0;
+        public double CurrentSector3Time { get; set; } = 0;
+        public int CurrentSectorNumber { get; set; } = 0;
+
+        public int PositionsGainedLost { get; set; } = 0;
+        public int SpeedCurrent { get; set; } = 0;
+        public int SpeedMax { get; set; } = 0;
+        public double TimeBehindLeader { get; set; } = 0;
+        public double TimeBehindNext { get; set; } = 0;
+        public int TotalLaps { get; set; } = 0;
+        public int LapsDown { get; set; } = 0;
+
+
+        // Pit info
+        public bool PitInPitBox { get; set; } = false;
+        
+        public int PitLastLapPitted { get; set; } = 0;
+        public int PitLastStopDuration { get; set; } = 0;
+        public int PitCount { get; set; } = 0;
+
+        // Flags
+        public bool HasFinished { get; set; } = false;
+        public bool HasRetired { get; set; } = false;
+        public bool HasBlueFlag { get; set; } = false;
+        public bool HasOfftrack { get; set; } = false;
+        public int IncidentCount { get; set; } = 0;
+
+
+        public class Championship {
+            // Leadercar
+            // Leader Photo
+            // Leader team
+            // Championship name
+            // Next event
+            // Current round number
+            // Championship Sponsor
+
+            // Championship Standings
+        }
+        */
     }
 }

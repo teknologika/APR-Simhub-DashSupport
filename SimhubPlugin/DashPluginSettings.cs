@@ -34,14 +34,21 @@ namespace APR.DashSupport
         
         // Settings to support standings
         
+        
+        // Enable Standings Properties and calculations
         public bool EnableStandings { get; set; } = false;
-        public int SlideOutDelay { get; set; } = 20;
+
+        // Enable Multi-class in standings
         public bool Multiclass { get; set; } = false;
         public int NumberOfMulticlassDrivers { get; set; } = 3;
         public bool ShowCarClassName { get; set; } = false;
 
-        public int DriverNameStyle { get; set; } = 0;
+        public int SlideOutDelay { get; set; } = 20;
+
         public bool SettingsUpdated { get; set; } = false;
+
+        public int DriverNameStyle { get; set; } = 0;
+        
         public bool DriverNameStyle_0 { get; set; } = true;
         public bool DriverNameStyle_1 { get; set; } = false;
         public bool DriverNameStyle_2 { get; set; } = false;
@@ -64,10 +71,12 @@ namespace APR.DashSupport
         public int ColumnWidthCarNumber { get; set; } = 40;
         public int ColumnWidthDriverName { get; set; } = 170;
         public int RowWidth { get; set; }
+        public int RowHeight { get; set; } = 25;
+        public int RowGapBetweenRows { get; set; } = 2;
         public int ColumnWidthGapToLeader { get; set; } = 40;
         public int ColumnWidthGapToCarInFront { get; set; } = 40;
         public int ColumnWidthFastestLap { get; set; } = 40;
-        public int ColumnWIdthLastLap { get; set; } = 40;
+        public int ColumnWidthLastLap { get; set; } = 40;
 
 
 
