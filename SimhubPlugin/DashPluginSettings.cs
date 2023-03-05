@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using GameReaderCommon.Replays;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -49,11 +50,25 @@ namespace APR.DashSupport
         public bool DriverNameStyle_5 { get; set; } = false;
         public bool DriverNameStyle_6 { get; set; } = false;
 
+        public bool ShowGapToLeader { get; set; } = true;
+        public bool ShowGapToCarInFront { get; set; } = true;
+        public bool ShowFastestLap { get; set; } = true;
+        public bool ShowLastlap { get; set; } = true;
+        
+        public bool SlideOutLastLapTimes { get; set; } = true;
+        public bool SlideOutPitStatus { get; set; } = true;
 
+        public bool ShowCarNumber { get; set; } = true;
 
+        public int ColumnWidthPosition { get; set; } = 25;
+        public int ColumnWidthCarNumber { get; set; } = 40;
+        public int ColumnWidthDriverName { get; set; } = 170;
+        public int RowWidth { get; set; }
+        public int ColumnWidthGapToLeader { get; set; } = 40;
+        public int ColumnWidthGapToCarInFront { get; set; } = 40;
+        public int ColumnWidthFastestLap { get; set; } = 40;
+        public int ColumnWIdthLastLap { get; set; } = 40;
 
-       
-    
 
 
         #region Property supporting UI refresh from code

@@ -77,20 +77,24 @@
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="250"/>
-                                <ColumnDefinition Width="250"/>
+                                <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="250"/>
                                 <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="1*" MinHeight="30"/>
                                 <RowDefinition Height="1*" MinHeight="30"/>
+                                <RowDefinition Height="1*" MinHeight="30"/>
+                                <RowDefinition Height="1*" MinHeight="30"/>
+                                <RowDefinition Height="1*" MinHeight="30"/>
+                                <RowDefinition Height="1*" MinHeight="30"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Enable Standings" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Enable Standings" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
                             <styles:SHToggleButton Grid.Row="0" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding EnableStandings}" RenderTransformOrigin="0.45,0.2"/>
 
-                            <TextBlock Grid.Row="1" Text="Driver Name Style" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Driver Name Style" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
                             <ComboBox Grid.Row="1" Grid.Column="1" SelectionChanged="SettingsUpdated_Click" HorizontalAlignment="Left" VerticalAlignment="Center" Width="200" Margin="0,10,-15,0">
-                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_0}">Firstname Middle Lastname</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding DriverNameStyle_0}">Full Name</ComboBoxItem>
                                 <ComboBoxItem IsSelected="{Binding DriverNameStyle_1}">Firstname Lastname</ComboBoxItem>
                                 <ComboBoxItem IsSelected="{Binding DriverNameStyle_2}">Lastname, Firstname</ComboBoxItem>
                                 <ComboBoxItem IsSelected="{Binding DriverNameStyle_3}">F. Lastname</ComboBoxItem>
@@ -98,6 +102,11 @@
                                 <ComboBoxItem IsSelected="{Binding DriverNameStyle_5}">Lastname, F.</ComboBoxItem>
                                 <ComboBoxItem IsSelected="{Binding DriverNameStyle_6}">LAS</ComboBoxItem>
                             </ComboBox>
+                            <TextBlock Grid.Row="3" Grid.Column="0"  Text="Show Gap to Leader" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="3" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ShowGapToLeader}" RenderTransformOrigin="0.45,0.2"/>
+                            <TextBlock Grid.Row="3" Grid.Column="2" Text="Show Gap car in front" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="3" Grid.Column="4"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ShowGapToCarInFront}" RenderTransformOrigin="0.45,0.2"/>
+
                         </Grid>
                     </styles:SHSection>
                 </StackPanel>

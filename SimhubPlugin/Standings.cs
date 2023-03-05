@@ -4,9 +4,11 @@ using IRacingReader;
 using iRacingSDK;
 using MahApps.Metro.Controls;
 using SimHub.Plugins;
+using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Groups;
 using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Status;
 using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
+using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.TimespanText.Imp;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models.BuiltIn;
 using System;
 using System.Collections.Generic;
@@ -24,9 +26,11 @@ namespace APR.DashSupport {
 
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
         static int iRacingMaxCars = 63;
+        static int iRacingMaxClasses = 5;
 
 
         public List<RaceCar> CompetingCars = new List<RaceCar>();
+        public List<CarClass> CarClasses = new List<CarClass>();
         public int LeaderIdx = 0;
         public List<int> ClassLeaderIdx = new List<int>();
         public double LeaderLastLap { get; set; } = 0;
@@ -34,6 +38,45 @@ namespace APR.DashSupport {
         public double LeaderBestLap { get; set; } = 0;
         public int LeaderCurrentLap { get; set; } = 0;
         public double LeaderTrackDistancePercent { get; set; } = 0;
+        public double SessionBestLapTime { get; set; } = 0;
+        
+
+        // Create and clear data structures.
+        // Call at the start of every session.
+        public void InitClassDataStrucutres() {
+            CarClasses.Clear();
+            for (int i = 0; i < iRacingMaxClasses; i++) {
+                CarClasses[i] = new CarClass();
+            }
+        }
+
+        // Create the simhub properties
+        // Call before updates, after init has been called
+        public void AddCarClassRelatedProperties() {
+
+        }
+
+        // Update the simhub properties
+        // call once per second
+        public void UpdateCarClassRelatedProperties() {
+
+        }
+
+        public string SessionBestLapAsDisplayString(Double seconds) {
+
+
+            TimeSpan interval = TimeSpan.FromSeconds(seconds);
+            return interval.ToString(@"m\:ss\.fff", null);
+
+            //string timeInterval = interval.ToString();
+            // Pad the end of the TimeSpan string with spaces if it 
+            // does not contain milliseconds.
+            //int pIndex = timeInterval.IndexOf(':');
+            //pIndex = timeInterval.IndexOf('.', pIndex);
+            // if (pIndex < 0) timeInterval += "        ";
+
+        }
+
 
         public List<RaceCar> CompetingCarsSortedbyPosition {
             get {
@@ -159,7 +202,7 @@ namespace APR.DashSupport {
                 if (competitiors != null) {
                     CompetingCars = new List<RaceCar>();
                     for (int i = 0; i < competitiors.Length; i++) {
-                        if (competitiors[i].CarNumberRaw > -1)
+                        if (competitiors[i].CarNumberRaw > 0)
                         {
 
                             RaceCar car = new RaceCar();
@@ -353,6 +396,11 @@ namespace APR.DashSupport {
                         PreviousGap = car.GapBehindLeader;
                     }
 
+                    SessionBestLapTime = data.NewData.BestLapTime.TotalSeconds;
+                    if (car.BestLap == SessionBestLapTime) {
+                        
+                    }
+
 
                     string iString = string.Format("{0:00}", car.Position);
                     SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
@@ -416,6 +464,8 @@ namespace APR.DashSupport {
             public string CarClassName { get; set; } = string.Empty;
             public string CarClassColour { get; set; } = string.Empty;
             public string CarClassDisplayName { get; set; } = string.Empty;
+            public double CarClassBestLapTime { get; set; } = 0;
+            public double CarClassLeaderID { get; set; } = 0;
         }
 
         public class RaceCar {
