@@ -1,8 +1,10 @@
 ﻿using GameReaderCommon.Replays;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Runtime.CompilerServices;
-using System.Windows;
+using Color = System.Drawing.Color;
 
 namespace APR.DashSupport
 {
@@ -42,6 +44,44 @@ namespace APR.DashSupport
         public bool Multiclass { get; set; } = false;
         public int NumberOfMulticlassDrivers { get; set; } = 3;
         public bool ShowCarClassName { get; set; } = false;
+        public bool UseGapBasedPositions { get; set; } = true;
+
+        public string StandingsBackgroundColour { get; set; } = "#00000";
+        public string StandingsBackgroundRowAlternateColour { get; set; } = "#00000";
+        public string ReferenceDriverBackgroundColour { get; set; } = "#044BFC";
+        public double BackgroundTransparency { get; set; } = 0.2;
+        public double BackgroundAlternateTransparency { get; set; } = 0.4;
+       
+        public string StandingsBackgroundRowColourWithTransparency {
+            get {
+                Color colour = ColorTranslator.FromHtml(StandingsBackgroundColour);
+                int opacity = Convert.ToInt16(255 * (1 - BackgroundTransparency));
+                Color colourWithAplha = Color.FromArgb(opacity, colour);
+                return string.Format("#{0:X2}{1:X2}{2:X2}{3:X2}", colourWithAplha.A, colourWithAplha.R, colourWithAplha.G, colourWithAplha.B);
+
+            }
+        }
+
+        public string StandingsBackgroundRowAlternateColourWithTransparency {
+            get {
+                Color colour = ColorTranslator.FromHtml(StandingsBackgroundRowAlternateColour);
+                int opacity = Convert.ToInt16(255 * (1 - BackgroundAlternateTransparency));
+                Color colourWithAplha = Color.FromArgb(opacity, colour);
+                return string.Format("#{0:X2}{1:X2}{2:X2}{3:X2}", colourWithAplha.A, colourWithAplha.R, colourWithAplha.G, colourWithAplha.B);
+
+            }
+        }
+
+        public string StandingsBackgroundDriverReferenceRowColourWithTransparency {
+            get {
+                Color colour = ColorTranslator.FromHtml(ReferenceDriverBackgroundColour);
+                int opacity = Convert.ToInt16(255 * (1 - BackgroundTransparency));
+                Color colourWithAplha = Color.FromArgb(opacity, colour);
+                return string.Format("#{0:X2}{1:X2}{2:X2}{3:X2}", colourWithAplha.A, colourWithAplha.R, colourWithAplha.G, colourWithAplha.B);
+
+            }
+        }
+
 
         public int SlideOutDelay { get; set; } = 20;
 
