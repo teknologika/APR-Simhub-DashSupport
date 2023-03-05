@@ -90,6 +90,12 @@ namespace APR.DashSupport {
             }
         }
 
+        public List<RaceCar> CompetingCarsSortedbyBestLapTime {
+            get {
+                return CompetingCars.OrderBy(o => o.BestLap).ToList();
+            }
+        }
+
         public void UpdateStandingsNameSetting() {
             if (Settings.SettingsUpdated) {
                 if (Settings.DriverNameStyle_0) {
@@ -364,6 +370,10 @@ namespace APR.DashSupport {
                         }
                     }
 
+                    if (car.BestLap <= 0 && car.LastLap > 0) {
+                        car.BestLap = car.LastLap;
+                    }
+
                     // calculate the expected for the leader
                    // car.EstimatedLapTime = irData.Telemetry.CarIdxEstTime[LeaderIdx];
                     //  LeaderExpectedLapTime = (LeaderLastLap * 2 + LeaderBestLap) / 3;
@@ -389,6 +399,7 @@ namespace APR.DashSupport {
                 UpdateGapTiming();
 
                 double PreviousGap = 0;
+                int CarWithFastestOverallLapTime = 0;
 
                 foreach (var car in CompetingCarsSortedbyGapToLeader) {
                     if (car.Position == 1) {
@@ -400,21 +411,66 @@ namespace APR.DashSupport {
                         PreviousGap = car.GapBehindLeader;
                     }
 
-                    SessionBestLapTime = data.NewData.BestLapTime.TotalSeconds;
-                    if (car.BestLap == SessionBestLapTime) {
-                        
+                    // get the best lap time because we can't trust Simhub
+                    SessionBestLapTime = double.MaxValue;
+                    foreach (var fastestCar in CompetingCarsSortedbyBestLapTime) {
+                        if (fastestCar.BestLap < SessionBestLapTime) {
+                            SessionBestLapTime = fastestCar.BestLap;
+                            CarWithFastestOverallLapTime = fastestCar.CarIDx;
+                        }
                     }
+                    if (SessionBestLapTime == double.MaxValue) {
+                        SessionBestLapTime = 0;
+                    }
+
+                    
+
+
+
+                    bool BestLapIsOverallBest = false;
+                    bool LastLapIsOverallBestLap = false;
+                    bool LastLapIsPersonalBestLap = false;
+
+                    if (SessionBestLapTime > 0) {
+                        if (car.BestLap == 0 && car.LastLap > 0) {
+                            car.BestLap = car.LastLap;
+                        }
+
+                        double bob = Math.Abs(SessionBestLapTime - car.BestLap);
+
+                        if (Math.Abs(SessionBestLapTime - car.BestLap) > 0.001) {
+                            BestLapIsOverallBest = true;
+                        }
+
+                        if (car.BestLap > 0) {
+                            if ((SessionBestLapTime - car.BestLap) > 0.001) {
+                                SessionBestLapTime = car.BestLap;
+                                BestLapIsOverallBest = true;
+                            }
+
+                        }
+
+                    
+                        if (Math.Abs(SessionBestLapTime - car.LastLap) < 0.001) {
+                            LastLapIsOverallBestLap = true;
+                        }
+
+                        if (Math.Abs(car.BestLap - car.LastLap) < 0.001) {
+                            LastLapIsPersonalBestLap = true;
+                        }
+                    }
+
 
                     string iString = string.Format("{0:00}", car.Position);
                     
-                    if (Settings.UseGapBasedPositions) {
-                        iString = string.Format("{0:00}", car.GapBasedPosition);
-                        SetProp("Standings.Overall.Position" + iString + ".Position", car.GapBasedPosition);
+                  //  if (Settings.UseGapBasedPositions) {
+                  //      iString = string.Format("{0:00}", car.GapBasedPosition);
+                  //      SetProp("Standings.Overall.Position" + iString + ".Position", car.GapBasedPosition);
 
-                    }
-                    else {
+                  //  }
+                  //  else {
                         SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
-                    }
+                  //  }
                     
                     if (car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
                         car.IsPlayer = true;
@@ -432,7 +488,16 @@ namespace APR.DashSupport {
                     SetProp("Standings.Overall.Position" + iString + ".BestLap", car.BestLap);
                     SetProp("Standings.Overall.Position" + iString + ".LastLap", car.LastLap);
                     SetProp("Standings.Overall.Position" + iString + ".IsPlayer", car.IsPlayer);
-
+                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", LastLapIsPersonalBestLap);
+                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", LastLapIsOverallBestLap);
+                    if (CarWithFastestOverallLapTime == car.CarIDx) {
+                        SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", true);
+                    }
+                    else {
+                        SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
+                    }
+                    
+                    SetProp("Standings.Overall" + iString + ".BestLap", (SessionBestLapTime));
 
                 }
             }
@@ -465,6 +530,10 @@ namespace APR.DashSupport {
                     AddProp("Standings.Overall.Position" + iString + ".BestLap", 0);
                     AddProp("Standings.Overall.Position" + iString + ".LastLap", 0);
                     AddProp("Standings.Overall.Position" + iString + ".IsPlayer", false);
+                    AddProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", false);
+                    AddProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", false);
+                    AddProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
+                    AddProp("Standings.Overall" + iString + ".BestLap", 0);
                 }
             }
         }
