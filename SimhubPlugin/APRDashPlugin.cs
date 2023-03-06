@@ -128,7 +128,7 @@ namespace APR.DashSupport
                     // TODO: Add logic to reset everything when the session changes
                     bool sessionStartSetupCompleted = false;
                     if(!sessionStartSetupCompleted) {
-                        InitStandings();
+                        InitStandings(ref data);
                         sessionStartSetupCompleted = true;
                     }
 
