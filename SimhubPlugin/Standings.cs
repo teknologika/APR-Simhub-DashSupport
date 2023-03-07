@@ -154,6 +154,22 @@ namespace APR.DashSupport {
             bool setBestLap = false;
 
             // try with the overall best laps array
+            object _CarIdxF2Times = null;
+            float[] CarIdxF2Times = null;
+            irData.Telemetry.TryGetValue("CarIdxF2Time", out _CarIdxF2Times);
+            if (_CarIdxF2Times.GetType() == typeof(float[])) {
+                CarIdxF2Times = _CarIdxF2Times as float[];
+                if (CarIdxF2Times != null) {
+                    if (TimeSpan.FromMinutes((float)CarIdxF2Times[competitor.CarIdx]) > TimeSpan.Zero) {
+                        car.CarIdxF2Time = CarIdxF2Times[competitor.CarIdx];
+   
+                    }
+                }
+            }
+
+
+
+            // try with the overall best laps array
             object _bestlaptimes = null;
             float[] bestlapTimes = null;
             irData.Telemetry.TryGetValue("CarIdxBestLapTime", out _bestlaptimes);
@@ -359,6 +375,10 @@ namespace APR.DashSupport {
                     }
                     else if (SessionType == "Race") {
                         foreach (RaceCar anotherCar in CompetingCarsSortedbyPosition) {
+                            if(anotherCar.CarIdxF2Time != 0) {
+                                anotherCar.GapBehindLeader = anotherCar.CarIdxF2Time;
+                            }
+                            
                             SessionData._DriverInfo._Drivers[] competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
                             double lastNonZeroGapBehindLeader = 0.0;
 
@@ -859,6 +879,7 @@ namespace APR.DashSupport {
             public double BestLap { get; set; } = 0;
             public double LastLap { get; set; } = 0;
             public int Lap { get; set; } = 0;
+            public float CarIdxF2Time { get; set; } = 0;
 
 
             public double EstimatedLapTime { get; set; } = 0;
