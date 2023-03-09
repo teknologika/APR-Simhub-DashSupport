@@ -107,16 +107,100 @@ namespace APR.DashSupport
 
         public bool ShowCarNumber { get; set; } = true;
 
+
+        public bool ColumnShowPosition { get; set; } = true;
+        public bool ColumnShowCarNumber { get; set; } = true;
+        public bool ColumnShowDriverName { get; set; } = true;
+        public bool ColumnShowGapToLeader { get; set; } = true;
+        public bool ColumnShowGapToCarInFront { get; set; } = true;
+        public bool ColumnShowFastestLap { get; set; } = true;
+        public bool ColumnShowLastLap { get; set; } = true;
+
+        
         public int ColumnWidthPosition { get; set; } = 25;
         public int ColumnWidthCarNumber { get; set; } = 40;
         public int ColumnWidthDriverName { get; set; } = 170;
-        public int RowWidth { get; set; }
-        public int RowHeight { get; set; } = 25;
-        public int RowGapBetweenRows { get; set; } = 2;
         public int ColumnWidthGapToLeader { get; set; } = 40;
         public int ColumnWidthGapToCarInFront { get; set; } = 40;
         public int ColumnWidthFastestLap { get; set; } = 40;
         public int ColumnWidthLastLap { get; set; } = 40;
+
+        public int ColumnStartPosition {
+            get {
+                return 0;
+            }
+        }
+
+        public int ColumnStartCarNumber {
+            get {
+                if (ColumnShowPosition) {
+                    return ColumnStartPosition + ColumnWidthPosition;
+                }
+                else {
+                    return ColumnStartPosition;
+                }
+            }
+        }
+
+        public int ColumnStartDriverName {
+            get {
+                if (ColumnShowCarNumber) {
+                    return ColumnStartCarNumber + ColumnWidthCarNumber;
+                }
+                else {
+                    return ColumnStartCarNumber;
+                }
+            }
+        }
+
+        public int ColumnStartGapToLeader {
+            get {
+                if (ColumnShowDriverName) {
+                    return ColumnStartDriverName + ColumnWidthDriverName ;
+                }
+                else {
+                    return ColumnStartDriverName;
+                }
+            }
+        }
+
+        public int ColumnStartGapToCarInFront {
+            get {
+                if (ColumnShowGapToLeader) {
+                    return ColumnStartGapToLeader + ColumnWidthGapToLeader;
+                }
+                else {
+                    return ColumnStartGapToLeader;
+                }
+            }
+        }
+
+        public int ColumnStartLastLap {
+            get {
+                if (ColumnShowGapToCarInFront) {
+                    return ColumnStartGapToCarInFront + ColumnWidthGapToCarInFront;
+                }
+                else {
+                    return ColumnStartGapToCarInFront;
+                }
+            }
+        }
+
+        public int ColumnStartFastestLap {
+            get {
+                if (ColumnShowLastLap) {
+                    return ColumnStartLastLap + ColumnWidthLastLap ;
+                }
+                else { 
+                    return ColumnStartLastLap;
+                }
+            }
+        }
+
+
+        public int RowWidth { get; set; }
+        public int RowHeight { get; set; } = 25;
+        public int RowGapBetweenRows { get; set; } = 2;
 
 
 

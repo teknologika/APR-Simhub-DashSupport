@@ -680,7 +680,7 @@ namespace APR.DashSupport {
 
                 // After the Loop calculate everything
 
-                LeaderTrackDistancePercent = CompetingCars[LeaderIdx].LapDistancePercent;
+               // LeaderTrackDistancePercent = CompetingCars[LeaderIdx].LapDistancePercent;
 
                 double PreviousGap = 0;
                 int CarWithFastestOverallLapTime = 0;
@@ -790,6 +790,14 @@ namespace APR.DashSupport {
             SetProp("Standings.Colours.BackgroundAlternate", Settings.StandingsBackgroundRowAlternateColourWithTransparency);
             SetProp("Standings.Colours.BackgroundDriverHighlight", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
 
+            SetProp("Standings.Columns.Position.Left", Settings.ColumnStartPosition);
+            SetProp("Standings.Columns.Position.Width", Settings.ColumnWidthPosition);
+            SetProp("Standings.Columns.Position.Visible", Settings.ColumnShowPosition);
+
+            SetProp("Standings.Columns.CarNumber.Left", Settings.ColumnStartCarNumber);
+            SetProp("Standings.Columns.CarNumber.Width", Settings.ColumnWidthCarNumber);
+            SetProp("Standings.Columns.CarNumber.Visible", Settings.ColumnShowCarNumber);
+
         }
 
         public void AddStandingsRelatedProperties() {
@@ -798,6 +806,14 @@ namespace APR.DashSupport {
                 AddProp("Standings.Colours.Background", Settings.StandingsBackgroundRowColourWithTransparency);
                 AddProp("Standings.Colours.BackgroundAlternate", Settings.StandingsBackgroundRowAlternateColourWithTransparency);
                 AddProp("Standings.Colours.BackgroundDriverHighlight", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
+
+                AddProp("Standings.Columns.Position.Left", Settings.ColumnStartPosition);
+                AddProp("Standings.Columns.Position.Width", Settings.ColumnWidthPosition);
+                AddProp("Standings.Columns.Position.Visible", Settings.ColumnShowPosition);
+
+                AddProp("Standings.Columns.CarNumber.Left", Settings.ColumnStartCarNumber);
+                AddProp("Standings.Columns.CarNumber.Width", Settings.ColumnWidthCarNumber);
+                AddProp("Standings.Columns.CarNumber.Visible", Settings.ColumnShowCarNumber);
 
                 AddProp("Standings.NumberOfCarsInSession", 0);
                 
