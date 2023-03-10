@@ -39,13 +39,13 @@
                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="Show RPM Bar" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
                                 <styles:SHToggleButton Grid.Row="0" Grid.Column="3"  HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding EnableRPMBar}" RenderTransformOrigin="0.45,0.2"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Target Brake Pecentage" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                                <TextBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTargetPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0'%'}}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTargetPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0}}"/>
                                 <TextBlock Grid.Row="1" Grid.Column="2" Text="Peak Brake Pecentage" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                                <TextBox Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeMaxPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0'%'}}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeMaxPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0}}"/>
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Trail Brake start Pecentage" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                                <TextBox Grid.Row="2" Grid.Column="1"   HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTrailStartPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0'%'}}"/>
+                                <TextBox Grid.Row="2" Grid.Column="1"   HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTrailStartPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0}}"/>
                                 <TextBlock Grid.Row="2" Grid.Column="2" Text="Trail Brake end Percentage" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                                <TextBox Grid.Row="2" Grid.Column="3"   HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTrailEndPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0'%'}}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3"   HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding BrakeTrailEndPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0}}"/>
                                 <TextBlock Grid.Row="4" Grid.Column="0" Text="Preferred brake bias Percentage" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Height="18" Margin="1,8,0,0"></TextBlock>
                                 <TextBox Grid.Row="4" Grid.Column="1"   HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding PreferredBrakeBiasPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0'%'}}" Margin="0,0,0,0"/>
                                 <TextBlock Grid.Row="6" Grid.Column="0" Text="Show Pit window Pop-up" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
@@ -88,6 +88,8 @@
                                 <RowDefinition Height="1*" MinHeight="30"/>
                                 <RowDefinition Height="1*" MinHeight="30"/>
                                 <RowDefinition Height="1*" MinHeight="30"/>
+                                <RowDefinition Height="1*" MinHeight="30"/>
+                                <RowDefinition Height="1*" MinHeight="30"/>
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Enable Standings" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
                             <styles:SHToggleButton Grid.Row="0" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding EnableStandings}" RenderTransformOrigin="0.45,0.2"/>
@@ -102,10 +104,27 @@
                                 <ComboBoxItem IsSelected="{Binding DriverNameStyle_5}">Lastname, F.</ComboBoxItem>
                                 <ComboBoxItem IsSelected="{Binding DriverNameStyle_6}">LAS</ComboBoxItem>
                             </ComboBox>
+                            <TextBlock Grid.Row="2" Grid.Column="0"  Text="Show Position" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="2" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnShowPosition}" RenderTransformOrigin="0.45,0.2"/>
+                            <TextBlock Grid.Row="2" Grid.Column="2" Text="Show car number" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="2" Grid.Column="4"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnShowCarNumber}" RenderTransformOrigin="0.45,0.2"/>
+
                             <TextBlock Grid.Row="3" Grid.Column="0"  Text="Show Gap to Leader" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                            <styles:SHToggleButton Grid.Row="3" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ShowGapToLeader}" RenderTransformOrigin="0.45,0.2"/>
+                            <styles:SHToggleButton Grid.Row="3" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnShowGapToLeader}" RenderTransformOrigin="0.45,0.2"/>
                             <TextBlock Grid.Row="3" Grid.Column="2" Text="Show Gap car in front" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
-                            <styles:SHToggleButton Grid.Row="3" Grid.Column="4"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ShowGapToCarInFront}" RenderTransformOrigin="0.45,0.2"/>
+                            <styles:SHToggleButton Grid.Row="3" Grid.Column="4"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnShowGapToCarInFront}" RenderTransformOrigin="0.45,0.2"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0"  Text="Show last lap" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="4" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnShowGapToLeader}" RenderTransformOrigin="0.45,0.2"/>
+                            <TextBlock Grid.Row="4" Grid.Column="2" Text="Show fastest lap" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="4" Grid.Column="4"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnShowGapToCarInFront}" RenderTransformOrigin="0.45,0.2"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0"  Text="Cycle gaps and lap times" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="5" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnCycleDisplay}" RenderTransformOrigin="0.45,0.2"/>
+                            <TextBlock Grid.Row="5" Grid.Column="2" Text="Cycle data every N seconds." HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <TextBox Grid.Row="5" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding ColumnCycleDuration,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0}}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Slide out fastest lap" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="6" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnSlideOutFastestLap}" RenderTransformOrigin="0.45,0.2"/>
+                            <TextBlock Grid.Row="6" Grid.Column="2" Text="Show fastest lap for N seconds." HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <TextBox Grid.Row="6" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding ColumnSlideOutDuration,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0}}"/>
 
                         </Grid>
                     </styles:SHSection>

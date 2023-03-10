@@ -798,6 +798,27 @@ namespace APR.DashSupport {
             SetProp("Standings.Columns.CarNumber.Width", Settings.ColumnWidthCarNumber);
             SetProp("Standings.Columns.CarNumber.Visible", Settings.ColumnShowCarNumber);
 
+            SetProp("Standings.Columns.DriverName.Left", Settings.ColumnStartDriverName);
+            SetProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
+            SetProp("Standings.Columns.DriverName.Visible", Settings.ColumnShowDriverName);
+            
+            SetProp("Standings.Columns.GapToLeader.Left", Settings.ColumnStartGapToLeader);
+            SetProp("Standings.Columns.GapToLeader.Width", Settings.ColumnWidthGapToLeader);
+            SetProp("Standings.Columns.GapToLeader.Visible", Settings.ColumnShowGapToLeader);
+            
+            SetProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
+            SetProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
+            SetProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
+            
+            SetProp("Standings.Columns.FastestLap.Left", Settings.ColumnStartFastestLap);
+            SetProp("Standings.Columns.FastestLap.Width", Settings.ColumnWidthFastestLap);
+            SetProp("Standings.Columns.FastestLap.Visible", Settings.ColumnShowFastestLap);
+            SetProp("Standings.Columns.FastestLap.Slider.Left", Settings.ColumnStartFastestLapSlider);
+
+            SetProp("Standings.Columns.LastLap.Left", Settings.ColumnStartLastLap);
+            SetProp("Standings.Columns.LastLap.Width", Settings.ColumnWidthLastLap);
+            SetProp("Standings.Columns.LastLap.Visible", Settings.ColumnShowLastLap);
+            
         }
 
         public void AddStandingsRelatedProperties() {
@@ -814,6 +835,30 @@ namespace APR.DashSupport {
                 AddProp("Standings.Columns.CarNumber.Left", Settings.ColumnStartCarNumber);
                 AddProp("Standings.Columns.CarNumber.Width", Settings.ColumnWidthCarNumber);
                 AddProp("Standings.Columns.CarNumber.Visible", Settings.ColumnShowCarNumber);
+
+                AddProp("Standings.Columns.DriverName.Left", Settings.ColumnStartDriverName);
+                AddProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
+                AddProp("Standings.Columns.DriverName.Visible", Settings.ColumnShowDriverName);
+
+                AddProp("Standings.Columns.GapToLeader.Left", Settings.ColumnStartGapToLeader);
+                AddProp("Standings.Columns.GapToLeader.Width", Settings.ColumnWidthGapToLeader);
+                AddProp("Standings.Columns.GapToLeader.Visible", Settings.ColumnShowGapToLeader);
+                                  
+                AddProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
+                AddProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
+                AddProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
+
+                AddProp("Standings.Columns.FastestLap.Left", Settings.ColumnStartFastestLap);
+                AddProp("Standings.Columns.FastestLap.Width", Settings.ColumnWidthFastestLap);
+                AddProp("Standings.Columns.FastestLap.Visible", Settings.ColumnShowFastestLap);
+                AddProp("Standings.Columns.FastestLap.Slider.Left", Settings.ColumnStartFastestLapSlider);
+
+                AddProp("Standings.Columns.LastLap.Left", Settings.ColumnStartLastLap);
+                AddProp("Standings.Columns.LastLap.Width", Settings.ColumnWidthLastLap);
+                AddProp("Standings.Columns.LastLap.Visible", Settings.ColumnShowLastLap);
+
+
+                
 
                 AddProp("Standings.NumberOfCarsInSession", 0);
                 

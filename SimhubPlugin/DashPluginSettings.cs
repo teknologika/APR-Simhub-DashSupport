@@ -117,13 +117,14 @@ namespace APR.DashSupport
         public bool ColumnShowLastLap { get; set; } = true;
 
         
-        public int ColumnWidthPosition { get; set; } = 25;
-        public int ColumnWidthCarNumber { get; set; } = 40;
-        public int ColumnWidthDriverName { get; set; } = 170;
-        public int ColumnWidthGapToLeader { get; set; } = 40;
-        public int ColumnWidthGapToCarInFront { get; set; } = 40;
-        public int ColumnWidthFastestLap { get; set; } = 40;
-        public int ColumnWidthLastLap { get; set; } = 40;
+        public int ColumnWidthPosition { get; set; } = 30;
+        public int ColumnWidthCarNumber { get; set; } = 30;
+        public int ColumnWidthDriverName { get; set; } = 180;
+        public int ColumnWidthGapToLeader { get; set; } = 60;
+        public int ColumnWidthGapToCarInFront { get; set; } = 60;
+        public int ColumnWidthFastestLap { get; set; } = 80;
+        public int ColumnWidthLastLap { get; set; } = 80;
+
 
         public int ColumnStartPosition {
             get {
@@ -175,7 +176,7 @@ namespace APR.DashSupport
             }
         }
 
-        public int ColumnStartLastLap {
+        public int ColumnStartFastestLap {
             get {
                 if (ColumnShowGapToCarInFront) {
                     return ColumnStartGapToCarInFront + ColumnWidthGapToCarInFront;
@@ -186,17 +187,34 @@ namespace APR.DashSupport
             }
         }
 
-        public int ColumnStartFastestLap {
+        public int ColumnStartLastLap {
             get {
-                if (ColumnShowLastLap) {
-                    return ColumnStartLastLap + ColumnWidthLastLap ;
+                if (ColumnShowFastestLap) {
+                    return ColumnStartFastestLap + ColumnWidthFastestLap;
                 }
-                else { 
-                    return ColumnStartLastLap;
+                else {
+                    return ColumnStartFastestLap;
                 }
             }
         }
 
+        public int ColumnStartFastestLapSlider {
+            get {
+                if (ColumnShowLastLap) {
+                    return ColumnStartFastestLap + ColumnWidthFastestLap;
+                }
+                else {
+                    return ColumnStartFastestLap;
+                }
+            }
+        }
+
+
+
+        public int ColumnSlideOutDuration { get; set; } = 10;
+        public int ColumnCycleDuration { get; set; } = 30;
+        public bool ColumnSlideOutFastestLap { get; set; } = true;
+        public bool ColumnCycleDisplay { get; set; } = false;
 
         public int RowWidth { get; set; }
         public int RowHeight { get; set; } = 25;
