@@ -204,20 +204,23 @@ namespace APR.DashSupport {
                 }
             }
 
-            // After the best laps, try and overwrite it with the data from the opponents data
-            // There may not be an opponent, if not, don't add the opponent data
-            List <Opponent> opponents = data.NewData.Opponents;
-            Opponent opponent = opponents.Find(Opponent => Opponent.Id == competitiors[id].UserName);
-            if (opponent != null) {
-                if (!setLastLap) {
-                    car.LastLap = opponent.LastLapTime.TotalSeconds;
-                }
-                if (!setBestLap) {
-                    if (opponent.LastLapTime < opponent.BestLapTime) {
-                        car.BestLap = opponent.LastLapTime.TotalSeconds;
+            if (!data.NewData.Spectating) {
+
+                // After the best laps, try and overwrite it with the data from the opponents data
+                // There may not be an opponent, if not, don't add the opponent data
+                List<Opponent> opponents = data.NewData.Opponents;
+                Opponent opponent = opponents.Find(Opponent => Opponent.Id == competitiors[id].UserName);
+                if (opponent != null) {
+                    if (!setLastLap) {
+                        car.LastLap = opponent.LastLapTime.TotalSeconds;
                     }
-                    else {
-                        car.BestLap = opponent.BestLapTime.TotalSeconds;
+                    if (!setBestLap) {
+                        if (opponent.LastLapTime < opponent.BestLapTime) {
+                            car.BestLap = opponent.LastLapTime.TotalSeconds;
+                        }
+                        else {
+                            car.BestLap = opponent.BestLapTime.TotalSeconds;
+                        }
                     }
                 }
             }
@@ -318,7 +321,7 @@ namespace APR.DashSupport {
 
         public void UpdateGapTiming(ref GameData data) {
 
-            string SessionType = data.NewData.SessionTypeName;
+            
             irData.Telemetry.TryGetValue("SessionState", out object rawSessionState);
             int sessionState = Convert.ToInt32(rawSessionState);
 
@@ -532,6 +535,12 @@ namespace APR.DashSupport {
             List<RaceCar> loopy = CompetingCarsSortedbyGapToLeader;
             for (int i = 0; i < CompetingCarsSortedbyGapToLeader.Count(); i++) {
                 loopy[i].GapBasedPosition = i;
+            }
+        }
+
+        public void ClearStandings() {
+            if (Settings.EnableStandings) {
+                CompetingCars.Clear();
             }
         }
 

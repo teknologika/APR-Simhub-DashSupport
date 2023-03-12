@@ -5,6 +5,7 @@ using System.Windows.Media;
 using IRacingReader;
 using iRacingSDK;
 using System.Diagnostics.Eventing.Reader;
+using System.Windows.Markup;
 
 namespace APR.DashSupport
 {
@@ -22,6 +23,17 @@ namespace APR.DashSupport
         public PluginManager PluginManager { get; set; }
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
         public string LeftMenuTitle => "APR Dash Support";
+        public int PreviousSessionState = 0;
+        public double PreviousSessionTick;
+        public long PreviousSessionID;
+        public string SessionType;
+
+        private void UpdateSessionData(GameData data) {
+            SessionType = data.NewData.SessionTypeName;
+            PreviousSessionTick = (double)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.SessionTime");
+            PreviousSessionID = (long)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionData.WeekendInfo.SessionID");
+        }
+
 
         /// <summary>
         /// Called once after plugins startup
@@ -91,8 +103,8 @@ namespace APR.DashSupport
             //InitRotaryButtons(pluginManager);
             //InitOtherButtons(pluginManager);
 
+            ClearStandings();
             AddStandingsRelatedProperties();
-
         }
 
         /// <summary>
@@ -115,46 +127,66 @@ namespace APR.DashSupport
                 frameCounter = 0;
             }
 
+            if (data.GameName != "IRacing") {
+                return;
+            }
 
             // Confirm the sim is up and running at it is iRacing
-            if (data.GameRunning && data.GameName == "IRacing")
+
+
+            // Make sure we are getting a telemetry feed
+            if (data.GameRunning &&  data.NewData != null)
             {
-                // Make sure we are getting a telemetry feed
-                if (data.OldData != null && data.NewData != null)
-                {
-                    //Gaining access to raw data
-                    if (data?.NewData?.GetRawDataObject() is DataSampleEx) { irData = data.NewData.GetRawDataObject() as DataSampleEx; }
+                //Gaining access to raw data
+                if (data?.NewData?.GetRawDataObject() is DataSampleEx) { irData = data.NewData.GetRawDataObject() as DataSampleEx; }
 
-                    // TODO: Add logic to reset everything when the session changes
-                    bool sessionStartSetupCompleted = false;
-                    if(!sessionStartSetupCompleted) {
-                        InitStandings(ref data);
-                        sessionStartSetupCompleted = true;
-                    }
+                // TODO: Add logic to reset everything when the session changes
+                int CurrentSessionState = (int)GetProp("DataCorePlugin.GameRawData.Telemetry.SessionState");
+                int num = CurrentSessionState % 3 == 0 || CurrentSessionState >= 5 ? PreviousSessionState : CurrentSessionState;
+                double SessionTime = (double)GetProp("DataCorePlugin.GameRawData.Telemetry.SessionTime");
+                long CurrentSessionID = (long)GetProp("DataCorePlugin.GameRawData.SessionData.WeekendInfo.SessionID");
+                bool flag = SessionType == null || this.SessionType != data.NewData.SessionTypeName || SessionTime < PreviousSessionTick || CurrentSessionID != PreviousSessionID ;
+                if (flag || this.PreviousSessionState != num) {
+                    if (((num == 4 ? 0 : (this.PreviousSessionState != 1 ? 1 : 0)) | (flag ? 1 : 0)) != 0) {
+                        DebugMessage("APR: Session reset or session changed.");
 
-                    if (frameCounter == 2) {
-                        UpdateStandingsRelatedProperties(ref data);
-                    }
-
-                    if (frameCounter == 3) {
+                        this.UpdateSessionData(data);
 
                     }
-
-                    if (frameCounter == 4) {
-
-                        GetSetupBias();
-                        GetSetupTC();
-                        GetSetupABS();
-                        UpdateFrontARBColour();
-                        UpdateRearARBColour();
-                        UpdateTCValues();
-                        UpdateBrakeBarColour();
-                        UpdateMAPValues();
-                        UpdateBitePointRecommendation();
-                        UpdatePitWindowMessage();
-                        UpdatePopupPositions();
-                    }
+                    this.PreviousSessionState = num;
                 }
+
+                bool sessionStartSetupCompleted = false;
+                if (!sessionStartSetupCompleted) {
+                    InitStandings(ref data);
+                    sessionStartSetupCompleted = true;
+                }
+
+                if (frameCounter == 2) {
+                    UpdateStandingsRelatedProperties(ref data);
+                }
+
+                if (frameCounter == 3) {
+
+                }
+
+                if (frameCounter == 4) {
+
+                    GetSetupBias();
+                    GetSetupTC();
+                    GetSetupABS();
+                    UpdateFrontARBColour();
+                    UpdateRearARBColour();
+                    UpdateTCValues();
+                    UpdateBrakeBarColour();
+                    UpdateMAPValues();
+                    UpdateBitePointRecommendation();
+                    UpdatePitWindowMessage();
+                    UpdatePopupPositions();
+                }
+            }
+            else {
+                DebugMessage("CLEAR DATA HERE??");
             }
 
 
