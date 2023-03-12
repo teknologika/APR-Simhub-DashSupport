@@ -186,7 +186,7 @@ namespace APR.DashSupport
                 }
             }
             else {
-                DebugMessage("CLEAR DATA HERE??");
+                ClearStandings();
             }
 
 

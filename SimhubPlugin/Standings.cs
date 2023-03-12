@@ -4,29 +4,9 @@ using IRacingReader;
 using iRacingSDK;
 using MahApps.Metro.Controls;
 using SimHub.Plugins;
-using SimHub.Plugins.DataPlugins.DataCore;
-using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Groups;
-using SimHub.Plugins.DataPlugins.RGBDriver.LedsContainers.Status;
-using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
-using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
-using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.TimespanText.Imp;
-using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
-using SimHub.Plugins.OutputPlugins.GraphicalDash.Models.BuiltIn;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Forms;
-using System.Windows.Markup;
-using System.Windows.Markup.Localizer;
 using Opponent = GameReaderCommon.Opponent;
 
 namespace APR.DashSupport {
@@ -321,7 +301,6 @@ namespace APR.DashSupport {
 
         public void UpdateGapTiming(ref GameData data) {
 
-            
             irData.Telemetry.TryGetValue("SessionState", out object rawSessionState);
             int sessionState = Convert.ToInt32(rawSessionState);
 
@@ -358,10 +337,6 @@ namespace APR.DashSupport {
                        
                         // loop through the cars again, adding in the gaps
                         double lastNonZeroGapBehindLeader = 0.0;
-
-
-
-
                         foreach (RaceCar anotherCar in CompetingCarsSortedbyBestLapTime) {
                             if (theCar.Position > 1) {
                                 if (TimeSpan.FromSeconds(anotherCar.BestLap) == TimeSpan.Zero) {
