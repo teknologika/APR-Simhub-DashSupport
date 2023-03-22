@@ -12,3 +12,5 @@
 </div>
 
 Welcome. This plugin supports the Simhub dashes created by Average Performance RACING.
+
+This library supports the [APR Centre Overlay](https://github.com/teknologika/APR-Centre-Overlay) and the [APR Standings Overlay](https://github.com/teknologika/APR-Standings)
