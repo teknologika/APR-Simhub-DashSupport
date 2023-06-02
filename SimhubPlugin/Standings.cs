@@ -64,7 +64,6 @@ namespace APR.DashSupport {
             car.Driver.DriverFullName = competitor.UserName;
             car.Driver.DriverCustomerID = competitor.UserID;
 
-
             car.Driver.DriverIRating = competitor.IRating;
             car.Driver.DriverSafetyRating = competitor.LicString;
             car.Driver.DriverLicenseLevel = competitor.LicLevel;
@@ -309,108 +308,7 @@ namespace APR.DashSupport {
 
         public void UpdateGapTiming(ref GameData data) {
 
-            irData.Telemetry.TryGetValue("SessionState", out object rawSessionState);
-            int sessionState = Convert.ToInt32(rawSessionState);
 
-            // loop through the cars to set the best laps
-            foreach (RaceCar theCar in CompetingCars) {
-                theCar.EstimatedLapTime = irData.Telemetry.CarIdxEstTime[theCar.CarIDx];
-                theCar.LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[theCar.CarIDx];
-                theCar.Position = irData.Telemetry.CarIdxPosition[theCar.CarIDx];
-                theCar.PositionInClass = irData.Telemetry.CarIdxClassPosition[theCar.CarIDx];
-
-                if (TimeSpan.FromSeconds(LeaderBestLap) == TimeSpan.Zero) {
-                    LeaderBestLap = theCar.BestLap;
-                }
-
-                // If the best lap is faster, make it the leader's best lap
-                if (TimeSpan.FromSeconds(theCar.BestLap) != TimeSpan.Zero) {
-                    if (LapIsfaster(theCar.BestLap, LeaderBestLap)) {
-                        LeaderBestLap = theCar.BestLap;
-                    }
-                }
-
-                // If the best lap is faster, make it the fastest lap
-                if (TimeSpan.FromSeconds(theCar.LastLap) != TimeSpan.Zero) {
-                    if ((LapIsfaster(theCar.LastLap, theCar.BestLap)) || (TimeSpan.FromSeconds(theCar.BestLap) == TimeSpan.Zero)) {
-
-                        theCar.BestLap = theCar.LastLap;
-                    }
-                }
-            }
-
-            bool SimpleGap = true; //TODO: Make this a config setting
-            if (SimpleGap) {
-                // in practice the leader has the fastest time in the race it is P1
-                if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
-
-                    // loop through the cars again, adding in the gaps
-                    double lastNonZeroGapBehindLeader = 0.0;
-
-                    // In practice gaps are based on lap time
-                    foreach (RaceCar anotherCar in CompetingCarsSortedbyBestLapTime) {
-                        if (anotherCar.Position > 1) {
-                            if (TimeSpan.FromSeconds(anotherCar.BestLap) == TimeSpan.Zero) {
-                                anotherCar.GapBehindLeader = 0.0;
-                            }
-                            else {
-                                anotherCar.GapBehindLeader = Math.Abs(LeaderBestLap - anotherCar.BestLap);
-                                anotherCar.IntervalGap = anotherCar.GapBehindLeader - lastNonZeroGapBehindLeader;
-                                lastNonZeroGapBehindLeader = anotherCar.GapBehindLeader;
-                            }
-
-                        }
-                    }
-                }
-                else if (SessionType == "Race") {
-
-                    // in the race gaps are based on position
-                    foreach (RaceCar anotherCar in CompetingCarsSortedbyPosition) {
-
-                        // if in watch mode, get the official gaps.
-                        if (data.NewData.Spectating) {
-                            DebugMessage("Watch mode");
-                        }
-
-                        // if we are in the first sector, use the iRacing end of lap delta
-                        if (anotherCar.LapDistancePercent < irData.SessionData.SplitTimeInfo.Sectors[1].SectorStartPct) {
-                            if (anotherCar.CarIdxF2Time != 0) {
-                                anotherCar.GapBehindLeader = anotherCar.CarIdxF2Time;
-                            }
-                        }
-                        else {
-                            double lapPace = (LeaderExpectedLapTime + anotherCar.EstimatedLapTime) / 2;
-                            double delta = 0.0;
-                            if (anotherCar.LapsBehindLeader == 0) {
-                                delta = (LeaderLapDistancePercent - anotherCar.LapDistancePercent) * lapPace;
-                            }
-                            else {
-                                delta = ((1 - anotherCar.LapDistancePercent) + LeaderLapDistancePercent) * lapPace;
-                                delta = delta + (anotherCar.LapsBehindLeader * lapPace);
-                            }
-                            anotherCar.GapBehindLeader = delta;
-                        }
-
-                        // get the delta to the car in front, not the leader
-                        if (CompetingCarsSortedbyPosition.Count() > 2) {
-                            if (anotherCar.Position < 2) {
-                                anotherCar.IntervalGap = 0.0;
-                            }
-                            else {
-                                anotherCar.IntervalGap = (anotherCar.GapBehindLeader - CompetingCarsSortedbyPosition[anotherCar.Position - 1].GapBehindLeader);
-                            }
-                        }
-
-                    }
-
-                }
-            }
-
-            // Update the gap based positions
-            List<RaceCar> loopy = CompetingCarsSortedbyGapToLeader;
-            for (int i = 0; i < CompetingCarsSortedbyGapToLeader.Count(); i++) {
-                loopy[i].GapBasedPosition = i;
-            }
         }
     
 
@@ -444,194 +342,229 @@ namespace APR.DashSupport {
 
         public void UpdateStandingsRelatedProperties(ref GameData data) {
 
+           
+            // Get the iRacing Session state
+            irData.Telemetry.TryGetValue("SessionState", out object rawSessionState);
+            int sessionState = Convert.ToInt32(rawSessionState);
+
             // The cars are all stored in the iRacing Data structures in CarIDx order
             // lets start by getting all the drivers and putting their info into a list of cars
 
             // Add Standings Properties
             if (Settings.EnableStandings) {
-                int i = 0;
+
+                // Calculate the session best laptime
+                SessionBestLapTime = double.MaxValue;
+                int CarWithFastestOverallLapTime = 0;
 
                 // Loop 1 update everything
                 foreach (var car in CompetingCars) {
 
-                    // Get Position
-                    car.Position = irData.Telemetry.CarIdxPosition[i];
-                    if (car.Position == 1) {
-                        LeaderIdx = car.CarIDx;
-                    }
+                    // Get Position overall and in class
+                    car.Position = irData.Telemetry.CarIdxPosition[car.CarIDx];
+                    car.PositionInClass = irData.Telemetry.CarIdxClassPosition[car.CarIDx];
 
-                    car.PositionInClass = irData.Telemetry.CarIdxClassPosition[i];
-                    car.Lap = irData.Telemetry.CarIdxLap[i];
-                    car.LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[i];
+                    car.EstimatedLapTime = irData.Telemetry.CarIdxEstTime[car.CarIDx];
+                    car.LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[car.CarIDx];
 
+                    car.Lap = irData.Telemetry.CarIdxLap[car.CarIDx];
 
-                    List<Opponent> opponents = data.NewData.Opponents;
-                    Opponent opponent = opponents.Find(Opponent => Opponent.Id == car.Driver.DriverFullName);
-                    if (opponent != null) {
-                        car.LastLap = opponent.LastLapTime.TotalSeconds;
-                        car.BestLap = opponent.BestLapTime.TotalSeconds;
+                    if (car.Position > 0) {
 
-                        if (opponent.LastLapTime < opponent.BestLapTime) {
-                            if (TimeSpan.FromSeconds(car.LastLap) != TimeSpan.Zero) {
-                                car.BestLap = opponent.LastLapTime.TotalSeconds;
-                            }
-                        }
-                    }
-
-                    // If car is P1 we are the leader
-                    if (car.Position == 1) {
-                        LeaderIdx = car.CarIDx;
-                        LeaderBestLap = car.BestLap;
-                        LeaderExpectedLapTime = car.EstimatedLapTime;
-                    }
-
-                    // get the last lap times
-                    object _lastlaptimes = null;
-                    float[] lastlapTimes = null;
-                    irData.Telemetry.TryGetValue("CarIdxLastLapTime", out _lastlaptimes);
-                    if (_lastlaptimes.GetType() == typeof(float[])) {
-                        lastlapTimes = _lastlaptimes as float[];
-                        if (lastlapTimes != null) {
-                            if (lastlapTimes[i] >= 0) {
-                                car.LastLap = lastlapTimes[i];
-
-                                // If this is the overall leader, get their last lap for gap calcs
- 
-                                if (LeaderIdx == car.CarIDx) {
-                                    LeaderLastLap = car.LastLap;
-                                    LeaderCurrentLap = car.Lap;
+                        // Get the last lap times
+                        object _lastlaptimes = null;
+                        float[] lastlapTimes = null;
+                        irData.Telemetry.TryGetValue("CarIdxLastLapTime", out _lastlaptimes);
+                        if (_lastlaptimes.GetType() == typeof(float[])) {
+                            lastlapTimes = _lastlaptimes as float[];
+                            if (lastlapTimes != null) {
+                                if (lastlapTimes[car.CarIDx] >= 0) {
+                                    car.LastLap = lastlapTimes[car.CarIDx];
                                 }
-                                // TODO: Class leader logic goes here
                             }
                         }
-                    }
 
-                    if (TimeSpan.FromSeconds(car.LastLap) < TimeSpan.FromSeconds(car.BestLap)) {
-                        if (TimeSpan.FromSeconds(car.LastLap) > TimeSpan.Zero) {
-                            car.BestLap = car.LastLap;
+                        // Get the best lap times
+                        object _bestlaptimes = null;
+                        float[] bestlapTimes = null;
+                        irData.Telemetry.TryGetValue("CarIdxBestLapTime", out _bestlaptimes);
+                        if (_bestlaptimes.GetType() == typeof(float[])) {
+                            bestlapTimes = _bestlaptimes as float[];
+                            if (bestlapTimes != null) {
+                                if (bestlapTimes[car.CarIDx] >= 0) {
+                                    car.BestLap = bestlapTimes[car.CarIDx];
+                                }
+                            }
                         }
-                    }
 
-                    // calculate the expected for the current car
-                    // Andreas Dahl's Foruyla
-                    // LeaderExpectedLapTime = (LeaderLastLap * 2 + LeaderBestLap) / 3;
-                    // car.EstimatedLapTime = (car.LastLap * 2 + car.BestLap) / 3;
+                        // If our lap is the fastest overall, record it as the sesion best
+                        if (car.BestLap < SessionBestLapTime) {
+                            if (car.BestLap > 0.0) {
+                                SessionBestLapTime = car.BestLap;
+                                CarWithFastestOverallLapTime = car.CarIDx;
 
-                    // this is iRacing's formula - Estimated time to reach current location on track
-                    LeaderExpectedLapTime = irData.Telemetry.CarIdxEstTime[LeaderIdx];
-                    car.EstimatedLapTime = irData.Telemetry.CarIdxEstTime[i];
-                  
+                            }
+                        }
 
-                    i++;
+                        // If car is P1 we are the leader
+                        // If this is the overall leader, get their data for calcs
+                        if (car.Position == 1) {
+                            LeaderIdx = car.CarIDx;
+                            LeaderBestLap = car.BestLap;
+                            LeaderLastLap = car.LastLap;
+                            LeaderCurrentLap = car.Lap;
+                            LeaderExpectedLapTime = car.EstimatedLapTime;
+                        }
+                       
+                        // calculate the expected for the current car
+                        // Andreas Dahl's Foruyla
+                        // LeaderExpectedLapTime = (LeaderLastLap * 2 + LeaderBestLap) / 3;
+                        // car.EstimatedLapTime = (car.LastLap * 2 + car.BestLap) / 3;
+
+                        // this is iRacing's formula - Estimated time to reach current location on track
+                        LeaderExpectedLapTime = irData.Telemetry.CarIdxEstTime[LeaderIdx];
+                        car.EstimatedLapTime = irData.Telemetry.CarIdxEstTime[car.CarIDx];
+                      }
                 }
 
-                UpdateGapTiming(ref data);
+                // if there is no session best set it to zero
+                if (SessionBestLapTime == double.MaxValue) {
+                    SessionBestLapTime = 0.0;
+                }
 
-                // After the Loop calculate everything
 
-               // LeaderTrackDistancePercent = CompetingCars[LeaderIdx].LapDistancePercent;
 
-                double PreviousGap = 0;
-                int CarWithFastestOverallLapTime = 0;
+                bool SimpleGap = false; //TODO: Make this a config setting
+                if (SimpleGap) {
+                    // in practice the leader has the fastest time in the race it is P1
+                    if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
 
-                foreach (var car in CompetingCarsSortedbyGapToLeader) {
-                    if (car.Position == 1) {
-                        car.GapBehindLeader = 0;
-                    }
-                    else {
-                        // car.IntervalGap = PreviousGap - car.GapBehindLeader;
-                        car.IntervalGap = car.GapBehindLeader - PreviousGap;
-                        PreviousGap = car.GapBehindLeader;
-                    }
+                        // loop through the cars again, adding in the gaps
+                        double lastNonZeroGapBehindLeader = 0.0;
 
-                    // get the best lap time because we can't trust Simhub
-                    SessionBestLapTime = double.MaxValue;
-                    foreach (var fastestCar in CompetingCarsSortedbyBestLapTime) {
-                        if (fastestCar.BestLap < SessionBestLapTime) {
-                            if (fastestCar.BestLap > 0) {
-                                SessionBestLapTime = fastestCar.BestLap;
-                                CarWithFastestOverallLapTime = fastestCar.CarIDx;
+                        // In practice gaps are based on lap time
+                        foreach (RaceCar anotherCar in CompetingCarsSortedbyBestLapTime) {
+                            if (anotherCar.Position > 1) {
+                                if (TimeSpan.FromSeconds(anotherCar.BestLap) == TimeSpan.Zero) {
+                                    anotherCar.GapBehindLeader = 0.0;
+                                }
+                                else {
+                                    anotherCar.GapBehindLeader = Math.Abs(LeaderBestLap - anotherCar.BestLap);
+                                    anotherCar.IntervalGap = anotherCar.GapBehindLeader - lastNonZeroGapBehindLeader;
+                                    lastNonZeroGapBehindLeader = anotherCar.GapBehindLeader;
+                                }
+
                             }
-                            }
-                    }
-                    if (SessionBestLapTime == double.MaxValue) {
-                        SessionBestLapTime = 0;
-                    }
-
-                   //bool BestLapIsOverallBest = false;
-                    bool LastLapIsOverallBestLap = false;
-                    bool LastLapIsPersonalBestLap = false;
-
-                    if (SessionBestLapTime > 0) {
-                        if (car.BestLap == 0 && car.LastLap > 0) {
-                            car.BestLap = car.LastLap;
                         }
+                    }
+                    else if (SessionType == "Race") {
 
-                        double bob = Math.Abs(SessionBestLapTime - car.BestLap);
+                        // in the race gaps are based on position
+                        foreach (RaceCar anotherCar in CompetingCarsSortedbyPosition) {
 
-                        if (Math.Abs(SessionBestLapTime - car.BestLap) > 0.001) {
-                            //BestLapIsOverallBest = true;
-                        }
-
-                        if (car.BestLap > 0) {
-                            if ((SessionBestLapTime - car.BestLap) > 0.001) {
-                                SessionBestLapTime = car.BestLap;
-                                //BestLapIsOverallBest = true;
+                            // if in watch mode, get the official gaps.
+                            if (data.NewData.Spectating) {
+                                DebugMessage("Watch mode");
                             }
 
+                            // if we are in the first sector, use the iRacing end of lap delta
+                            if (anotherCar.LapDistancePercent < irData.SessionData.SplitTimeInfo.Sectors[1].SectorStartPct) {
+                                if (anotherCar.CarIdxF2Time != 0) {
+                                    anotherCar.GapBehindLeader = anotherCar.CarIdxF2Time;
+                                }
+                            }
+                            else {
+                                double lapPace = (LeaderExpectedLapTime + anotherCar.EstimatedLapTime) / 2;
+                                double delta = 0.0;
+                                if (anotherCar.LapsBehindLeader == 0) {
+                                    delta = (LeaderLapDistancePercent - anotherCar.LapDistancePercent) * lapPace;
+                                }
+                                else {
+                                    delta = ((1 - anotherCar.LapDistancePercent) + LeaderLapDistancePercent) * lapPace;
+                                    delta = delta + (anotherCar.LapsBehindLeader * lapPace);
+                                }
+                                anotherCar.GapBehindLeader = delta;
+                            }
+
+                            // get the delta to the car in front, not the leader
+                            if (CompetingCarsSortedbyPosition.Count() > 2) {
+                                if (anotherCar.Position < 2) {
+                                    anotherCar.IntervalGap = 0.0;
+                                }
+                                else {
+                                    anotherCar.IntervalGap = (anotherCar.GapBehindLeader - CompetingCarsSortedbyPosition[anotherCar.Position - 1].GapBehindLeader);
+                                }
+                            }
+
                         }
 
-                    
-                        if (Math.Abs(SessionBestLapTime - car.LastLap) < 0.001) {
-                            LastLapIsOverallBestLap = true;
+                    }
+                }
+
+                bool SimhubGaps = true;
+                if (SimhubGaps) {
+                    int CurrentSessionState = (int)GetProp("DataCorePlugin.GameRawData.Telemetry.SessionState");
+                }
+
+
+                foreach (var car in CompetingCars) {
+
+                    if (car.Position > 0) {
+                        //bool BestLapIsOverallBest = false;
+                        bool LastLapIsOverallBestLap = false;
+                        bool LastLapIsPersonalBestLap = false;
+
+                        if (SessionBestLapTime > 0) {
+                            if (Math.Abs(SessionBestLapTime - car.LastLap) < 0.001) {
+                                LastLapIsOverallBestLap = true;
+                            }
+
+                            if (Math.Abs(car.BestLap - car.LastLap) < 0.001) {
+                                LastLapIsPersonalBestLap = true;
+                            }
                         }
 
-                        if (Math.Abs(car.BestLap - car.LastLap) < 0.001) {
-                            LastLapIsPersonalBestLap = true;
+                        string iString = string.Format("{0:00}", car.Position);
+                        SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
+
+
+                        if (car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
+                            car.IsPlayer = true;
                         }
-                    }
+                        else {
+                            car.IsPlayer = false;
+                        }
 
 
-                    string iString = string.Format("{0:00}", car.Position);
-                    SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
-       
-                    
-                    if (car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
-                        car.IsPlayer = true;
-                    }
-                    else {
-                        car.IsPlayer = false;
-                    }
+                        SetProp("Standings.Overall.Position" + iString + ".Number", car.CarNumber);
+                        SetProp("Standings.Overall.Position" + iString + ".DriverName", car.Driver.DriverDisplayName);
+                        if (car.GapBehindLeader < 0) {
+                            SetProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
+                        }
+                        else {
+                            SetProp("Standings.Overall.Position" + iString + ".GapToLeader", car.GapBehindLeader);
+                        }
 
+                        SetProp("Standings.Overall.Position" + iString + ".GapToCarAhead", car.IntervalGap);
+                        SetProp("Standings.Overall.Position" + iString + ".IsInPit", car.PitInPitLane);
+                        SetProp("Standings.Overall.Position" + iString + ".BestLap", car.BestLap);
+                        SetProp("Standings.Overall.Position" + iString + ".LastLap", car.LastLap);
+                        SetProp("Standings.Overall.Position" + iString + ".IsPlayer", car.IsPlayer);
+                        SetProp("Standings.Overall.Position" + iString + ".LapsBehindLeader", car.LapsBehindLeader);
+                        SetProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", LastLapIsPersonalBestLap);
+                        SetProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", LastLapIsOverallBestLap);
+                        if (CarWithFastestOverallLapTime == car.CarIDx) {
+                            SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", true);
+                        }
+                        else {
+                            SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
+                        }
 
-                    SetProp("Standings.Overall.Position" + iString + ".Number", car.CarNumber);
-                    SetProp("Standings.Overall.Position" + iString + ".DriverName", car.Driver.DriverDisplayName);
-                    if (car.GapBehindLeader < 0) {
-                        SetProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
+                        SetProp("Standings.Overall" + iString + ".BestLap", (SessionBestLapTime));
                     }
-                    else {
-                        SetProp("Standings.Overall.Position" + iString + ".GapToLeader", car.GapBehindLeader);
-                    }
-                    
-                    SetProp("Standings.Overall.Position" + iString + ".GapToCarAhead", car.IntervalGap);
-                    SetProp("Standings.Overall.Position" + iString + ".IsInPit", car.PitInPitLane);
-                    SetProp("Standings.Overall.Position" + iString + ".BestLap", car.BestLap);
-                    SetProp("Standings.Overall.Position" + iString + ".LastLap", car.LastLap);
-                    SetProp("Standings.Overall.Position" + iString + ".IsPlayer", car.IsPlayer);
-                    SetProp("Standings.Overall.Position" + iString + ".LapsBehindLeader", car.LapsBehindLeader);
-                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", LastLapIsPersonalBestLap);
-                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", LastLapIsOverallBestLap);
-                    if (CarWithFastestOverallLapTime == car.CarIDx) {
-                        SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", true);
-                    }
-                    else {
-                        SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
-                    }
-                    
-                    SetProp("Standings.Overall" + iString + ".BestLap", (SessionBestLapTime));
-
                 }
             }
+           
 
             // update session properties
             SetProp("Standings.NumberOfCarsInSession" , NumberOfCarsInSession);
@@ -771,6 +704,11 @@ namespace APR.DashSupport {
         }
 
         public class RaceCar {
+
+            public override string ToString() {
+                return string.Format("P{0} {1} {2}", Position, CarNumber, Driver.DriverDisplayName);
+            }
+       
 
             public TrackSections track;
 
