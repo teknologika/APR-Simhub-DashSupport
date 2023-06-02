@@ -465,26 +465,27 @@ namespace APR.DashSupport {
                                     LeaderCurrentLap = car.Lap;
                                 }
                                 else {
+                                    if (LeaderLapDistancePercent > 0.1) {
+                                        double lapPace = (LeaderExpectedLapTime + car.EstimatedLapTime) / 2;
+                                        double carEst = LeaderExtTime - car.EstTime;
 
-                                    double lapPace = (LeaderExpectedLapTime + car.EstimatedLapTime) / 2;
-                                    double carEst = LeaderExtTime - car.EstTime;
+                                        double delta = 0.0;
+                                        if (car.LapsBehindLeader == 0) {
+                                            delta = (LeaderLapDistancePercent - car.LapDistancePercent) * lapPace;
+                                        }
+                                        else {
+                                            delta = (((1 - car.LapDistancePercent) * lapPace) + (LeaderLapDistancePercent * lapPace));
 
-                                    double delta = 0.0;
-                                    if (car.LapsBehindLeader == 0) {
-                                        delta = (LeaderLapDistancePercent - car.LapDistancePercent) * lapPace;
+                                        }
+                                        car.GapBehindLeader = delta;
                                     }
-                                    else {
-                                        delta = (((1 - car.LapDistancePercent)*lapPace) + (LeaderLapDistancePercent * lapPace));
-                                
-                                    }
-                                    car.GapBehindLeader = delta;
                                 }
                             }
                         }
 
                         foreach (var car in CompetingCars) {
                             // get the delta to the car in front, not the leader
-                            if (car.Position == 1) {
+                            if (car.Position <= 1) {
                                 car.IntervalGap = 0.0;
                             }
                             else if (car.Position == 2) {
@@ -500,10 +501,10 @@ namespace APR.DashSupport {
                         }
                     }
                 }
-
-                foreach (var car in CompetingCars) {
-
-                    if (car.Position > 0) {
+                var cars = CompetingCarsSortedbyGapToLeader;
+                for (int i = 0; i < CompetingCarsSortedbyGapToLeader.Count; i++) {
+                    var car = cars[i];
+                    if (car.Position > 0 && cars[1].GapBehindLeader <= 0.0) {
                         //bool BestLapIsOverallBest = false;
                         bool LastLapIsOverallBestLap = false;
                         bool LastLapIsPersonalBestLap = false;
@@ -519,10 +520,10 @@ namespace APR.DashSupport {
                         }
 
                         string iString = string.Format("{0:00}", car.Position);
-                        SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
+                        SetProp("Standings.Overall.Position" + iString + ".Position", i+1);
 
 
-                        if (car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
+                        if ( car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
                             car.IsPlayer = true;
                         }
                         else {
