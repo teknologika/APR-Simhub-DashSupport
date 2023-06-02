@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using Color = System.Drawing.Color;
@@ -113,6 +114,7 @@ namespace APR.DashSupport
         public bool ColumnShowDriverName { get; set; } = true;
         public bool ColumnShowGapToLeader { get; set; } = true;
         public bool ColumnShowGapToCarInFront { get; set; } = true;
+        public bool HideGapToCarInFront { get; set; } = false;
         public bool ColumnShowFastestLap { get; set; } = true;
         public bool ColumnShowLastLap { get; set; } = true;
 
@@ -168,7 +170,12 @@ namespace APR.DashSupport
         public int ColumnStartGapToCarInFront {
             get {
                 if (ColumnShowGapToLeader) {
-                    return ColumnStartGapToLeader + ColumnWidthGapToLeader;
+                    if (HideGapToCarInFront) {
+                        return ColumnStartGapToLeader;
+                    }
+                    else {
+                        return ColumnStartGapToLeader + ColumnWidthGapToLeader;
+                    }
                 }
                 else {
                     return ColumnStartGapToLeader;
