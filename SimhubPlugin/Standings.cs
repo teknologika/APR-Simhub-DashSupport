@@ -312,13 +312,29 @@ namespace APR.DashSupport {
 
 
         }
-    
 
         public void ClearStandings() {
             if (Settings.EnableStandings) {
-                CompetingCars.Clear();
+                for (int i = 1; i < iRacingMaxCars + 1; i++) {
+                    string iString = string.Format("{0:00}", i);
+                    SetProp("Standings.Overall.Position" + iString + ".Position", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".Number", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".DriverName", string.Empty);
+                    SetProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".GapToCarAhead", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".IsInPit", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".BestLap", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".LastLap", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".IsPlayer", false);
+                    SetProp("Standings.Overall.Position" + iString + ".LapsBehindLeader", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", false);
+                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", false);
+                    SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
+                    SetProp("Standings.Overall.Position" + iString + ".RowIsVisible", false);
+                    SetProp("Standings.Overall" + iString + ".BestLap", 0);
+                }
             }
-        }
+         }
 
         public void InitStandings(ref GameData data) {
             if (Settings.EnableStandings) {
@@ -521,7 +537,7 @@ namespace APR.DashSupport {
 
                         string iString = string.Format("{0:00}", car.Position);
                         SetProp("Standings.Overall.Position" + iString + ".Position", i+1);
-
+                        SetProp("Standings.Overall.Position" + iString + ".RowIsVisible", true);
 
                         if ( car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
                             car.IsPlayer = true;
@@ -663,6 +679,7 @@ namespace APR.DashSupport {
                     AddProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", false);
                     AddProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", false);
                     AddProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
+                    AddProp("Standings.Overall.Position" + iString + ".RowIsVisible", false);
                     AddProp("Standings.Overall" + iString + ".BestLap", 0);
                 }
             }
@@ -679,8 +696,6 @@ namespace APR.DashSupport {
             TimeSpan secondTime = TimeSpan.FromSeconds(second);
             return firstTime < secondTime;
         }
-        
-
         
 
         public class Standings {
@@ -848,8 +863,6 @@ namespace APR.DashSupport {
             }
 
 
-
-
             public int TrackSectionID { get; set; }
             public double TrackDistancePercent { get; set; }
             public double TrackSectionTime { get; set; }
@@ -860,51 +873,5 @@ namespace APR.DashSupport {
         }
 
 
-        /* Currently not used
-        
-        public double BestLapSector1 { get; set; } = 0;
-        public double BestLapSector2 { get; set; } = 0;
-        public double BestLapSector3 { get; set; } = 0;
-        public double CurrentSector1Time { get; set; } = 0;
-        public double CurrentSector2Time { get; set; } = 0;
-        public double CurrentSector3Time { get; set; } = 0;
-        public int CurrentSectorNumber { get; set; } = 0;
-
-        public int PositionsGainedLost { get; set; } = 0;
-        public int SpeedCurrent { get; set; } = 0;
-        public int SpeedMax { get; set; } = 0;
-        public double TimeBehindLeader { get; set; } = 0;
-        public double TimeBehindNext { get; set; } = 0;
-        public int TotalLaps { get; set; } = 0;
-        public int LapsDown { get; set; } = 0;
-
-
-        // Pit info
-        public bool PitInPitBox { get; set; } = false;
-        
-        public int PitLastLapPitted { get; set; } = 0;
-        public int PitLastStopDuration { get; set; } = 0;
-        public int PitCount { get; set; } = 0;
-
-        // Flags
-        public bool HasFinished { get; set; } = false;
-        public bool HasRetired { get; set; } = false;
-        public bool HasBlueFlag { get; set; } = false;
-        public bool HasOfftrack { get; set; } = false;
-        public int IncidentCount { get; set; } = 0;
-
-
-        public class Championship {
-            // Leadercar
-            // Leader Photo
-            // Leader team
-            // Championship name
-            // Next event
-            // Current round number
-            // Championship Sponsor
-
-            // Championship Standings
-        }
-        */
     }
 }

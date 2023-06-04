@@ -6,6 +6,7 @@ using IRacingReader;
 using iRacingSDK;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows.Markup;
+using System.Net.Http.Headers;
 
 namespace APR.DashSupport
 {
@@ -227,8 +228,9 @@ namespace APR.DashSupport
         }
 
         private void OnSessionChange(PluginManager pluginManager) {
-
+            ClearStandings();
         }
+
 
 
         // Helper functions to deal with SimhubProperties
