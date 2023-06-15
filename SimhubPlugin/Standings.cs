@@ -4,6 +4,7 @@ using IRacingReader;
 using iRacingSDK;
 using MahApps.Metro.Controls;
 using SimHub.Plugins;
+using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText.Imp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace APR.DashSupport {
         public List<RaceCar> CompetingCars = new List<RaceCar>();
         public List<RaceCar> OpponentCars = new List<RaceCar>();
         public int NumberOfCarsInSession = 0;
+        public long NumOfCarClasses = 0;
         public List<CarClass> CarClasses = new List<CarClass>();
         public int LeaderIdx = 0;
         public List<int> ClassLeaderIdx = new List<int>();
@@ -50,16 +52,30 @@ namespace APR.DashSupport {
             RaceCar car = new RaceCar {
 
                 CarIDx = (int)competitor.CarIdx,
-                CarClass = competitor.CarClassID,
+                CarClassId = competitor.CarClassID,
                 CarNumber = competitor.CarNumber,
-
+                
                 // Get Position
                 Position = irData.Telemetry.CarIdxPosition[competitor.CarIdx],
+                PositionInClass = irData.Telemetry.CarIdxClassPosition[competitor.CarIdx],
                 EstimatedLapTime = irData.Telemetry.CarIdxEstTime[competitor.CarIdx],
                 LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[competitor.CarIdx],
                 Lap = irData.Telemetry.CarIdxLap[competitor.CarIdx],
 
             };
+
+            CarClass thisCarClass = GetCarClassDetailsForClassWithId(car.CarClassId);
+
+            if (thisCarClass == null && competitor.CarClassShortName != null) {
+                thisCarClass = new CarClass();
+                thisCarClass.CarClassID = car.CarClassId;
+                thisCarClass.CarClassColour = competitor.CarClassColor.Replace("0x", "#FF");
+                thisCarClass.CarClassName = competitor.CarClassShortName;
+                CarClasses.Add(thisCarClass);
+            }
+            else {
+                
+            }
 
             car.LapsBehindLeader = LeaderCurrentLap - car.Lap;
 
@@ -70,6 +86,8 @@ namespace APR.DashSupport {
             car.Driver.DriverSafetyRating = competitor.LicString;
             car.Driver.DriverLicenseLevel = competitor.LicLevel;
             car.Driver.Nationality = competitor.ClubName;
+
+
 
             // chop up the drivers name(s)
             // TODO: Don't store everything, just chop once and store what we need ... maybe
@@ -229,8 +247,9 @@ namespace APR.DashSupport {
         // Call at the start of every session.
         public void InitClassDataStrucutres() {
             CarClasses.Clear();
-            for (int i = 0; i < iRacingMaxClasses; i++) {
-                CarClasses[i] = new CarClass();
+
+            for (int i = 0; i < NumOfCarClasses; i++) {
+                CarClasses.Add(CarClasses[i]);
             }
         }
 
@@ -266,6 +285,11 @@ namespace APR.DashSupport {
                 return CompetingCars.OrderBy(o => o.Position).ToList();
             }
         }
+
+        public CarClass GetCarClassDetailsForClassWithId(long carClassId) {
+            return CarClasses.Find(x => x.CarClassID == carClassId);
+        }
+
         public List<RaceCar> CompetingCarsSortedbyGapToLeader {
             get {
                 return CompetingCars.OrderBy(o => o.GapBehindLeader).ToList();
@@ -318,6 +342,7 @@ namespace APR.DashSupport {
                 for (int i = 1; i < iRacingMaxCars + 1; i++) {
                     string iString = string.Format("{0:00}", i);
                     SetProp("Standings.Overall.Position" + iString + ".Position", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".Position", 0);
                     SetProp("Standings.Overall.Position" + iString + ".Number", 0);
                     SetProp("Standings.Overall.Position" + iString + ".DriverName", string.Empty);
                     SetProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
@@ -332,6 +357,12 @@ namespace APR.DashSupport {
                     SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
                     SetProp("Standings.Overall.Position" + iString + ".RowIsVisible", false);
                     SetProp("Standings.Overall" + iString + ".BestLap", 0);
+
+                    SetProp("Standings.Overall.Position" + iString + ".Class.ClassId",0D);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Name", string.Empty);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Color", string.Empty);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Position", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", 0);
                 }
             }
          }
@@ -339,7 +370,12 @@ namespace APR.DashSupport {
         public void InitStandings(ref GameData data) {
             if (Settings.EnableStandings) {
                 SessionData._DriverInfo._Drivers[] competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
-               // List<Opponent> opponents = data.NewData.Opponents;
+                SessionData._WeekendInfo weekendInfo = irData.SessionData.WeekendInfo;
+
+                NumOfCarClasses = weekendInfo.NumCarClasses;
+                // InitClassDataStrucutres();
+
+                // List<Opponent> opponents = data.NewData.Opponents;
 
                 if (competitiors != null) {
                     CompetingCars = new List<RaceCar>();
@@ -351,6 +387,7 @@ namespace APR.DashSupport {
 
                             RaceCar car = GetCompositeCarForIDx(i, ref data);
                             CompetingCars.Add(car);
+
                         }
 
                     }
@@ -473,7 +510,7 @@ namespace APR.DashSupport {
                             if (car.Position > 0) {
                                 // if in watch mode, get the official gaps.
                                 if (data.NewData.Spectating) {
-                                    DebugMessage("Watch mode");
+                                    //DebugMessage("Watch mode");
                                 }
 
                                 if (car.Position == 1) {
@@ -481,7 +518,7 @@ namespace APR.DashSupport {
                                     LeaderCurrentLap = car.Lap;
                                 }
                                 else {
-                                    if (LeaderLapDistancePercent > 0.1) {
+                                   if (LeaderLapDistancePercent > 0.1) {
                                         double lapPace = (LeaderExpectedLapTime + car.EstimatedLapTime) / 2;
                                         double carEst = LeaderExtTime - car.EstTime;
 
@@ -494,7 +531,7 @@ namespace APR.DashSupport {
 
                                         }
                                         car.GapBehindLeader = delta;
-                                    }
+                                   }
                                 }
                             }
                         }
@@ -535,8 +572,10 @@ namespace APR.DashSupport {
                             }
                         }
 
+                        // Change for multi class
                         string iString = string.Format("{0:00}", car.Position);
                         SetProp("Standings.Overall.Position" + iString + ".Position", i+1);
+                        SetProp("Standings.Overall.Position" + iString + ".Class.Position", car.PositionInClass );
                         SetProp("Standings.Overall.Position" + iString + ".RowIsVisible", true);
 
                         if ( car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
@@ -545,7 +584,6 @@ namespace APR.DashSupport {
                         else {
                             car.IsPlayer = false;
                         }
-
 
                         SetProp("Standings.Overall.Position" + iString + ".Number", car.CarNumber);
                         SetProp("Standings.Overall.Position" + iString + ".DriverName", car.Driver.DriverDisplayName);
@@ -572,6 +610,16 @@ namespace APR.DashSupport {
                         }
 
                         SetProp("Standings.Overall" + iString + ".BestLap", (SessionBestLapTime));
+
+                        CarClass classy = GetCarClassDetailsForClassWithId(car.CarClassId);
+
+                        // Class specifics
+                        SetProp("Standings.Overall.Position" + iString + ".Class.ClassId", classy.CarClassID);
+                        SetProp("Standings.Overall.Position" + iString + ".Class.Name", classy.CarClassName);
+                        SetProp("Standings.Overall.Position" + iString + ".Class.Color", classy.CarClassColour);
+                        SetProp("Standings.Overall.Position" + iString + ".Class.Position", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", 0);
+
                     }
                 }
             }
@@ -605,7 +653,6 @@ namespace APR.DashSupport {
             }
             else {
                 Settings.HideGapToCarInFront = false;
-
             }
 
             SetProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
@@ -667,6 +714,12 @@ namespace APR.DashSupport {
                 for (int i = 1; i < iRacingMaxCars + 1; i++) {
                     string iString = string.Format("{0:00}", i);
                     AddProp("Standings.Overall.Position" + iString + ".Position", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".Class.ClassId", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".Class.Name", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".Class.Color", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".Class.Position", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", 0);
+                    AddProp("Standings.Overall.Position" + iString + ".Class.GapToCarAhead", 0);
                     AddProp("Standings.Overall.Position" + iString + ".Number", 0);
                     AddProp("Standings.Overall.Position" + iString + ".DriverName", string.Empty);
                     AddProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
@@ -700,7 +753,6 @@ namespace APR.DashSupport {
 
         public class Standings {
             public int CurrentlyObservedDriver { get; set; } = 0;
-
             public string BattleBoxDisplayString { get; set; } = string.Empty;
             public double BattleBoxGap { get; set; }
             public int BattleBoxDriver1Position { get; set; } = 0;
@@ -712,14 +764,17 @@ namespace APR.DashSupport {
 
         }
 
-        
         public class CarClass {
-            public int CarClassID { get; set; } = 0;
+            public long CarClassID { get; set; } = 0;
             public string CarClassName { get; set; } = string.Empty;
             public string CarClassColour { get; set; } = string.Empty;
-            public string CarClassDisplayName { get; set; } = string.Empty;
             public double CarClassBestLapTime { get; set; } = 0;
             public double CarClassLeaderID { get; set; } = 0;
+
+            public override string ToString() {
+                return string.Format("{0}- {1} Colour:{2}", CarClassID, CarClassName, CarClassColour);
+            }
+
         }
 
         public class RaceCar {
@@ -738,7 +793,7 @@ namespace APR.DashSupport {
 
             public int CarIDx { get; set; } = int.MinValue;
             public string CarNumber { get; set; } = "";   
-            public long CarClass { get; set; } = long.MinValue;
+            public long CarClassId { get; set; } = long.MinValue;
             public Driver Driver { get; set; } = null;
             public int CurrentTrackSection { get; set; } = 0;
 
@@ -849,10 +904,6 @@ namespace APR.DashSupport {
                     return 3;
                 }
             }
-
-
-
-
         }
 
         public class TrackSector {

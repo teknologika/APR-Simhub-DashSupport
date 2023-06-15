@@ -232,7 +232,6 @@ namespace APR.DashSupport
         }
 
 
-
         // Helper functions to deal with SimhubProperties
         public void AddProp(string PropertyName, dynamic defaultValue) => PluginManager.AddProperty(PropertyName, GetType(), defaultValue);
         public void SetProp(string PropertyName, dynamic value) => PluginManager.SetPropertyValue(PropertyName, GetType(), value);
