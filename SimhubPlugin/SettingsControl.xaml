@@ -70,7 +70,7 @@
             </ScrollViewer>
         </styles:SHTabItem>
 
-        <styles:SHTabItem Header="Standings">
+        <styles:SHTabItem Header="Standings" Height="32" VerticalAlignment="Top">
             <ScrollViewer>
                 <StackPanel>
                     <styles:SHSection Title="Standings">

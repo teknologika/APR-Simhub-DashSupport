@@ -7,8 +7,10 @@ using SimHub.Plugins;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText.Imp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Windows.Documents;
+using System.Windows.Markup;
 using Opponent = GameReaderCommon.Opponent;
 
 namespace APR.DashSupport {
@@ -76,8 +78,13 @@ namespace APR.DashSupport {
             else {
                 
             }
-
-            car.LapsBehindLeader = LeaderCurrentLap - car.Lap;
+            if (car.Position > 1) {
+                car.LapsBehindLeader = LeaderCurrentLap - car.Lap;
+            }
+            else {
+                car.LapsBehindLeader = 0;
+            }
+            
 
             car.Driver.DriverFullName = competitor.UserName;
             car.Driver.DriverCustomerID = competitor.UserID;
@@ -211,7 +218,6 @@ namespace APR.DashSupport {
 
             // If we aren't in watch mode, grab opponents
             if (!data.NewData.Spectating) {
-
                 // After the best laps, try and overwrite it with the data from the opponents data
                 // There may not be an opponent, if not, don't add the opponent data
                 List<Opponent> opponents = data.NewData.Opponents;
@@ -237,7 +243,7 @@ namespace APR.DashSupport {
                 LeaderBestLap = car.BestLap;
                 LeaderExpectedLapTime = car.EstimatedLapTime;
                 LeaderLapDistancePercent = car.LapDistancePercent;
-
+                LeaderCurrentLap = car.Lap;
             }
 
             return car;
@@ -290,9 +296,19 @@ namespace APR.DashSupport {
             return CarClasses.Find(x => x.CarClassID == carClassId);
         }
 
+        public Opponent GetOpponentWithName(ref GameData data, string name) {
+            return data.NewData.Opponents.Find(x => x.Name == name);
+        }
+
         public List<RaceCar> CompetingCarsSortedbyGapToLeader {
             get {
                 return CompetingCars.OrderBy(o => o.GapBehindLeader).ToList();
+            }
+        }
+
+        public List<RaceCar> CompetingCarsSortedbyRaceDistancePercent {
+            get {
+                return CompetingCars.OrderByDescending(o => o.RaceDistancePercent).ToList();
             }
         }
 
@@ -396,8 +412,7 @@ namespace APR.DashSupport {
         }
 
         public void UpdateStandingsRelatedProperties(ref GameData data) {
-
-           
+      
             // Get the iRacing Session state
             irData.Telemetry.TryGetValue("SessionState", out object rawSessionState);
             int sessionState = Convert.ToInt32(rawSessionState);
@@ -448,6 +463,13 @@ namespace APR.DashSupport {
                             if (bestlapTimes != null) {
                                 if (bestlapTimes[car.CarIDx] >= 0) {
                                     car.BestLap = bestlapTimes[car.CarIDx];
+                                }
+                                else {
+                                    Opponent oppy = GetOpponentWithName(ref data, car.Driver.DriverFullName);
+                                    double bestLapFromOpponents = oppy.BestLapTime.TotalSeconds;
+                                    if (bestLapFromOpponents > 0.0) {
+                                        car.BestLap = bestLapFromOpponents;
+                                    }
                                 }
                             }
                         }
@@ -554,73 +576,95 @@ namespace APR.DashSupport {
                         }
                     }
                 }
-                var cars = CompetingCarsSortedbyGapToLeader;
-                for (int i = 0; i < CompetingCarsSortedbyGapToLeader.Count; i++) {
+                // lap distance percentage based standings and gaps
+                var cars = CompetingCars;
+                for (int i = 0; i < cars.Count; i++) {
+                    cars[i].RaceDistancePercent = cars[i].LapDistancePercent + cars[i].Lap;
+                }
+
+
+                if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
+                    cars = CompetingCarsSortedbyPosition;
+                }
+                else {
+                    cars = CompetingCarsSortedbyRaceDistancePercent;
+                }
+
+                List < RaceCar > CarsForDisplay = new List < RaceCar >();
+                for (int i = 0; i < cars.Count; i++) {
                     var car = cars[i];
-                    if (car.Position > 0 && cars[1].GapBehindLeader <= 0.0) {
-                        //bool BestLapIsOverallBest = false;
-                        bool LastLapIsOverallBestLap = false;
-                        bool LastLapIsPersonalBestLap = false;
+                    if (car.Position > 0) {
 
-                        if (SessionBestLapTime > 0) {
-                            if (Math.Abs(SessionBestLapTime - car.LastLap) < 0.001) {
-                                LastLapIsOverallBestLap = true;
-                            }
-
-                            if (Math.Abs(car.BestLap - car.LastLap) < 0.001) {
-                                LastLapIsPersonalBestLap = true;
-                            }
-                        }
-
-                        // Change for multi class
-                        string iString = string.Format("{0:00}", car.Position);
-                        SetProp("Standings.Overall.Position" + iString + ".Position", i+1);
-                        SetProp("Standings.Overall.Position" + iString + ".Class.Position", car.PositionInClass );
-                        SetProp("Standings.Overall.Position" + iString + ".RowIsVisible", true);
-
-                        if ( car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
-                            car.IsPlayer = true;
-                        }
-                        else {
-                            car.IsPlayer = false;
-                        }
-
-                        SetProp("Standings.Overall.Position" + iString + ".Number", car.CarNumber);
-                        SetProp("Standings.Overall.Position" + iString + ".DriverName", car.Driver.DriverDisplayName);
-                        if (car.GapBehindLeader < 0) {
-                            SetProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
-                        }
-                        else {
-                            SetProp("Standings.Overall.Position" + iString + ".GapToLeader", car.GapBehindLeader);
-                        }
-
-                        SetProp("Standings.Overall.Position" + iString + ".GapToCarAhead", car.IntervalGap);
-                        SetProp("Standings.Overall.Position" + iString + ".IsInPit", car.PitInPitLane);
-                        SetProp("Standings.Overall.Position" + iString + ".BestLap", car.BestLap);
-                        SetProp("Standings.Overall.Position" + iString + ".LastLap", car.LastLap);
-                        SetProp("Standings.Overall.Position" + iString + ".IsPlayer", car.IsPlayer);
-                        SetProp("Standings.Overall.Position" + iString + ".LapsBehindLeader", car.LapsBehindLeader);
-                        SetProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", LastLapIsPersonalBestLap);
-                        SetProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", LastLapIsOverallBestLap);
-                        if (CarWithFastestOverallLapTime == car.CarIDx) {
-                            SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", true);
-                        }
-                        else {
-                            SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
-                        }
-
-                        SetProp("Standings.Overall" + iString + ".BestLap", (SessionBestLapTime));
-
-                        CarClass classy = GetCarClassDetailsForClassWithId(car.CarClassId);
-
-                        // Class specifics
-                        SetProp("Standings.Overall.Position" + iString + ".Class.ClassId", classy.CarClassID);
-                        SetProp("Standings.Overall.Position" + iString + ".Class.Name", classy.CarClassName);
-                        SetProp("Standings.Overall.Position" + iString + ".Class.Color", classy.CarClassColour);
-                        SetProp("Standings.Overall.Position" + iString + ".Class.Position", 0);
-                        SetProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", 0);
-
+                        CarsForDisplay.Add(car);
                     }
+                }
+
+                for (int i = 0; i < CarsForDisplay.Count; i++) {
+                    var car = CarsForDisplay[i];
+
+                    //bool BestLapIsOverallBest = false;
+                    bool LastLapIsOverallBestLap = false;
+                    bool LastLapIsPersonalBestLap = false;
+
+                    if (SessionBestLapTime > 0) {
+                        if (Math.Abs(SessionBestLapTime - car.LastLap) < 0.001) {
+                            LastLapIsOverallBestLap = true;
+                        }
+
+                        if (Math.Abs(car.BestLap - car.LastLap) < 0.001) {
+                            LastLapIsPersonalBestLap = true;
+                        }
+                    }
+
+                    // Change for multi class
+                    string iString = string.Format("{0:00}", i+1);
+                    SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Position", car.PositionInClass );
+                    SetProp("Standings.Overall.Position" + iString + ".RowIsVisible", true);
+
+                    if ( car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
+                        car.IsPlayer = true;
+                    }
+                    else {
+                        car.IsPlayer = false;
+                    }
+
+                    SetProp("Standings.Overall.Position" + iString + ".Number", car.CarNumber);
+                    SetProp("Standings.Overall.Position" + iString + ".DriverName", car.Driver.DriverDisplayName);
+                    if (car.GapBehindLeader < 0) {
+                        SetProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
+                    }
+                    else {
+                        SetProp("Standings.Overall.Position" + iString + ".GapToLeader", car.GapBehindLeader);
+                    }
+
+                    SetProp("Standings.Overall.Position" + iString + ".GapToCarAhead", car.IntervalGap);
+                    SetProp("Standings.Overall.Position" + iString + ".IsInPit", car.PitInPitLane);
+                    SetProp("Standings.Overall.Position" + iString + ".BestLap", car.BestLap);
+                    SetProp("Standings.Overall.Position" + iString + ".LastLap", car.LastLap);
+                    SetProp("Standings.Overall.Position" + iString + ".IsPlayer", car.IsPlayer);
+                    SetProp("Standings.Overall.Position" + iString + ".LapsBehindLeader", car.LapsBehindLeader);
+                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", LastLapIsPersonalBestLap);
+                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", LastLapIsOverallBestLap);
+                    if (CarWithFastestOverallLapTime == car.CarIDx) {
+                        SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", true);
+                    }
+                    else {
+                        SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
+                    }
+
+                    SetProp("Standings.Overall" + iString + ".BestLap", (SessionBestLapTime));
+
+                    CarClass classy = GetCarClassDetailsForClassWithId(car.CarClassId);
+
+                    // Class specifics
+                    SetProp("Standings.Overall.Position" + iString + ".Class.ClassId", classy.CarClassID);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Name", classy.CarClassName);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Color", classy.CarClassColour);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Position", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", 0);
+
+                 
                 }
             }
            
@@ -650,13 +694,21 @@ namespace APR.DashSupport {
             // in practice the leader has the fastest time in the race it is P1
             if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
                 Settings.HideGapToCarInFront = true;
+
             }
             else {
                 Settings.HideGapToCarInFront = false;
+
             }
 
             SetProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
-            SetProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
+            if (Settings.HideGapToCarInFront) {
+                SetProp("Standings.Columns.GapToCarInFront.Visible", false);
+            }
+            else {
+                SetProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
+            }
+            
             SetProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
 
             SetProp("Standings.Columns.FastestLap.Left", Settings.ColumnStartFastestLap);
@@ -811,6 +863,7 @@ namespace APR.DashSupport {
             public double IntervalGap { get; set; } = 0;
             public double IntervalGapDelayed { get; set; } = 0;
             public double LapDistancePercent { get; set; } = 0;
+            public double RaceDistancePercent { get; set; } = 0;
             public int LapsBehindLeader { get; set; } = 0;
             public double GapBehindLeader { get; set; } = 0;
             public int LapsBehindNext { get; set; } = 0;
