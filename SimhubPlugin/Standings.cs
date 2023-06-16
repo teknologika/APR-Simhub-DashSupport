@@ -23,7 +23,6 @@ namespace APR.DashSupport {
         public List<RaceCar> OpponentCars = new List<RaceCar>();
         public int NumberOfCarsInSession = 0;
         public long NumOfCarClasses = 0;
-        public List<CarClass> CarClasses = new List<CarClass>();
         public int LeaderIdx = 0;
         public List<int> ClassLeaderIdx = new List<int>();
         public double LeaderLastLap { get; set; } = 0;
@@ -54,30 +53,18 @@ namespace APR.DashSupport {
             RaceCar car = new RaceCar {
 
                 CarIDx = (int)competitor.CarIdx,
-                CarClassId = competitor.CarClassID,
+                ClassId = competitor.CarClassID,
                 CarNumber = competitor.CarNumber,
                 
                 // Get Position
                 Position = irData.Telemetry.CarIdxPosition[competitor.CarIdx],
-                PositionInClass = irData.Telemetry.CarIdxClassPosition[competitor.CarIdx],
+                ClassPosition = irData.Telemetry.CarIdxClassPosition[competitor.CarIdx],
                 EstimatedLapTime = irData.Telemetry.CarIdxEstTime[competitor.CarIdx],
                 LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[competitor.CarIdx],
                 Lap = irData.Telemetry.CarIdxLap[competitor.CarIdx],
 
             };
 
-            CarClass thisCarClass = GetCarClassDetailsForClassWithId(car.CarClassId);
-
-            if (thisCarClass == null && competitor.CarClassShortName != null) {
-                thisCarClass = new CarClass();
-                thisCarClass.CarClassID = car.CarClassId;
-                thisCarClass.CarClassColour = competitor.CarClassColor.Replace("0x", "#FF");
-                thisCarClass.CarClassName = competitor.CarClassShortName;
-                CarClasses.Add(thisCarClass);
-            }
-            else {
-                
-            }
             if (car.Position > 1) {
                 car.LapsBehindLeader = LeaderCurrentLap - car.Lap;
             }
@@ -249,28 +236,6 @@ namespace APR.DashSupport {
             return car;
         }
 
-        // Create and clear data structures.
-        // Call at the start of every session.
-        public void InitClassDataStrucutres() {
-            CarClasses.Clear();
-
-            for (int i = 0; i < NumOfCarClasses; i++) {
-                CarClasses.Add(CarClasses[i]);
-            }
-        }
-
-        // Create the simhub properties
-        // Call before updates, after init has been called
-        public void AddCarClassRelatedProperties(ref GameData data) {
-
-        }
-
-        // Update the simhub properties
-        // call once per second
-        public void UpdateCarClassRelatedProperties(ref GameData data) {
-
-        }
-
         public string LaptimeAsDisplayString(Double seconds) {
 
 
@@ -290,10 +255,6 @@ namespace APR.DashSupport {
             get {
                 return CompetingCars.OrderBy(o => o.Position).ToList();
             }
-        }
-
-        public CarClass GetCarClassDetailsForClassWithId(long carClassId) {
-            return CarClasses.Find(x => x.CarClassID == carClassId);
         }
 
         public Opponent GetOpponentWithName(ref GameData data, string name) {
@@ -400,13 +361,11 @@ namespace APR.DashSupport {
                         if (competitiors[i].CarNumberRaw > 0)
                         {
                             NumberOfCarsInSession++;
-
                             RaceCar car = GetCompositeCarForIDx(i, ref data);
                             CompetingCars.Add(car);
-
                         }
-
                     }
+
                 }
             }
         }
@@ -432,8 +391,13 @@ namespace APR.DashSupport {
 
                     // Get Position overall and in class
                     car.Position = irData.Telemetry.CarIdxPosition[car.CarIDx];
-                    car.PositionInClass = irData.Telemetry.CarIdxClassPosition[car.CarIDx];
+                    car.ClassPosition = irData.Telemetry.CarIdxClassPosition[car.CarIDx];
 
+                    // Get class info
+                    car.ClassId = irData.SessionData.DriverInfo.CompetingDrivers[car.CarIDx].CarClassID;
+                    car.ClassName = irData.SessionData.DriverInfo.CompetingDrivers[car.CarIDx].CarClassShortName;
+                    var tmpColor = irData.SessionData.DriverInfo.CompetingDrivers[car.CarIDx].CarClassColor;
+                    car.ClassColor = tmpColor.Replace("0x","#FF");
                     car.EstimatedLapTime = irData.Telemetry.CarIdxEstTime[car.CarIDx];
                     car.LapDistancePercent = irData.Telemetry.CarIdxLapDistPct[car.CarIDx];
 
@@ -501,7 +465,7 @@ namespace APR.DashSupport {
                         // this is iRacing's formula - Estimated time to reach current location on track
                         LeaderExtTime = irData.Telemetry.CarIdxEstTime[LeaderIdx];
                         car.EstTime = irData.Telemetry.CarIdxEstTime[car.CarIDx];
-                      }
+                    }
                 }
 
                 // if there is no session best set it to zero
@@ -616,10 +580,8 @@ namespace APR.DashSupport {
                         }
                     }
 
-                    // Change for multi class
                     string iString = string.Format("{0:00}", i+1);
                     SetProp("Standings.Overall.Position" + iString + ".Position", car.Position);
-                    SetProp("Standings.Overall.Position" + iString + ".Class.Position", car.PositionInClass );
                     SetProp("Standings.Overall.Position" + iString + ".RowIsVisible", true);
 
                     if ( car.CarIDx == irData.SessionData.DriverInfo.DriverCarIdx) {
@@ -655,16 +617,14 @@ namespace APR.DashSupport {
 
                     SetProp("Standings.Overall" + iString + ".BestLap", (SessionBestLapTime));
 
-                    CarClass classy = GetCarClassDetailsForClassWithId(car.CarClassId);
 
                     // Class specifics
-                    SetProp("Standings.Overall.Position" + iString + ".Class.ClassId", classy.CarClassID);
-                    SetProp("Standings.Overall.Position" + iString + ".Class.Name", classy.CarClassName);
-                    SetProp("Standings.Overall.Position" + iString + ".Class.Color", classy.CarClassColour);
-                    SetProp("Standings.Overall.Position" + iString + ".Class.Position", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", 0);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.ClassId", car.ClassId);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Name", car.ClassName);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Color", car.ClassColor);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.Position", car.ClassPosition);
+                    SetProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", car.ClassGapToClassLeader);
 
-                 
                 }
             }
            
@@ -816,25 +776,11 @@ namespace APR.DashSupport {
 
         }
 
-        public class CarClass {
-            public long CarClassID { get; set; } = 0;
-            public string CarClassName { get; set; } = string.Empty;
-            public string CarClassColour { get; set; } = string.Empty;
-            public double CarClassBestLapTime { get; set; } = 0;
-            public double CarClassLeaderID { get; set; } = 0;
-
-            public override string ToString() {
-                return string.Format("{0}- {1} Colour:{2}", CarClassID, CarClassName, CarClassColour);
-            }
-
-        }
-
         public class RaceCar {
 
             public override string ToString() {
                 return string.Format("P{0} {1} {2}", Position, CarNumber, Driver.DriverDisplayName);
             }
-       
 
             public TrackSections track;
 
@@ -844,18 +790,16 @@ namespace APR.DashSupport {
             }
 
             public int CarIDx { get; set; } = int.MinValue;
-            public string CarNumber { get; set; } = "";   
-            public long CarClassId { get; set; } = long.MinValue;
+            public string CarNumber { get; set; } = "";
+
             public Driver Driver { get; set; } = null;
             public int CurrentTrackSection { get; set; } = 0;
-
 
             // Lap timing info
             public double BestLap { get; set; } = 0;
             public double LastLap { get; set; } = 0;
             public int Lap { get; set; } = 0;
             public float CarIdxF2Time { get; set; } = 0;
-
 
             public double EstimatedLapTime { get; set; } = 0;
             public double EstTime { get; set; } = 0;
@@ -869,14 +813,18 @@ namespace APR.DashSupport {
             public int LapsBehindNext { get; set; } = 0;
             public int Position { get; set; } = 0;
             public int GapBasedPosition { get; set; } = 0;
-            public int PositionInClass { get; set; } = 0;
-            public int GapBasedPositionInClass { get; set; } = 0;
+
 
             //Pit info
             public int PitInPitLane { get; set; } = 0;
+            public bool IsPlayer { get; set; } = false;
 
-            public bool IsPlayer { get;  set; } = false;
-          
+            // Class info
+            public long ClassId { get; set; } = long.MinValue;
+            public string ClassName { get; set; } = string.Empty;
+            public string ClassColor { get; set; } = string.Empty;
+            public int ClassPosition { get; set; } = 0;
+            public int ClassGapToClassLeader { get; set; } = 0;
         }
 
         // Holds driver information
