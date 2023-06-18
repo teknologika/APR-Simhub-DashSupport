@@ -70,7 +70,9 @@ namespace APR.DashSupport
             pluginManager.AddProperty<string>("MainMenuSelected", this.GetType(), "none");
 
             AddProp("BrakeBarColour", "Red");
-            AddProp("BrakeBiasColour", "black");
+            AddProp("BrakeBiasColour", "Black");
+            AddProp("BrakeBarTargetTrailPercentage",0);
+            AddProp("BrakeBarTargetPercentage", 0);
 
             AddProp("ARBColourFront", "White");
             AddProp("ARBColourRear", "White");
@@ -104,8 +106,9 @@ namespace APR.DashSupport
             //InitRotaryButtons(pluginManager);
             //InitOtherButtons(pluginManager);
 
-            ClearStandings();
-            AddStandingsRelatedProperties();
+            //Standings Support removed 18/8/2023
+            //ClearStandings();
+            //AddStandingsRelatedProperties();
         }
 
         /// <summary>
@@ -159,12 +162,18 @@ namespace APR.DashSupport
 
                 bool sessionStartSetupCompleted = false;
                 if (!sessionStartSetupCompleted) {
-                    InitStandings(ref data);
+
+                    // Standins support removed 18/06/2023
+                    //InitStandings(ref data);
                     sessionStartSetupCompleted = true;
                 }
 
-                if (frameCounter == 2) {
-                    UpdateStandingsRelatedProperties(ref data);
+                // Frames are used to reduce calculation frequency
+
+                if (frameCounter == 1) {
+                    // Standings support removed 18/06/2023
+                    //UpdateStandingsRelatedProperties(ref data);
+                    UpdateBrakeBar();
                 }
 
                 if (frameCounter == 3) {
@@ -179,15 +188,36 @@ namespace APR.DashSupport
                     UpdateFrontARBColour();
                     UpdateRearARBColour();
                     UpdateTCValues();
-                    UpdateBrakeBarColour();
                     UpdateMAPValues();
                     UpdateBitePointRecommendation();
                     UpdatePitWindowMessage();
                     UpdatePopupPositions();
                 }
+
+                if (frameCounter == 10) {
+                    UpdateBrakeBar();
+                }
+
+                if (frameCounter == 20) {
+                    UpdateBrakeBar();
+                }
+
+                if (frameCounter == 30) {
+                    UpdateBrakeBar();
+                }
+
+                if (frameCounter == 40) {
+                    UpdateBrakeBar();
+                }
+
+                if (frameCounter == 50) {
+                    UpdateBrakeBar();
+                }
             }
+
             else {
-                ClearStandings();
+                // Standings support removed 18/06/2023
+                //ClearStandings();
             }
 
 
@@ -228,7 +258,8 @@ namespace APR.DashSupport
         }
 
         private void OnSessionChange(PluginManager pluginManager) {
-            ClearStandings();
+            // Standins support removed 18/06/2023
+            //ClearStandings();
         }
 
 

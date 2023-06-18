@@ -1,20 +1,18 @@
-﻿using SimHub.Plugins;
+﻿using iRacingSDK;
+using SimHub.Plugins;
 using System;
 using System.Globalization;
 
 namespace APR.DashSupport {
 	public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
-		public void UpdateBrakeBarColour() {
+		public void UpdateBrakeBar() {
 
 			var brakePercentage = (double)GetProp("DataCorePlugin.GameData.Brake");
-			string brakeBarColour = "Red";
+			string brakeBarColour;
 
 			if (brakePercentage < Settings.BrakeTrailStartPercentage) {
 				brakeBarColour = "Red";
-			}
-			else if (brakePercentage < Settings.BrakeTrailEndPercentage) {
-				brakeBarColour = "Magenta";
 			}
 			else if (brakePercentage < Settings.BrakeTrailEndPercentage) {
 				brakeBarColour = "Magenta";
@@ -29,7 +27,9 @@ namespace APR.DashSupport {
 				brakeBarColour = "Red";
 			}
 			SetProp("BrakeBarColour", brakeBarColour);
-		}
+            SetProp("BrakeBarTargetTrailPercentage", ((Settings.BrakeTrailEndPercentage + Settings.BrakeTrailStartPercentage)/2)/100);
+            SetProp("BrakeBarTargetPercentage", Settings.BrakeTargetPercentage/100);
+        }
 
 		public void UpdateFrontARBColour() {
 

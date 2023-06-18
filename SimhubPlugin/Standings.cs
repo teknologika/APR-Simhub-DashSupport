@@ -1,4 +1,6 @@
-﻿using FMOD;
+﻿/*
+
+using FMOD;
 using GameReaderCommon;
 using IRacingReader;
 using iRacingSDK;
@@ -32,12 +34,16 @@ namespace APR.DashSupport {
         public int LeaderCurrentLap { get; set; } = 0;
         public double LeaderLapDistancePercent { get; set; } = 0;
         public double SessionBestLapTime { get; set; } = 0;
+        public double CameraDriverIdx { get; set; } = 0;
+        public double PlayerIdx { get; set; } = 0;
+        public double PlayerClassId { get; set; } = 0;
 
         //public List<double> iRSectorStartDistancePercent { get; set; } = 0;
         //irData.SessionData.SplitTimeInfo.Sectors[3].SectorNum;
         //irData.SessionData.SplitTimeInfo.Sectors[3].SectorStartPct;
         public RaceCar GetCompositeCarForIDx(int id, ref GameData data) {
             SessionData._DriverInfo._Drivers[] competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
+            
 
             // Check the id is not too big
             if (id > competitiors.Length) {
@@ -357,15 +363,20 @@ namespace APR.DashSupport {
                 if (competitiors != null) {
                     CompetingCars = new List<RaceCar>();
                     NumberOfCarsInSession = 0;
+                    CameraDriverIdx = irData.Telemetry.CamCarIdx;
+                    PlayerIdx = irData.SessionData.DriverInfo.DriverCarIdx;
+
                     for (int i = 0; i < competitiors.Length; i++) {
                         if (competitiors[i].CarNumberRaw > 0)
                         {
                             NumberOfCarsInSession++;
                             RaceCar car = GetCompositeCarForIDx(i, ref data);
                             CompetingCars.Add(car);
+                            if (car.CarIDx == PlayerIdx) {
+                                PlayerClassId = car.ClassId;
+                            }
                         }
                     }
-
                 }
             }
         }
@@ -554,15 +565,29 @@ namespace APR.DashSupport {
                     cars = CompetingCarsSortedbyRaceDistancePercent;
                 }
 
-                List < RaceCar > CarsForDisplay = new List < RaceCar >();
-                for (int i = 0; i < cars.Count; i++) {
-                    var car = cars[i];
-                    if (car.Position > 0) {
-
-                        CarsForDisplay.Add(car);
+                bool multiClassView = true;
+                List<RaceCar> MyClassOnlyCars = new List<RaceCar>();
+                List<RaceCar> CarsForDisplay = new List<RaceCar>();
+                if (multiClassView) {
+                    MyClassOnlyCars = CompetingCarsForClassSortedByPosition(cars, PlayerClassId);
+                    for (int i = 0; i < MyClassOnlyCars.Count; i++) {
+                        var car = MyClassOnlyCars[i];
+                        if (car.Position > 0) {
+                            CarsForDisplay.Add(car);
+                        }
                     }
                 }
-
+                else {
+                    for (int i = 0; i < cars.Count; i++) {
+                        var car = cars[i];
+                        if (car.Position > 0) {
+                            CarsForDisplay.Add(car);
+                        }
+                    }
+                }
+                    
+                
+                
                 for (int i = 0; i < CarsForDisplay.Count; i++) {
                     var car = CarsForDisplay[i];
 
@@ -628,7 +653,6 @@ namespace APR.DashSupport {
                 }
             }
            
-
             // update session properties
             SetProp("Standings.NumberOfCarsInSession" , NumberOfCarsInSession);
             SetProp("Standings.Colours.Background", Settings.StandingsBackgroundRowColourWithTransparency);
@@ -748,6 +772,11 @@ namespace APR.DashSupport {
                     AddProp("Standings.Overall" + iString + ".BestLap", 0);
                 }
             }
+        }
+
+        public List<RaceCar> CompetingCarsForClassSortedByPosition(List<RaceCar> cars, double classID) {
+            List < RaceCar > tmp = cars.FindAll(x => x.ClassId == classID);
+            return tmp.OrderBy(o => o.ClassPosition).ToList();
         }
 
         public bool LapIsEqual(double first,  double second) {
@@ -927,3 +956,4 @@ namespace APR.DashSupport {
 
     }
 }
+*/
