@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using Color = System.Drawing.Color;
 
@@ -82,6 +83,16 @@ namespace APR.DashSupport
 
             }
         }
+
+        // Pit Strategy Calculator Settings
+        public bool EnableStrategyCalculation { get; set; } = false;
+
+        // If we want to do the calcs ourselves, we can override values in the UI
+        public double Strategy_OverrideStartingFuelPercentage { get; set; } = 100;
+        public double Strategy_OverrideAvailableTankSizePercentage { get; set; } = 100;
+        public double Strategy_OverrideFuelPerLap { get; set; } = 0;
+        public double Strategy_OverrideNumberOfRaceLaps { get; set; } = 0;
+        public double Strategy_OverrideAvailableTankSize{ get; set; } = 0;
 
 
         public int SlideOutDelay { get; set; } = 20;

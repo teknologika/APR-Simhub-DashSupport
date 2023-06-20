@@ -70,6 +70,58 @@
             </ScrollViewer>
         </styles:SHTabItem>
 
+        <styles:SHTabItem Header="Pitstop Strategy">
+            <ScrollViewer>
+                <StackPanel>
+                    <styles:SHSection Title="Pitstop Strategy Calculation">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="500"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1*" MinHeight="50"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0"
+                                           Text="These settings are used for pit strategy calculations. They are intended for multi-stop races and provide multiple strategy calculations for the driver to choose from." VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" TextWrapping="WrapWithOverflow" Margin="0,0,-206,0"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="250"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="250"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                    <RowDefinition Height="1*" MinHeight="30"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Enable Pitstop Strategy Calculation" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18" Grid.ColumnSpan="3" Margin="0,0,200,0"/>
+                                <styles:SHToggleButton Grid.Row="0" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" IsChecked="{Binding EnableStrategyCalculation}" RenderTransformOrigin="0.45,0.2"/>
+
+                                <TextBlock Grid.Row="1" FontWeight="Bold" Text="Values to override calculation defaults. Use with caution." VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18" Grid.ColumnSpan="3" Margin="0,0,200,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Starting Fuel Percentage (Default is 100%)" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <TextBox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding StrategyOverrideStartingFuelPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0}}"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Available tank size (Default is 100%)" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                                <TextBox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding StrategyOverrideStartingFuelPercentage,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0}}"/>
+
+                            </Grid>
+                        </StackPanel>
+                    </styles:SHSection>
+                </StackPanel>
+            </ScrollViewer>
+        </styles:SHTabItem>
+
         <!--<styles:SHTabItem Header="Standings" Height="32" VerticalAlignment="Top">
             <ScrollViewer>
                 <StackPanel>
@@ -131,7 +183,7 @@
                 </StackPanel>
             </ScrollViewer>
         </styles:SHTabItem>-->
-        
+
 
     </styles:SHTabControl>
 </UserControl>

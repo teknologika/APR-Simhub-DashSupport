@@ -56,6 +56,7 @@ namespace APR.DashSupport
 
             InitRotaries(pluginManager);
 
+
             this.AttachDelegate("EnableBrakeAndThrottleBars", () => Settings.EnableBrakeAndThrottleBars);
             this.AttachDelegate("EnableRPMBar", () => Settings.EnableRPMBar);
             this.AttachDelegate("EnablePitWindowPopup", () => Settings.EnablePitWindowPopup);
@@ -109,6 +110,8 @@ namespace APR.DashSupport
             //Standings Support removed 18/8/2023
             //ClearStandings();
             //AddStandingsRelatedProperties();
+
+            InitPitCalculations();
         }
 
         /// <summary>
@@ -200,6 +203,7 @@ namespace APR.DashSupport
 
                 if (frameCounter == 20) {
                     UpdateBrakeBar();
+                    UpdatePitCalculations(ref data);
                 }
 
                 if (frameCounter == 30) {
