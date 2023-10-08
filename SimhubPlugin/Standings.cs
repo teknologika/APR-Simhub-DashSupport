@@ -1,6 +1,4 @@
-﻿/*
-
-using FMOD;
+﻿using FMOD;
 using GameReaderCommon;
 using IRacingReader;
 using iRacingSDK;
@@ -18,7 +16,7 @@ using Opponent = GameReaderCommon.Opponent;
 namespace APR.DashSupport {
 
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
-        static int iRacingMaxCars = 63;
+/*        static int iRacingMaxCars = 63;
         static int iRacingMaxClasses = 5;
 
         public List<RaceCar> CompetingCars = new List<RaceCar>();
@@ -284,6 +282,7 @@ namespace APR.DashSupport {
                 return CompetingCars.OrderBy(o => o.BestLap).ToList();
             }
         }
+*/
 
         public void UpdateStandingsNameSetting() {
             if (Settings.SettingsUpdated) {
@@ -315,11 +314,7 @@ namespace APR.DashSupport {
             }
         }
 
-        public void UpdateGapTiming(ref GameData data) {
-
-
-        }
-
+/*
         public void ClearStandings() {
             if (Settings.EnableStandings) {
                 for (int i = 1; i < iRacingMaxCars + 1; i++) {
@@ -349,9 +344,10 @@ namespace APR.DashSupport {
                 }
             }
          }
-
+*/
         public void InitStandings(ref GameData data) {
             if (Settings.EnableStandings) {
+                /*
                 SessionData._DriverInfo._Drivers[] competitiors = irData.SessionData.DriverInfo.CompetingDrivers;
                 SessionData._WeekendInfo weekendInfo = irData.SessionData.WeekendInfo;
 
@@ -377,12 +373,12 @@ namespace APR.DashSupport {
                             }
                         }
                     }
-                }
+                }*/
             }
         }
 
         public void UpdateStandingsRelatedProperties(ref GameData data) {
-      
+
             // Get the iRacing Session state
             irData.Telemetry.TryGetValue("SessionState", out object rawSessionState);
             int sessionState = Convert.ToInt32(rawSessionState);
@@ -391,6 +387,7 @@ namespace APR.DashSupport {
             // lets start by getting all the drivers and putting their info into a list of cars
 
             // Add Standings Properties
+            /*
             if (Settings.EnableStandings) {
 
                 // Calculate the session best laptime
@@ -649,61 +646,63 @@ namespace APR.DashSupport {
                     SetProp("Standings.Overall.Position" + iString + ".Class.Color", car.ClassColor);
                     SetProp("Standings.Overall.Position" + iString + ".Class.Position", car.ClassPosition);
                     SetProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", car.ClassGapToClassLeader);
-
+                
                 }
-            }
-           
+                */
+
+
+
             // update session properties
-            SetProp("Standings.NumberOfCarsInSession" , NumberOfCarsInSession);
-            SetProp("Standings.Colours.Background", Settings.StandingsBackgroundRowColourWithTransparency);
-            SetProp("Standings.Colours.BackgroundAlternate", Settings.StandingsBackgroundRowAlternateColourWithTransparency);
-            SetProp("Standings.Colours.BackgroundDriverHighlight", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
+            //SetProp("Standings.NumberOfCarsInSession" , NumberOfCarsInSession);
+            if (Settings.EnableStandings) {
 
-            SetProp("Standings.Columns.Position.Left", Settings.ColumnStartPosition);
-            SetProp("Standings.Columns.Position.Width", Settings.ColumnWidthPosition);
-            SetProp("Standings.Columns.Position.Visible", Settings.ColumnShowPosition);
+                SetProp("Standings.Colours.Background", Settings.StandingsBackgroundRowColourWithTransparency);
+                SetProp("Standings.Colours.BackgroundAlternate", Settings.StandingsBackgroundRowAlternateColourWithTransparency);
+                SetProp("Standings.Colours.BackgroundDriverHighlight", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
 
-            SetProp("Standings.Columns.CarNumber.Left", Settings.ColumnStartCarNumber);
-            SetProp("Standings.Columns.CarNumber.Width", Settings.ColumnWidthCarNumber);
-            SetProp("Standings.Columns.CarNumber.Visible", Settings.ColumnShowCarNumber);
+                SetProp("Standings.Columns.Position.Left", Settings.ColumnStartPosition);
+                SetProp("Standings.Columns.Position.Width", Settings.ColumnWidthPosition);
+                SetProp("Standings.Columns.Position.Visible", Settings.ColumnShowPosition);
 
-            SetProp("Standings.Columns.DriverName.Left", Settings.ColumnStartDriverName);
-            SetProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
-            SetProp("Standings.Columns.DriverName.Visible", Settings.ColumnShowDriverName);
-            
-            SetProp("Standings.Columns.GapToLeader.Left", Settings.ColumnStartGapToLeader);
-            SetProp("Standings.Columns.GapToLeader.Width", Settings.ColumnWidthGapToLeader);
-            SetProp("Standings.Columns.GapToLeader.Visible", Settings.ColumnShowGapToLeader);
+                SetProp("Standings.Columns.CarNumber.Left", Settings.ColumnStartCarNumber);
+                SetProp("Standings.Columns.CarNumber.Width", Settings.ColumnWidthCarNumber);
+                SetProp("Standings.Columns.CarNumber.Visible", Settings.ColumnShowCarNumber);
 
-            // in practice the leader has the fastest time in the race it is P1
-            if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
-                Settings.HideGapToCarInFront = true;
+                SetProp("Standings.Columns.DriverName.Left", Settings.ColumnStartDriverName);
+                SetProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
+                SetProp("Standings.Columns.DriverName.Visible", Settings.ColumnShowDriverName);
 
+                SetProp("Standings.Columns.GapToLeader.Left", Settings.ColumnStartGapToLeader);
+                SetProp("Standings.Columns.GapToLeader.Width", Settings.ColumnWidthGapToLeader);
+                SetProp("Standings.Columns.GapToLeader.Visible", Settings.ColumnShowGapToLeader);
+
+                // in practice the leader has the fastest time in the race it is P1
+                if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
+                    Settings.HideGapToCarInFront = true;
+                }
+                else {
+                    Settings.HideGapToCarInFront = false;
+                }
+
+                SetProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
+                if (Settings.HideGapToCarInFront) {
+                    SetProp("Standings.Columns.GapToCarInFront.Visible", false);
+                }
+                else {
+                    SetProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
+                }
+
+                SetProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
+
+                SetProp("Standings.Columns.FastestLap.Left", Settings.ColumnStartFastestLap);
+                SetProp("Standings.Columns.FastestLap.Width", Settings.ColumnWidthFastestLap);
+                SetProp("Standings.Columns.FastestLap.Visible", Settings.ColumnShowFastestLap);
+                SetProp("Standings.Columns.FastestLap.Slider.Left", Settings.ColumnStartFastestLapSlider);
+
+                SetProp("Standings.Columns.LastLap.Left", Settings.ColumnStartLastLap);
+                SetProp("Standings.Columns.LastLap.Width", Settings.ColumnWidthLastLap);
+                SetProp("Standings.Columns.LastLap.Visible", Settings.ColumnShowLastLap);
             }
-            else {
-                Settings.HideGapToCarInFront = false;
-
-            }
-
-            SetProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
-            if (Settings.HideGapToCarInFront) {
-                SetProp("Standings.Columns.GapToCarInFront.Visible", false);
-            }
-            else {
-                SetProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
-            }
-            
-            SetProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
-
-            SetProp("Standings.Columns.FastestLap.Left", Settings.ColumnStartFastestLap);
-            SetProp("Standings.Columns.FastestLap.Width", Settings.ColumnWidthFastestLap);
-            SetProp("Standings.Columns.FastestLap.Visible", Settings.ColumnShowFastestLap);
-            SetProp("Standings.Columns.FastestLap.Slider.Left", Settings.ColumnStartFastestLapSlider);
-
-            SetProp("Standings.Columns.LastLap.Left", Settings.ColumnStartLastLap);
-            SetProp("Standings.Columns.LastLap.Width", Settings.ColumnWidthLastLap);
-            SetProp("Standings.Columns.LastLap.Visible", Settings.ColumnShowLastLap);
-            
         }
 
         public void AddStandingsRelatedProperties() {
@@ -743,7 +742,7 @@ namespace APR.DashSupport {
                 AddProp("Standings.Columns.LastLap.Visible", Settings.ColumnShowLastLap);
 
 
-                
+                /*
 
                 AddProp("Standings.NumberOfCarsInSession", 0);
                 
@@ -771,9 +770,11 @@ namespace APR.DashSupport {
                     AddProp("Standings.Overall.Position" + iString + ".RowIsVisible", false);
                     AddProp("Standings.Overall" + iString + ".BestLap", 0);
                 }
+                */
             }
         }
 
+        /*
         public List<RaceCar> CompetingCarsForClassSortedByPosition(List<RaceCar> cars, double classID) {
             List < RaceCar > tmp = cars.FindAll(x => x.ClassId == classID);
             return tmp.OrderBy(o => o.ClassPosition).ToList();
@@ -791,8 +792,11 @@ namespace APR.DashSupport {
             return firstTime < secondTime;
         }
         
+        */
 
         public class Standings {
+
+            /*
             public int CurrentlyObservedDriver { get; set; } = 0;
             public string BattleBoxDisplayString { get; set; } = string.Empty;
             public double BattleBoxGap { get; set; }
@@ -802,9 +806,10 @@ namespace APR.DashSupport {
             public string BattleBoxDriver2Name { get; set; } = string.Empty;
             public int EstimatedOvertakeLaps { get; set; } = 0;
             public double EstimatedOvertakePercentage { get; set; } = 0.0;
-
+            */
         }
 
+        /*
         public class RaceCar {
 
             public override string ToString() {
@@ -953,7 +958,6 @@ namespace APR.DashSupport {
             }
         }
 
-
+        */
     }
 }
-*/

@@ -21,7 +21,7 @@ using static iRacingSDK.SessionData._DriverInfo;
 namespace APR.DashSupport {
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
-        public int Strategy_NumberOfRaceLaps { get; set; } = 0;
+        public double Strategy_NumberOfRaceLaps { get; set; } = 0;
         public double Strategy_AverageFuelPerLap { get; set; } = 0;
         public double Strategy_AvailableTankSize { get; set; } = 0;
         public double Strategy_SetupFuel { get; set; } = 0;
@@ -32,6 +32,10 @@ namespace APR.DashSupport {
         public double Strategy_EarliestStopToMakeFinish { get; set; } = 0;
         public double Strategy_LatestStopToMakeFinish { get; set; } = 0;
         public double Strategy_MinimumPerStop { get; set; } = 0;
+        
+        public double Strategy_CoughAllowance = 0.4;
+        public double Strategy_LapsMargin = 1;
+
 
         public void ClearPitCalculations() {
             if (Settings.EnableStrategyCalculation) {
@@ -86,9 +90,17 @@ namespace APR.DashSupport {
             if (Settings.EnableStrategyCalculation) {
 
                 // Setup all the values for our calculations
-                
+
                 // Number of race laps
-                Strategy_NumberOfRaceLaps = data.NewData.TotalLaps;
+                double RomainRob_laps = GetProp("IRacingExtraProperties.iRacing_LapsRemainingFloat");
+                if (RomainRob_laps == double.NaN) {
+                    Strategy_NumberOfRaceLaps = data.NewData.TotalLaps;
+                }
+                else {
+                    Strategy_NumberOfRaceLaps = RomainRob_laps;
+                }
+
+                
                 if (Settings.Strategy_OverrideNumberOfRaceLaps > 0) {
                     Strategy_NumberOfRaceLaps = Convert.ToInt16(Settings.Strategy_OverrideNumberOfRaceLaps);
                 }
@@ -127,6 +139,7 @@ namespace APR.DashSupport {
                 Strategy_FuelToAdd = ((Strategy_NumberOfRaceLaps * Strategy_AverageFuelPerLap) - Strategy_SetupFuel);
                 if (Strategy_FuelToAdd > 0) {
                     Strategy_LastStopFuelToAdd = Strategy_FuelToAdd % Strategy_AvailableTankSize;
+                    Strategy_LastStopFuelToAdd = Strategy_LastStopFuelToAdd + Strategy_CoughAllowance + (Strategy_LapsMargin * Strategy_AverageFuelPerLap);
                 }
                 else {
                     Strategy_LastStopFuelToAdd = 0;
@@ -141,11 +154,12 @@ namespace APR.DashSupport {
                 }
 
                 // Calculate the earliest stop to make the finish
-                Strategy_EarliestStopToMakeFinish = (Strategy_FuelToAdd / Strategy_AverageFuelPerLap);
+                Strategy_EarliestStopToMakeFinish = 1 + (Strategy_AvailableTankSize - Strategy_SetupFuel + Strategy_CoughAllowance + (Strategy_LapsMargin * Strategy_AverageFuelPerLap)) / Strategy_AverageFuelPerLap;
+                //Strategy_EarliestStopToMakeFinish = (Strategy_FuelToAdd / Strategy_AverageFuelPerLap);
 
                 // Calculate the last stop to make the finsh
-                Strategy_LatestStopToMakeFinish = (Strategy_LastStopFuelToAdd / Strategy_AverageFuelPerLap);
-
+                Strategy_LatestStopToMakeFinish = Strategy_NumberOfRaceLaps - (Strategy_LastStopFuelToAdd / Strategy_AverageFuelPerLap);
+  
                 // Calculate the minimum amount of fuel to add per stop
                 Strategy_MinimumPerStop = (Strategy_FuelToAdd / Strategy_NumberOfStops);
 
@@ -215,7 +229,7 @@ namespace APR.DashSupport {
         // Strat A - Flat out stretch long, fill tank, short second fill
         public void StratA() {
             List <PitStop> StratAStops = new List <PitStop>();
-            double fuelMargin = 0.4;
+
            
             // get our starting positions
             double fuel = Strategy_SetupFuel;
@@ -227,7 +241,7 @@ namespace APR.DashSupport {
                 fuelNeededToEnd = fuelNeededToEnd - Strategy_AverageFuelPerLap;
 
 
-                if (fuel - Strategy_AverageFuelPerLap <= fuelMargin) {
+                if (fuel - Strategy_AverageFuelPerLap <= Strategy_CoughAllowance) {
 
                     // Ignore the last lap as we can go below one lap of fuel
                     if (i == (Strategy_NumberOfRaceLaps - 1)) {
@@ -240,9 +254,9 @@ namespace APR.DashSupport {
                         calcFuelToAdd = Math.Ceiling(calcFuelToAdd / 0.5) * 0.5;
 
                         // If we can add more than we need, only add what we need
-                        if (calcFuelToAdd > fuelNeededToEnd + fuelMargin) {
+                        if (calcFuelToAdd > fuelNeededToEnd + Strategy_CoughAllowance) {
                             // to be exta safe we need to add the margin twice which gets us home without a cough.
-                            calcFuelToAdd = Math.Ceiling(((fuelNeededToEnd + fuelMargin - Strategy_AverageFuelPerLap) / 0.5) * 0.5) + (Math.Ceiling(fuelMargin/0.5) *0.5);
+                            calcFuelToAdd = Math.Ceiling(((fuelNeededToEnd + Strategy_CoughAllowance - Strategy_AverageFuelPerLap) / 0.5) * 0.5) + (Math.Ceiling(Strategy_CoughAllowance/0.5) *0.5);
                         }
                         StratAStops.Add(new PitStop(i, calcFuelToAdd));
                         fuel = fuel + calcFuelToAdd;

@@ -7,6 +7,19 @@ using iRacingSDK;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows.Markup;
 using System.Net.Http.Headers;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using MahApps.Metro.Controls;
+using SimRaceX.Telemetry.Comparer.Model;
+using SimHub.Plugins.UI.DeviceScannerModels;
+using System.Collections.Generic;
+using SimHub.Plugins.DataPlugins.PersistantTracker;
+using System.Linq;
+using System.Xml.Linq;
+using Newtonsoft.Json;
+using System.Windows.Media.Animation;
 
 namespace APR.DashSupport
 {
@@ -28,6 +41,20 @@ namespace APR.DashSupport
         public double PreviousSessionTick;
         public long PreviousSessionID;
         public string SessionType;
+
+        public bool LogTelemetery = true;
+        public string _telemFeed = "";
+        public bool lineCrossed = false;
+        private double _lineCrossThreshold = 0.2;
+        private List<TelemetryData> _CurrentLapTelemetry;
+        private CarTrackTelemetry _LastLapTelemetery;
+        public double trackPosition = 0.0;
+        public bool IsFixedSetupSession = false;
+        public double SteeringAngle;
+        public int IncidentCount = 0;
+        public bool CurrentLapHasIncidents;
+        public bool IsCurrentLapValid = true;
+
 
         private void UpdateSessionData(GameData data) {
             SessionType = data.NewData.SessionTypeName;
@@ -51,6 +78,8 @@ namespace APR.DashSupport
 
             // Setup event handlers
             pluginManager.GameStateChanged += new PluginManager.GameRunningChangedDelegate(this.PluginManager_GameStateChanged);
+            pluginManager.NewLap += new PluginManager.NewLapDelegate(this.PluginManager_NewLap);
+
 
             this.OnSessionChange(pluginManager);
 
@@ -113,6 +142,8 @@ namespace APR.DashSupport
 
             InitPitCalculations();
         }
+
+
 
         /// <summary>
         /// Called one time per game data update, contains all normalized game data,
@@ -177,10 +208,16 @@ namespace APR.DashSupport
                     // Standings support removed 18/06/2023
                     //UpdateStandingsRelatedProperties(ref data);
                     UpdateBrakeBar();
-                }
-
-                if (frameCounter == 3) {
-
+                    trackPosition = irData.Telemetry.LapDistPct;
+                    // if we crossed the line, set line cross to true
+                    if (trackPosition < 0.02 ) {
+                        lineCrossed = true;
+                    }
+                    // if the threshold is greater set to false
+                    if (trackPosition > 0.02)
+                    {
+                        lineCrossed = false;
+                    }
                 }
 
                 if (frameCounter == 4) {
@@ -190,12 +227,18 @@ namespace APR.DashSupport
                     GetSetupABS();
                     UpdateFrontARBColour();
                     UpdateRearARBColour();
-                    UpdateTCValues();
-                    UpdateMAPValues();
+                  
                     UpdateBitePointRecommendation();
                     UpdatePitWindowMessage();
                     UpdatePopupPositions();
                 }
+
+                if (frameCounter == 5) {
+                    UpdateTCValues();
+                    UpdateABSValues();
+                    UpdateMAPValues();
+                }
+
 
                 if (frameCounter == 10) {
                     UpdateBrakeBar();
@@ -206,12 +249,105 @@ namespace APR.DashSupport
                     UpdatePitCalculations(ref data);
                 }
 
+               
+
                 if (frameCounter == 30) {
                     UpdateBrakeBar();
                 }
 
                 if (frameCounter == 40) {
                     UpdateBrakeBar();
+                }
+
+                if (LogTelemetery) {
+                    if ((frameCounter % 3) == 0) {
+
+                        _telemFeed = _telemFeed + TelemeteryDataUpdate(pluginManager, ref data);
+
+                        if ( (data.NewData.ReplayMode == "Replay") || (data.NewData.CurrentLapTime.TotalMilliseconds > 0) ) {
+                            if (_CurrentLapTelemetry.Count == 0 || _CurrentLapTelemetry.Last().LapDistance < data.NewData.TrackPositionPercent)
+                                _CurrentLapTelemetry.Add(new TelemetryData {
+                                    Throttle = data.NewData.Throttle,
+                                    Brake = data.NewData.Brake,
+                                    Clutch = data.NewData.Clutch,
+                                    LapDistance = data.NewData.TrackPositionPercent,
+                                    Speed = data.NewData.SpeedKmh,
+                                    Gear = data.NewData.Gear,
+                                    SteeringAngle = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.SteeringWheelAngle")) * -58.0,
+                                    LapTime = data.NewData.CurrentLapTime
+                                });
+                        }
+                    }
+
+                    if (frameCounter == 55) {
+
+                        SteeringAngle = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.SteeringWheelAngle")) * -58.0;
+                        var incidentCount = Convert.ToInt32(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.PlayerCarMyIncidentCount"));
+                        if (incidentCount > IncidentCount) {
+                            CurrentLapHasIncidents = true;
+                            IncidentCount = incidentCount;
+                        }
+
+                        if (lineCrossed) {
+
+                            if (_CurrentLapTelemetry is null)
+                                ResetCurrentLapTelemetry();
+
+                            if (_CurrentLapTelemetry != null && _CurrentLapTelemetry.Count > 0 && IsCurrentLapValid) {
+                                if (PluginManager.GameName == "IRacing")
+                                    IsFixedSetupSession = GetProp("DataCorePlugin.GameRawData.SessionData.DriverInfo.DriverSetupLoadTypeName").ToString() == "fixed";
+                                else
+                                    IsFixedSetupSession = false;
+                                
+
+                                double firstDataDistance = _CurrentLapTelemetry.First().LapDistance;
+                                double lastDataDistance = _CurrentLapTelemetry.Last().LapDistance;
+                              
+
+                                //   (new System.Collections.Generic.Mscorlib_DictionaryDebugView<string, object>(((GameReaderCommon.StatusData<IRacingReader.DataSampleEx>)data.NewData).RawData.Telemetry).Items[68]).Key
+                             
+                                //SessionData._DriverInfo._Drivers[] competingDrivers = this.irData.SessionData.DriverInfo.CompetingDrivers;
+                           
+                                float[] lastLaps = GetProp("DataCorePlugin.GameRawData.Telemetry.CarIdxLastLapTime");
+                                double obsTimeInSeconds = lastLaps[irData.Telemetry.CamCarIdx];
+                                TimeSpan observerdLapTime =  TimeSpan.FromSeconds(obsTimeInSeconds);
+                                var _telemeteryToWrite = _CurrentLapTelemetry;
+                                //Try to check if a complete lap has be done
+                                if (firstDataDistance < 0.1 && lastDataDistance > 0.9 && data.OldData.IsLapValid && obsTimeInSeconds > 0.0 ) {
+                                    var latestLapTelemetry = new CarTrackTelemetry {
+                                        GameName = "IRacing",
+                                        CarName = data.NewData.CarModel,
+                                        TrackName = data.NewData.TrackName,
+                                        PlayerName = data.NewData.PlayerName,
+                                        TrackCode = data.NewData.TrackCode,
+                                        //LapTime = data.NewData.LastLapTime,
+                                        LapTime = observerdLapTime,
+                                        TelemetryDatas = _telemeteryToWrite,
+                                        Created = DateTime.Now,
+                                        IsFixedSetup = _IsFixedSetupSession,
+                                        PluginVersion = "SimRaceX Telemetry Comparer - v1.6.0.0"
+                                    };
+                                    latestLapTelemetry.Type = "Personal best";
+                                    ExportCarTrackTelemetry(latestLapTelemetry);
+                                    _CurrentLapTelemetry = new List<TelemetryData>();
+
+                                }
+                            }
+
+                        }
+
+     
+                    }
+
+                }
+ 
+               
+                // Todo - remove this
+                if (frameCounter == 55) {
+                    if (LogTelemetery) {
+                      //  ProcessWrite(_telemFeed).Wait();
+                        _telemFeed = "";
+                    }
                 }
 
                 if (frameCounter == 50) {
@@ -240,6 +376,12 @@ namespace APR.DashSupport
             this.SaveCommonSettings("GeneralSettings", Settings);
         }
 
+        private void ResetCurrentLapTelemetry() {
+            _CurrentLapTelemetry = new List<TelemetryData>();
+            CurrentLapHasIncidents = false;
+        }
+
+
         /// <summary>
         /// Returns the settings control, return null if no settings control is required
         /// </summary>
@@ -264,6 +406,40 @@ namespace APR.DashSupport
         private void OnSessionChange(PluginManager pluginManager) {
             // Standins support removed 18/06/2023
             //ClearStandings();
+        }
+
+        private void PluginManager_NewLap(int completedLapNumber, bool testLap, PluginManager manager, ref GameData data) {
+           
+        }
+
+        static Task ProcessWrite(string data) {
+            string filePath = @"c:\temp.json";
+            return WriteTextAsync(filePath, data);
+        }
+
+        static async Task WriteTextAsync(string filePath, string text) {
+            byte[] encodedText = Encoding.Unicode.GetBytes(text);
+
+            using (FileStream sourceStream = new FileStream(filePath,
+                FileMode.Append, FileAccess.Write, FileShare.None,
+                bufferSize: 4096, useAsync: true)) {
+                await sourceStream.WriteAsync(encodedText, 0, encodedText.Length);
+            };
+        }
+
+       
+
+        public void ExportCarTrackTelemetry(CarTrackTelemetry exportTelemetery ) {
+            string exportDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Exports");
+            if (!Directory.Exists(exportDir))
+                Directory.CreateDirectory(exportDir);
+            string fileName = System.IO.Path.Combine(exportDir, $"{exportTelemetery.PlayerName}_{exportTelemetery.TrackName}_{exportTelemetery.CarName}_{exportTelemetery.SetupType}_{exportTelemetery.LapTime.ToString(@"mm\.ss\.fff")}.json");
+            using (StreamWriter file = File.CreateText(fileName)) {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, exportTelemetery);
+            }
+            Process.Start(exportDir);
+
         }
 
 

@@ -227,12 +227,24 @@ namespace APR.DashSupport {
 		}
 
 		public void UpdateTCValues() {
-			
+
+            SetProp("TCLabelHighValue", "HI OFF");
+            SetProp("TCLabelLowValue", "LOW");
+
             switch (GetProp("DataCorePlugin.GameData.CarModel")) {
 				case "Ford GT GT3":
 				case "Audi R8 LMS":
 				case "BMW M4 GT3":
-				case "Lamborghini Hurracan GT3 EVO":
+                    SetProp("TCLabelLowValue", "LOW");
+                    SetProp("TCLabelHighValue", "HI OFF");
+                    if (GetProp("TCLevel") == 10) {
+                        SetProp("TCIsOff", true);
+                    }
+                    else {
+                        SetProp("TCIsOff", false);
+                    }
+                    break;
+                case "Lamborghini Hurracan GT3 EVO":
 				case "McLaren MP4-12C GT3":
 				case "Mercedes-AMG GT3 2020":
 				case "Porsche 911 GT3 R":
@@ -247,8 +259,6 @@ namespace APR.DashSupport {
 					break;
 				case "Ferrari 488 GT3 Evo 2020":
 				default:
-					SetProp("TCLabelHighValue", "HI AID");
-					SetProp("TCLabelLowValue", "OFF");
 					if (GetProp("TCLevel") == 1) {
 						SetProp("TCIsOff", true);
 					}
@@ -262,11 +272,24 @@ namespace APR.DashSupport {
 
 		public void UpdateABSValues() {
 
-			switch (GetProp("DataCorePlugin.GameData.CarModel")) {
+            SetProp("ABSHighValueLabel", "HI AID");
+            SetProp("ABSLowValueLabel", "OFF");
+
+            switch (GetProp("DataCorePlugin.GameData.CarModel")) {
 				case "Ford GT GT3":
 				case "Audi R8 LMS":
 				case "BMW M4 GT3":
-				case "Lamborghini Hurracan GT3 EVO":
+                    SetProp("ABSHighValueLabel", "HI OFF");
+                    SetProp("ABSLowValueLabel", "LOW");
+                    if (GetProp("ABSLevel") == 12) {
+                        SetProp("ABSIsOff", true);
+                    }
+                    else {
+                        SetProp("ABSIsOff", false);
+                    }
+
+                    break;
+                case "Lamborghini Hurracan GT3 EVO":
 				case "McLaren MP4-12C GT3":
 				case "Mercedes-AMG GT3 2020":
 				case "Porsche 911 GT3 R":
@@ -282,8 +305,7 @@ namespace APR.DashSupport {
 					break;
 				case "Ferrari 488 GT3 Evo 2020":
 				default:
-					SetProp("ABSHighValueLabel", "HI AID");
-					SetProp("ABSLowValueLabel", "OFF");
+
 					if (GetProp("ABSLevel") == 1) {
 						SetProp("ABSIsOff", true);
 					}

@@ -122,7 +122,7 @@
             </ScrollViewer>
         </styles:SHTabItem>
 
-        <!--<styles:SHTabItem Header="Standings" Height="32" VerticalAlignment="Top">
+        <styles:SHTabItem Header="Standings" Height="32" VerticalAlignment="Top">
             <ScrollViewer>
                 <StackPanel>
                     <styles:SHSection Title="Standings">
@@ -182,7 +182,7 @@
                     </styles:SHSection>
                 </StackPanel>
             </ScrollViewer>
-        </styles:SHTabItem>-->
+        </styles:SHTabItem>
 
 
     </styles:SHTabControl>
