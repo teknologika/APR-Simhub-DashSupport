@@ -42,7 +42,7 @@ namespace APR.DashSupport
         public long PreviousSessionID;
         public string SessionType;
 
-        public bool LogTelemetery = true;
+        public bool LogTelemetery = false;
         public string _telemFeed = "";
         public bool lineCrossed = false;
         private double _lineCrossThreshold = 0.2;
@@ -136,9 +136,9 @@ namespace APR.DashSupport
             //InitRotaryButtons(pluginManager);
             //InitOtherButtons(pluginManager);
 
-            //Standings Support removed 18/8/2023
-            //ClearStandings();
-            //AddStandingsRelatedProperties();
+
+            ClearStandings();
+            AddStandingsRelatedProperties();
 
             InitPitCalculations();
         }
@@ -196,17 +196,16 @@ namespace APR.DashSupport
 
                 bool sessionStartSetupCompleted = false;
                 if (!sessionStartSetupCompleted) {
-
-                    // Standins support removed 18/06/2023
-                    //InitStandings(ref data);
+                    InitStandings(ref data);
                     sessionStartSetupCompleted = true;
                 }
 
                 // Frames are used to reduce calculation frequency
 
                 if (frameCounter == 1) {
-                    // Standings support removed 18/06/2023
-                    //UpdateStandingsRelatedProperties(ref data);
+
+                    UpdateStandingsRelatedProperties(ref data);
+
                     UpdateBrakeBar();
                     trackPosition = irData.Telemetry.LapDistPct;
                     // if we crossed the line, set line cross to true
@@ -357,7 +356,7 @@ namespace APR.DashSupport
 
             else {
                 // Standings support removed 18/06/2023
-                //ClearStandings();
+                ClearStandings();
             }
 
 
@@ -405,7 +404,7 @@ namespace APR.DashSupport
 
         private void OnSessionChange(PluginManager pluginManager) {
             // Standins support removed 18/06/2023
-            //ClearStandings();
+            ClearStandings();
         }
 
         private void PluginManager_NewLap(int completedLapNumber, bool testLap, PluginManager manager, ref GameData data) {

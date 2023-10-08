@@ -16,7 +16,7 @@ using Opponent = GameReaderCommon.Opponent;
 namespace APR.DashSupport {
 
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
-/*        static int iRacingMaxCars = 63;
+/*      static int iRacingMaxCars = 63;
         static int iRacingMaxClasses = 5;
 
         public List<RaceCar> CompetingCars = new List<RaceCar>();
@@ -314,37 +314,40 @@ namespace APR.DashSupport {
             }
         }
 
-/*
+
         public void ClearStandings() {
             if (Settings.EnableStandings) {
-                for (int i = 1; i < iRacingMaxCars + 1; i++) {
-                    string iString = string.Format("{0:00}", i);
-                    SetProp("Standings.Overall.Position" + iString + ".Position", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".Position", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".Number", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".DriverName", string.Empty);
-                    SetProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".GapToCarAhead", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".IsInPit", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".BestLap", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".LastLap", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".IsPlayer", false);
-                    SetProp("Standings.Overall.Position" + iString + ".LapsBehindLeader", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", false);
-                    SetProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", false);
-                    SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
-                    SetProp("Standings.Overall.Position" + iString + ".RowIsVisible", false);
-                    SetProp("Standings.Overall" + iString + ".BestLap", 0);
+                /*
+                    for (int i = 1; i < iRacingMaxCars + 1; i++) {
+                        string iString = string.Format("{0:00}", i);
+                        SetProp("Standings.Overall.Position" + iString + ".Position", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".Position", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".Number", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".DriverName", string.Empty);
+                        SetProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".GapToCarAhead", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".IsInPit", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".BestLap", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".LastLap", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".IsPlayer", false);
+                        SetProp("Standings.Overall.Position" + iString + ".LapsBehindLeader", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", false);
+                        SetProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", false);
+                        SetProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
+                        SetProp("Standings.Overall.Position" + iString + ".RowIsVisible", false);
+                        SetProp("Standings.Overall" + iString + ".BestLap", 0);
 
-                    SetProp("Standings.Overall.Position" + iString + ".Class.ClassId",0D);
-                    SetProp("Standings.Overall.Position" + iString + ".Class.Name", string.Empty);
-                    SetProp("Standings.Overall.Position" + iString + ".Class.Color", string.Empty);
-                    SetProp("Standings.Overall.Position" + iString + ".Class.Position", 0);
-                    SetProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", 0);
-                }
+                        SetProp("Standings.Overall.Position" + iString + ".Class.ClassId",0D);
+                        SetProp("Standings.Overall.Position" + iString + ".Class.Name", string.Empty);
+                        SetProp("Standings.Overall.Position" + iString + ".Class.Color", string.Empty);
+                        SetProp("Standings.Overall.Position" + iString + ".Class.Position", 0);
+                        SetProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", 0);
+                    }
+                */
             }
-         }
-*/
+        }
+
+
         public void InitStandings(ref GameData data) {
             if (Settings.EnableStandings) {
                 /*
