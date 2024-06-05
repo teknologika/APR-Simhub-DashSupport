@@ -18,6 +18,8 @@ namespace APR.DashSupport
     public class DashPluginSettings :INotifyPropertyChanged
     {
 
+        public int MaxCars = 64;
+
         public bool EnableRPMBar { get; set; } = true;
         public bool EnableBrakeAndThrottleBars { get; set; } = true;
         public double BrakeTargetPercentage { get; set; } = 85;
@@ -145,7 +147,9 @@ namespace APR.DashSupport
             }
         }
 
-        public int ColumnStartCarNumber {
+
+
+        public int ColumnStartDriverName {
             get {
                 if (ColumnShowPosition) {
                     return ColumnStartPosition + ColumnWidthPosition;
@@ -154,26 +158,28 @@ namespace APR.DashSupport
                     return ColumnStartPosition;
                 }
             }
+
         }
 
-        public int ColumnStartDriverName {
+        public int ColumnStartCarNumber {
             get {
-                if (ColumnShowCarNumber) {
-                    return ColumnStartCarNumber + ColumnWidthCarNumber;
+                if (ColumnShowDriverName) {
+                    return ColumnStartDriverName + ColumnWidthCarNumber;
+                    
                 }
                 else {
-                    return ColumnStartCarNumber;
+                    return ColumnStartDriverName;
                 }
             }
         }
 
         public int ColumnStartGapToLeader {
             get {
-                if (ColumnShowDriverName) {
-                    return ColumnStartDriverName + ColumnWidthDriverName ;
+                if (ColumnShowCarNumber) {
+                    return ColumnStartCarNumber + ColumnWidthDriverName;
                 }
                 else {
-                    return ColumnStartDriverName;
+                    return ColumnStartCarNumber;
                 }
             }
         }

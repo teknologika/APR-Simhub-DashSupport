@@ -106,6 +106,8 @@ namespace APR.DashSupport
 
             AddProp("ARBColourFront", "White");
             AddProp("ARBColourRear", "White");
+            AddProp("JackerColour", "White");
+
 
             AddProp("TCHighValueLabel", "HI AID");
             AddProp("TCLowValueLabel", "OFF");
@@ -247,8 +249,32 @@ namespace APR.DashSupport
                     UpdateBrakeBar();
                     UpdatePitCalculations(ref data);
                 }
+    
+                /*
+                if (frameCounter == 25) {
 
-               
+                    for (int i = 1; i < Settings.MaxCars ; i++) {
+
+                    }
+
+                    // Write the lap time to the json file
+                    /*
+                    Lap lastLap = new Lap {
+                        SessionID = 1,
+                        TrackID = data.NewData.TrackId,
+                        CarID = data.NewData.CarId,
+                        LapID = data.NewData.CurrentLap - 1,
+                        DriverID = data.NewData.PlayerName,
+                        LapTime = data.NewData.LastLapTime,
+                        TrackState = (string)pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionData.SessionInfo.Sessions01.SessionTrackRubberState"),
+                        TrackTemp = data.NewData.RoadTemperature
+                    };
+                    LapData.AddLapAsync(lastLap);
+                    
+                }           
+
+                */
+
 
                 if (frameCounter == 30) {
                     UpdateBrakeBar();

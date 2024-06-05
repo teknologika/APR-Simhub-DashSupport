@@ -44,6 +44,9 @@ namespace APR.DashSupport {
 			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBlades") != null) {
 				inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBlades"));
 			}
+			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.BarBladePosition") != null) {
+				inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.BarBladePosition"));
+			}
 
 			if (inCar == inSetup) {
 				SetProp("ARBColourFront", "Green");
@@ -53,7 +56,28 @@ namespace APR.DashSupport {
 			}
 		}
 
-		public void UpdateRearARBColour() {
+        public void UpdateJackerColour() {
+
+            int inCar = 0;
+            if (GetProp("GameRawData.Telemetry.dcWeightJackerRight") != null) {
+                inCar = Convert.ToInt32(GetProp("GameRawData.Telemetry.dcWeightJackerRight"));
+            }
+            int inSetup = 0;
+            if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.WeightJacker") != null) {
+                inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.WeightJacker"));
+            }
+
+
+
+            if (inCar == inSetup) {
+                SetProp("JackerColour", "Green");
+            }
+            else {
+                SetProp("JackerColour", "White");
+            }
+        }
+
+        public void UpdateRearARBColour() {
 
 			int inCar = 0;
 			if (GetProp("GameRawData.Telemetry.dcAntiRollRear") != null) {
@@ -66,9 +90,12 @@ namespace APR.DashSupport {
 			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBlades") != null) {
 				inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBlades"));
 			}
-			
+            else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.RearArb.ArbBlades") != null) {
+                inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.RearArb.ArbBlades"));
+            }
 
-			if (inCar == inSetup) {
+
+            if (inCar == inSetup) {
 				SetProp("ARBColourRear", "Green");
 			}
 			else {
@@ -99,8 +126,14 @@ namespace APR.DashSupport {
 			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.General.BrakePressureBias") != null) {
 				setupBias = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.General.BrakePressureBias");
 			}
+            else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarAdjustments.BrakePressureBias") != null) {
+                setupBias = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarAdjustments.BrakePressureBias");
+            }
 
-			Settings.SetupBrakeBiasPercentage = double.Parse(setupBias.Replace("%", ""));
+            
+
+
+            Settings.SetupBrakeBiasPercentage = double.Parse(setupBias.Replace("%", ""));
 			double bias = GetProp("BrakeBias");
 
 			if (bias == Settings.SetupBrakeBiasPercentage) {
@@ -136,7 +169,11 @@ namespace APR.DashSupport {
 				string[] splitter = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.BrakesDriveUnit.TractionControl.TractionControlSlip").Split(' ');
 				setupVal = Convert.ToString(splitter[0]);
 			}
-			string tc = Convert.ToString(GetProp("DataCorePlugin.GameData.TCLevel"));
+            else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarAdjustments.TcSetting") != null) {
+                string[] splitter = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarAdjustments.TcSetting").Split(' ');
+                setupVal = Convert.ToString(splitter[0]);
+            }
+            string tc = Convert.ToString(GetProp("DataCorePlugin.GameData.TCLevel"));
 			if (tc == setupVal) {
 				SetProp("TCColour", "Green");
 			}
@@ -327,7 +364,46 @@ namespace APR.DashSupport {
 			}
 
 			switch (GetProp("DataCorePlugin.GameData.CarModel")) {
-				case "Ford GT GT3":
+                case "Dallara IR18":
+                    switch (mapVal) {
+                        case 1:
+                            SetProp("MAPLabel", "1 - RACE");
+                            SetProp("MAPLabelColour", "GREEN");
+                            break;
+                        case 2:
+                            SetProp("MAPLabel", "2 - SAVE");
+                            SetProp("MAPLabelColour", "Orange");
+                            break;
+                        case 3:
+                            SetProp("MAPLabel", "3 - SAVE");
+                            SetProp("MAPLabelColour", "Orange");
+                            break;
+                        case 4:
+                            SetProp("MAPLabel", "4 - SAVE");
+                            SetProp("MAPLabelColour", "Orange");
+                            break;
+                        case 5:
+                            SetProp("MAPLabel", "5 - SAVE");
+                            SetProp("MAPLabelColour", "Orange");
+                            break;
+                        case 6:
+                            SetProp("MAPLabel", "6 - RACE");
+                            SetProp("MAPLabelColour", "Green");
+                            break;
+                        case 7:
+                            SetProp("MAPLabel", "7 - RACE");
+                            SetProp("MAPLabelColour", "Green");
+                            break;
+                        case 8:
+                            SetProp("MAPLabel", "8 - PACING");
+                            SetProp("MAPLabelColour", "Orange");
+                            break;
+                        default:
+                            SetProp("MAPLabel", mapVal.ToString());
+                            break;
+                    }
+                    break;
+                case "Ford GT GT3":
 				case "Audi R8 LMS":
 				case "BMW M4 GT3":
 				case "Lamborghini Hurracan GT3 EVO":
