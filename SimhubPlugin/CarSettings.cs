@@ -199,8 +199,12 @@ namespace APR.DashSupport {
 				string[] splitter = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarDials.AbsSetting").Split(' ');
 				setupVal = Convert.ToString(splitter[0]);
 			}
+            else if (GetProp("Added") != null) {
+                string[] splitter = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarAdjustments.AbsSetting").Split(' ');
+                setupVal = Convert.ToString(splitter[0]);
+            }
 
-			string absLevel = Convert.ToString(GetProp("DataCorePlugin.GameData.ABSLevel"));
+            string absLevel = Convert.ToString(GetProp("DataCorePlugin.GameData.ABSLevel"));
 			if (absLevel == setupVal) {
 				SetProp("ABSColour", "Green");
 			}
