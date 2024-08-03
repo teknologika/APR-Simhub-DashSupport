@@ -6,7 +6,13 @@ using System.Globalization;
 namespace APR.DashSupport {
 	public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
-		public void UpdateBrakeBar() {
+
+		public void UpdateStrategy() {
+
+		}
+
+
+        public void UpdateBrakeBar() {
 
 			var brakePercentage = (double)GetProp("DataCorePlugin.GameData.Brake");
 			string brakeBarColour;

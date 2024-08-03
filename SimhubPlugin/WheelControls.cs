@@ -1,5 +1,7 @@
+using GameReaderCommon.Replays;
 using SimHub.Plugins;
 using System;
+using System.Diagnostics.Eventing.Reader;
 
 namespace APR.DashSupport {
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
@@ -24,6 +26,14 @@ namespace APR.DashSupport {
         private bool volDownPressed = false;
         private bool prevButtonPressed = false;
         private bool nextButtonPressed = false;
+        private bool thanksButtonPressed = false;
+        private bool sorryButtonPressed = false;
+        private bool randomInsultAheadPressed = false;
+        private bool randomInsultBehindPressed = false;
+        private bool passLeftPressed = false;
+        private bool passRightPressed = false;
+
+
 
 
         public void InitRotaries(PluginManager pluginManager) {
@@ -52,6 +62,7 @@ namespace APR.DashSupport {
                 if (this.scrlRotary < 1)
                     this.scrlRotary = 12;
             }));
+
         }
 
         public void InitRotaryButtons(PluginManager pluginManager) {
@@ -78,6 +89,78 @@ namespace APR.DashSupport {
             pluginManager.AddAction("CentreRotaryReleased", this.GetType(), (Action<PluginManager, string>)((a, b) => this.centreRotaryPressed = false));
         }
 
+        public void InitStrategyButtons(PluginManager pluginManager) {
+
+            pluginManager.AddAction("Strategy.btnStratAPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                Settings.Strategy_SelectedStrategy = "A";
+                SetProp("Strategy.Indicator.StratMode", Settings.Strategy_SelectedStrategy);
+            }));
+  
+            pluginManager.AddAction("Strategy.btnStratBPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                Settings.Strategy_SelectedStrategy = "B";
+                SetProp("Strategy.Indicator.StratMode", Settings.Strategy_SelectedStrategy);
+            }));
+
+            pluginManager.AddAction("Strategy.btnStratCPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                Settings.Strategy_SelectedStrategy = "C";
+                SetProp("Strategy.Indicator.StratMode", Settings.Strategy_SelectedStrategy);
+            }));
+   
+            pluginManager.AddAction("Strategy.btnStratDPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                Settings.Strategy_SelectedStrategy = "D";
+                SetProp("Strategy.Indicator.StratMode", Settings.Strategy_SelectedStrategy);
+            }));
+
+            pluginManager.AddAction("Strategy.btnPaceCarPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                if (Settings.Strategy_UnderSC) {
+                    Settings.Strategy_UnderSC = false;
+                }
+                else {
+                    Settings.Strategy_UnderSC = true;
+                }
+                SetProp("Strategy.Indicator.UnderSC", Settings.Strategy_UnderSC);
+
+            }));
+
+            pluginManager.AddAction("Strategy.btnCPS1Pressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                if (Settings.Strategy_CPS_Completed == 0) {
+                    Settings.Strategy_CPS_Completed++;
+                }
+                else if (Settings.Strategy_CPS_Completed == 1 ) {
+                    Settings.Strategy_CPS_Completed--;
+                }
+                SetCPSIndicators();
+            }));
+
+            pluginManager.AddAction("Strategy.btnCPS2Pressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                if (Settings.Strategy_CPS_Completed == 1) {
+                    Settings.Strategy_CPS_Completed++;
+                }
+                else if (Settings.Strategy_CPS_Completed == 2) {
+                    Settings.Strategy_CPS_Completed--;
+                }
+                SetCPSIndicators();
+            }));
+
+        }
+
+        private void SetCPSIndicators() {
+            switch (Settings.Strategy_CPS_Completed) {
+                case 1:
+                    SetProp("Strategy.Indicator.CPS1Served", true);
+                    SetProp("Strategy.Indicator.CPS2Served", false);
+                    break;
+                case 2:
+                    SetProp("Strategy.Indicator.CPS1Served", true);
+                    SetProp("Strategy.Indicator.CPS2Served", true);
+                    break;
+                default:
+                    SetProp("Strategy.Indicator.CPS1Served", false);
+                    SetProp("Strategy.Indicator.CPS2Served", false);
+                    break;
+            }
+        }
+            
         public void InitOtherButtons(PluginManager pluginManager) {
 
             this.AttachDelegate("Button_FlashPressed", () => this.flashButtonPressed);
@@ -111,6 +194,35 @@ namespace APR.DashSupport {
             this.AttachDelegate("Button_nextPressed", () => this.nextButtonPressed);
             pluginManager.AddAction("btnNextPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.nextButtonPressed = true));
             pluginManager.AddAction("btnNextReleased", this.GetType(), (Action<PluginManager, string>)((a, b) => this.nextButtonPressed = false));
+
+            this.AttachDelegate("Button_ThanksPressed", () => this.thanksButtonPressed);
+            pluginManager.AddAction("btnThanksPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.thanksButtonPressed = true));
+            pluginManager.AddAction("btnThanksPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.thanksButtonPressed = false));
+
+            this.AttachDelegate("Button_SorryPressed", () => this.sorryButtonPressed);
+            pluginManager.AddAction("btnSorryPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.sorryButtonPressed = true));
+            pluginManager.AddAction("btnSorryPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.sorryButtonPressed = false));
+
+            this.AttachDelegate("Button_InsultAhead", () => this.randomInsultAheadPressed);
+            pluginManager.AddAction("btnInsultAheadPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.randomInsultAheadPressed = true));
+            pluginManager.AddAction("btnInsultAheadPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.randomInsultAheadPressed = false));
+
+            this.AttachDelegate("Button_InsultBehindPressed", () => this.randomInsultBehindPressed);
+            pluginManager.AddAction("btnInsultBehindPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.randomInsultBehindPressed = true));
+            pluginManager.AddAction("btnInsultBehindPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.randomInsultBehindPressed = false));
+
+            this.AttachDelegate("Button_PassLeftPressed", () => this.passLeftPressed);
+            pluginManager.AddAction("btnPassLeftPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.passLeftPressed = true));
+            pluginManager.AddAction("btnPassLeftPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.passLeftPressed = false));
+
+            this.AttachDelegate("Button_PassRightPressed", () => this.passRightPressed);
+            pluginManager.AddAction("btnPassRightPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.passRightPressed = true));
+            pluginManager.AddAction("btnPassRightPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.passRightPressed = false));
+
+
+
+
+
         }
     }
 }

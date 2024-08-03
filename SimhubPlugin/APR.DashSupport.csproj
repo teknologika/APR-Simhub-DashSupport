@@ -110,6 +110,7 @@
     <Compile Include="SimRaceX\TelemeteryData.cs" />
     <Compile Include="Standings.cs" />
     <Compile Include="TelemeteryExport.cs" />
+    <Compile Include="TextChat.cs" />
     <Compile Include="WheelControls.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -84,6 +84,7 @@ namespace APR.DashSupport
             this.OnSessionChange(pluginManager);
 
             InitRotaries(pluginManager);
+            InitStrategyButtons(pluginManager);
 
 
             this.AttachDelegate("EnableBrakeAndThrottleBars", () => Settings.EnableBrakeAndThrottleBars);
@@ -134,6 +135,14 @@ namespace APR.DashSupport
             AddProp("LaunchBitePointAdjusted", 0);
             AddProp("LaunchPreferFullThrottleStarts", Settings.PreferFullThrottleStarts);
             AddProp("LaunchUsingDualClutchPaddles", Settings.LaunchUsingDualClutchPaddles);
+
+
+            AddProp("Strategy.Indicator.StratMode", "A");
+            AddProp("Strategy.Indicator.UnderSC", false);
+            AddProp("Strategy.Indicator.CPS1Served", false);
+            AddProp("Strategy.Indicator.CPS2Served", false);
+
+            //HERE
 
             //InitRotaryButtons(pluginManager);
             //InitOtherButtons(pluginManager);
@@ -249,7 +258,11 @@ namespace APR.DashSupport
                     UpdateBrakeBar();
                     UpdatePitCalculations(ref data);
                 }
-    
+
+                if (frameCounter == 25) {
+                    UpdateStrategy();
+                
+                }
                 /*
                 if (frameCounter == 25) {
 

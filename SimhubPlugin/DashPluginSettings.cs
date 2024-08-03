@@ -6,6 +6,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Runtime;
 using System.Runtime.CompilerServices;
+using System.Windows.Forms;
 using Color = System.Drawing.Color;
 
 namespace APR.DashSupport
@@ -17,7 +18,6 @@ namespace APR.DashSupport
     /// </summary>
     public class DashPluginSettings :INotifyPropertyChanged
     {
-
         public int MaxCars = 64;
 
         public bool EnableRPMBar { get; set; } = true;
@@ -37,10 +37,13 @@ namespace APR.DashSupport
         public bool AdjustBiteRecommendationForTrackTemp { get; set; } = false;
         public bool LaunchUsingDualClutchPaddles { get; set; } = false;
 
-        
+        public string Strategy_SelectedStrategy { get; set; } = "A";
+        public int Strategy_CPS_Completed { get; set; } = 0;
+        public bool Strategy_UnderSC { get; set; } = false;
+
         // Settings to support standings
-        
-        
+
+
         // Enable Standings Properties and calculations
         public bool EnableStandings { get; set; } = false;
 
