@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/SimhubPlugin/.vs/APR.DashSupport/FileContentIndex/a06d9134-7989-4e44-8d85-426f6ae4f846.vsidx
+/SimhubPlugin/.vs/APR.DashSupport/v17/.suo
+/SimhubPlugin/obj/Debug/APR.DashSupport.dll
+/SimhubPlugin/obj/Debug/APR.DashSupport.pdb
+/SimhubPlugin/.vs/APR.DashSupport/v17/DocumentLayout.json
+/SimhubPlugin/.vs/APR.DashSupport/FileContentIndex/33bdaa5f-41de-47c8-885d-199c05cf7f3a.vsidx
