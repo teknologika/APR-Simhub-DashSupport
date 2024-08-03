@@ -41,6 +41,8 @@ namespace APR.DashSupport
         public double PreviousSessionTick;
         public long PreviousSessionID;
         public string SessionType;
+        public bool IsV8VetsSession = false;
+        public bool IsV8VetsRaceSession = false;
 
         public bool LogTelemetery = false;
         public string _telemFeed = "";
@@ -60,8 +62,31 @@ namespace APR.DashSupport
             SessionType = data.NewData.SessionTypeName;
             PreviousSessionTick = (double)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.SessionTime");
             PreviousSessionID = (long)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionData.WeekendInfo.SessionID");
+            IsV8VetsLeagueSession();
+
         }
 
+        private void IsV8VetsLeagueSession() {
+            var leagueID = (long)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionData.WeekendInfo.LeagueID");
+
+            if ((leagueID == 6455) || (leagueID == 10129) || (leagueID == 6788)) {
+                IsV8VetsSession = true;
+            }
+            else {
+                IsV8VetsSession = false;
+            }
+
+            if (IsV8VetsSession) {
+                string SessionTypeName = (string)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionTypeName");
+                if (SessionTypeName == "Race") {
+                    IsV8VetsRaceSession = true;
+                }
+                else {
+                    IsV8VetsRaceSession = false;
+                }
+            }
+
+        }
 
         /// <summary>
         /// Called once after plugins startup
@@ -200,7 +225,8 @@ namespace APR.DashSupport
                         DebugMessage("APR: Session reset or session changed.");
 
                         this.UpdateSessionData(data);
-
+                        SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
+                        SetProp("Strategy.Vets.IsVetsRaceSession", IsV8VetsRaceSession);
                     }
                     this.PreviousSessionState = num;
                 }

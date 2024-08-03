@@ -77,6 +77,11 @@ namespace APR.DashSupport {
                 AddProp("Strategy.Basic.AvailableTankSize", 0);
                 AddProp("Strategy.Basic.LatestStopToMakeFinish", 0);
                 AddProp("Strategy.Basic.LastStopFuelToAdd", 0);
+
+                AddProp("Strategy.Vets.IsVetsSession", false);
+                AddProp("Strategy.Vets.IsVetsRaceSession", false);
+
+
             }
         }
 
@@ -177,6 +182,8 @@ namespace APR.DashSupport {
                 SetProp("Strategy.Basic.EarliestStopToMakeFinish", Strategy_EarliestStopToMakeFinish);
                 SetProp("Strategy.Basic.LatestStopToMakeFinish", Strategy_LatestStopToMakeFinish);
                 SetProp("Strategy.Basic.LastStopFuelToAdd", Strategy_LastStopFuelToAdd);
+
+
 
                 StratA();
             }
