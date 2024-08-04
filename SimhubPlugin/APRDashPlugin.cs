@@ -43,6 +43,8 @@ namespace APR.DashSupport
         public string SessionType;
         public bool IsV8VetsSession = false;
         public bool IsV8VetsRaceSession = false;
+        public bool IsUnderSafetyCar = false;
+        public string[] V8VetsSafetyCarNames = { "BMW M4 GT4", "Mercedes AMG GT3" };
 
         public bool LogTelemetery = false;
         public string _telemFeed = "";
@@ -77,8 +79,7 @@ namespace APR.DashSupport
             }
 
             if (IsV8VetsSession) {
-                string SessionTypeName = (string)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionTypeName");
-                if (SessionTypeName == "Race") {
+                if (SessionType == "Race") {
                     IsV8VetsRaceSession = true;
                 }
                 else {
@@ -87,6 +88,35 @@ namespace APR.DashSupport
             }
 
         }
+
+
+        private void CheckIfUnderSafetyCar() {
+            if (2 == (long)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.PaceMode")) {
+                IsUnderSafetyCar = true;
+            }
+            else {
+                if (IsV8VetsRaceSession) {
+                    for (int i = 1; i < Settings.MaxCars; i++) {
+                        string carName = (string)this.PluginManager.GetPropertyValue($"IRacingExtraProperties.iRacing_Leaderboard_Driver_{i:00}_CarName");
+                        if (V8VetsSafetyCarNames.Contains(carName)) {
+                            bool isInPit = (bool)this.PluginManager.GetPropertyValue($"IRacingExtraProperties.iRacing_Leaderboard_Driver_{i:00}_IsInPit");
+                            if (!isInPit) {
+                                IsUnderSafetyCar = true;
+                            }
+                            else {
+                                IsUnderSafetyCar = false;
+                            }
+                        }
+                    }
+                }
+                else {
+                    IsUnderSafetyCar = false;
+                }
+            }
+            SetProp("Strategy.Vets.IsUnderSafetyCar", IsUnderSafetyCar);
+        }
+
+
 
         /// <summary>
         /// Called once after plugins startup
@@ -278,6 +308,7 @@ namespace APR.DashSupport
 
                 if (frameCounter == 10) {
                     UpdateBrakeBar();
+                    CheckIfUnderSafetyCar();
                 }
 
                 if (frameCounter == 20) {
