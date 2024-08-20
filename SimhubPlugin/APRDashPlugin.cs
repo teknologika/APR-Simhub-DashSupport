@@ -20,6 +20,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using System.Windows.Media.Animation;
+using static iRacingSDK.SessionData._RadioInfo;
 
 namespace APR.DashSupport
 {
@@ -45,6 +46,7 @@ namespace APR.DashSupport
         public bool IsV8VetsRaceSession = false;
         public bool IsUnderSafetyCar = false;
         public string[] V8VetsSafetyCarNames = { "BMW M4 GT4", "Mercedes AMG GT3" };
+        public bool IsIRacingAdmin = false;
 
         public bool LogTelemetery = false;
         public string _telemFeed = "";
@@ -67,6 +69,26 @@ namespace APR.DashSupport
             IsV8VetsLeagueSession();
 
         }
+
+        // check if the user can transmit on @RACECONTROL to see if we are an admin
+        private void CheckIfiRacingAdmin(GameData data) {
+            IsIRacingAdmin = false;
+            if (data.NewData != null ) {
+                SessionData._RadioInfo._Radios[] radios = this.irData.SessionData.RadioInfo.Radios;
+                foreach (var radio in radios) {
+                    SessionData._RadioInfo._Radios._Frequencies[] frequencies = radio.Frequencies;
+                    foreach (var frequency in frequencies) {
+                        if (frequency.FrequencyName.Contains("RACECONTROL")) {
+                            if (frequency.CanSquawk == 1) {
+                                IsIRacingAdmin = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }         
+        }
+
 
         private void IsV8VetsLeagueSession() {
             var leagueID = (long)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionData.WeekendInfo.LeagueID");
@@ -91,8 +113,11 @@ namespace APR.DashSupport
 
 
         private void CheckIfUnderSafetyCar() {
-            if (2 == (long)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.PaceMode")) {
+            var paceMode = this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.PaceMode");
+            if (2 == (int)paceMode ) {
                 IsUnderSafetyCar = true;
+                SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
+                return;
             }
             else {
                 if (IsV8VetsRaceSession) {
@@ -102,18 +127,19 @@ namespace APR.DashSupport
                             bool isInPit = (bool)this.PluginManager.GetPropertyValue($"IRacingExtraProperties.iRacing_Leaderboard_Driver_{i:00}_IsInPit");
                             if (!isInPit) {
                                 IsUnderSafetyCar = true;
-                            }
-                            else {
-                                IsUnderSafetyCar = false;
+                                SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
+                                return;
                             }
                         }
                     }
                 }
                 else {
                     IsUnderSafetyCar = false;
+                    SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
                 }
             }
-            SetProp("Strategy.Vets.IsUnderSafetyCar", IsUnderSafetyCar);
+            IsUnderSafetyCar = false;
+            SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
         }
 
 
@@ -197,6 +223,10 @@ namespace APR.DashSupport
             AddProp("Strategy.Indicator.CPS1Served", false);
             AddProp("Strategy.Indicator.CPS2Served", false);
 
+            AddProp("Strategy.Indicator.RCMode", false);
+            AddProp("Strategy.Indicator.isiRacingAdmin", IsIRacingAdmin = false);
+
+
             //HERE
 
             //InitRotaryButtons(pluginManager);
@@ -257,6 +287,12 @@ namespace APR.DashSupport
                         this.UpdateSessionData(data);
                         SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
                         SetProp("Strategy.Vets.IsVetsRaceSession", IsV8VetsRaceSession);
+                        SetProp("Strategy.Indicator.RCMode", Settings.Strategy_RCMode);
+
+                        // Check if we are an iRacing Admin
+                        CheckIfiRacingAdmin(data);
+                        SetProp("Strategy.Indicator.isiRacingAdmin", IsIRacingAdmin);
+
                     }
                     this.PreviousSessionState = num;
                 }
@@ -318,7 +354,7 @@ namespace APR.DashSupport
 
                 if (frameCounter == 25) {
                     UpdateStrategy();
-                
+                    SetProp("Strategy.Indicator.RCMode", Settings.Strategy_RCMode);
                 }
                 /*
                 if (frameCounter == 25) {

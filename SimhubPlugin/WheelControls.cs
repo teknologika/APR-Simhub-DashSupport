@@ -33,7 +33,21 @@ namespace APR.DashSupport {
         private bool passLeftPressed = false;
         private bool passRightPressed = false;
 
+        public void RaceControlAction(string ChatText, string AudioSampleName) {
+            
+            RadioAndTextChat.pressVJoyButton(Settings.ControlMapperVoyInstance, Settings.ControlMapperVoyPushToTalkButtonId);
+            RadioAndTextChat.iRacingChat(ChatText,IsIRacingAdmin);
+            RadioAndTextChat.playSound(Settings.AudioSamplesFolder + AudioSampleName, Settings.AudioSamplesOutputDevice);
+            RadioAndTextChat.releaseVJoyButton(Settings.ControlMapperVoyInstance, Settings.ControlMapperVoyPushToTalkButtonId);
+        }
 
+        public void RaceControlAction(string ChatTextOne, string ChatTextTwo, string AudioSampleName) {
+            RadioAndTextChat.pressVJoyButton(Settings.ControlMapperVoyInstance, Settings.ControlMapperVoyPushToTalkButtonId);
+            RadioAndTextChat.iRacingChat(ChatTextOne, IsIRacingAdmin);
+            RadioAndTextChat.iRacingChat(ChatTextTwo, IsIRacingAdmin);
+            RadioAndTextChat.playSound(Settings.AudioSamplesFolder + AudioSampleName, Settings.AudioSamplesOutputDevice);
+            RadioAndTextChat.releaseVJoyButton(Settings.ControlMapperVoyInstance, Settings.ControlMapperVoyPushToTalkButtonId);
+        }
 
 
         public void InitRotaries(PluginManager pluginManager) {
@@ -121,6 +135,63 @@ namespace APR.DashSupport {
                 SetProp("Strategy.Indicator.UnderSC", Settings.Strategy_UnderSC);
 
             }));
+
+            pluginManager.AddAction("RC.SC.Deploy", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** SAFETY CAR *** SAFETY CAR *** SAFETY CAR ***", "bruce-SafetyCar.mp3");
+            }));
+
+            pluginManager.AddAction("RC.SC.PitExitClosed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** PIT EXIT IS CLOSED ***", "bruce-PitExitIsNowClosed.mp3");
+            }));
+
+            pluginManager.AddAction("RC.SC.PitExitIsOpen", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** PIT EXIT IS OPEN ***", "bruce-PitExitIsNowOpen.mp3");
+            }));
+
+            pluginManager.AddAction("RC.SC.WeWillUnlap", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** WE WILL UNLAP CARS ***", "bruce-WeWillUnlap.mp3");
+            }));
+
+            pluginManager.AddAction("RC.SC.LineUp", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** ALL CARS LINE UP ON THE LEFT ***", "bruce-AllCarsOnTheLeft.mp3");
+                RaceControlAction("*** LAPPED CARS LINE UP ON THE RIGHT ***", "bruce-EligibleCarsOnTheRight.mp3");
+            }));
+
+            pluginManager.AddAction("RC.SC.LappedMayPass", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** ELIGIBLE CARS MAY NOW PASS THE SC ***", "bruce-LappedCarsMayPass.mp3");
+            }));
+
+            pluginManager.AddAction("RC.SC.RestartingThisLap", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** WE ARE RESTARTING THIS LAP ***", "bruce-RestartCurrentLap.mp3");
+            }));
+
+            pluginManager.AddAction("RC.SC.SCEnteringPitlane", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** SAFETY CAR ENTERING PITLANE ***", "bruce-SafetyCarInTheLane.mp3");
+            }));
+
+
+            pluginManager.AddAction("Strategy.btnRCModePressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                if (Settings.Strategy_RCMode) {
+                    Settings.Strategy_RCMode = false;
+                }
+                else {
+                    Settings.Strategy_RCMode = true;
+                }
+                SetProp("Strategy.Indicator.RCMode", Settings.Strategy_RCMode);
+            }));
+
+
+            pluginManager.AddAction("Strategy.btnPaceCarPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                if (Settings.Strategy_UnderSC) {
+                    Settings.Strategy_UnderSC = false;
+                }
+                else {
+                    Settings.Strategy_UnderSC = true;
+                }
+                SetProp("Strategy.Indicator.UnderSC", Settings.Strategy_UnderSC);
+
+            }));
+
 
             pluginManager.AddAction("Strategy.btnCPS1Pressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
                 if (Settings.Strategy_CPS_Completed == 0) {

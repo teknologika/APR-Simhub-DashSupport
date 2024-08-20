@@ -11,7 +11,6 @@ namespace APR.DashSupport {
 
 		}
 
-
         public void UpdateBrakeBar() {
 
 			var brakePercentage = (double)GetProp("DataCorePlugin.GameData.Brake");

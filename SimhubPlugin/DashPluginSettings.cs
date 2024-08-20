@@ -40,6 +40,13 @@ namespace APR.DashSupport
         public string Strategy_SelectedStrategy { get; set; } = "A";
         public int Strategy_CPS_Completed { get; set; } = 0;
         public bool Strategy_UnderSC { get; set; } = false;
+        public bool Strategy_RCMode { get; set; } = false;
+
+        public string AudioSamplesOutputDevice { get; set; } = "Sample (TC-HELICON GoXLR Mini)";
+        public string AudioSamplesFolder { get; set; } = "./RCSamples/";
+
+        public uint ControlMapperVoyInstance { get; set; } = 3;
+        public uint ControlMapperVoyPushToTalkButtonId { get; set; } = 1;
 
         // Settings to support standings
 
