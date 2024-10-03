@@ -1,3 +1,4 @@
+using GameReaderCommon;
 using GameReaderCommon.Replays;
 using SimHub.Plugins;
 using System;
@@ -49,6 +50,19 @@ namespace APR.DashSupport {
             RadioAndTextChat.releaseVJoyButton(Settings.ControlMapperVoyInstance, Settings.ControlMapperVoyPushToTalkButtonId);
         }
 
+        public void PrivateChatCarBehindAction(string Text) {
+            if (DriverBehindId != string.Empty) {
+                Text = "/" + DriverBehindId + " " + Text;
+            }
+            RadioAndTextChat.iRacingChat(Text, false);
+        }
+
+        public void PrivateChatCarAheadAction(string Text) {
+            if (DriverAheadId != string.Empty) {
+                Text = "/" + DriverAheadId + " " + Text;
+            }
+            RadioAndTextChat.iRacingChat(Text, false);  
+        }
 
         public void InitRotaries(PluginManager pluginManager) {
 
@@ -136,6 +150,7 @@ namespace APR.DashSupport {
 
             }));
 
+            /// Race Control specific buttons
             pluginManager.AddAction("RC.SC.Deploy", this.GetType(), (Action<PluginManager, string>)((a, b) => {
                 RaceControlAction("*** SAFETY CAR *** SAFETY CAR *** SAFETY CAR ***", "bruce-SafetyCar.mp3");
             }));
@@ -167,6 +182,20 @@ namespace APR.DashSupport {
 
             pluginManager.AddAction("RC.SC.SCEnteringPitlane", this.GetType(), (Action<PluginManager, string>)((a, b) => {
                 RaceControlAction("*** SAFETY CAR ENTERING PITLANE ***", "bruce-SafetyCarInTheLane.mp3");
+            }));
+
+
+            // Opponent chat buttons
+            pluginManager.AddAction("Chat.Ahead.BlueFlags", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                PrivateChatCarAheadAction("Can I pass please?");
+            }));
+
+            pluginManager.AddAction("Chat.Behind.PittingIn", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                PrivateChatCarAheadAction("I'm pitting.");
+            }));
+
+            pluginManager.AddAction("Chat.Behind.Thanks", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                PrivateChatCarAheadAction("Thank");
             }));
 
 

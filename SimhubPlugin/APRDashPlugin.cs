@@ -61,6 +61,11 @@ namespace APR.DashSupport
         public bool CurrentLapHasIncidents;
         public bool IsCurrentLapValid = true;
 
+        public string DriverAheadId = string.Empty;
+        public string DriverAheadName = string.Empty;
+        public string DriverBehindId = string.Empty;
+        public string DriverBehindName = string.Empty;
+
 
         private void UpdateSessionData(GameData data) {
             SessionType = data.NewData.SessionTypeName;
@@ -240,7 +245,6 @@ namespace APR.DashSupport
         }
 
 
-
         /// <summary>
         /// Called one time per game data update, contains all normalized game data,
         /// raw data are intentionnally "hidden" under a generic object type (A plugin SHOULD NOT USE IT)
@@ -384,6 +388,24 @@ namespace APR.DashSupport
 
                 if (frameCounter == 30) {
                     UpdateBrakeBar();
+
+                    // Update driver behind and ahead
+                    if (data.NewData.OpponentsAheadOnTrack.Count > 0) {
+                        DriverAheadId = data.NewData.OpponentsAheadOnTrack[0].CarNumber;
+                        DriverAheadName = data.NewData.OpponentsAheadOnTrack[0].Name.Split(' ')[0];
+                    }
+                    else {
+                        DriverAheadId = string.Empty;
+                        
+                    }
+
+                    if (data.NewData.OpponentsBehindOnTrack.Count > 0) {
+                        DriverBehindId = data.NewData.OpponentsBehindOnTrack[0].CarNumber;
+                        DriverBehindName = data.NewData.OpponentsBehindOnTrack[0].Name.Split(' ')[0];
+                    }
+                    else {
+                        DriverBehindId = string.Empty;
+                    }
                 }
 
                 if (frameCounter == 40) {
@@ -430,7 +452,6 @@ namespace APR.DashSupport
                                 else
                                     IsFixedSetupSession = false;
                                 
-
                                 double firstDataDistance = _CurrentLapTelemetry.First().LapDistance;
                                 double lastDataDistance = _CurrentLapTelemetry.Last().LapDistance;
                               
