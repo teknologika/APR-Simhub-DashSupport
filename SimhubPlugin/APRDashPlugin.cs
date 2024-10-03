@@ -390,22 +390,34 @@ namespace APR.DashSupport
                     UpdateBrakeBar();
 
                     // Update driver behind and ahead
-                    if ((data.NewData.OpponentsAheadOnTrack.Count > 0) & (data.NewData.OpponentsAheadOnTrack[0].RelativeGapToPlayer < 1.0)) {
-        
-                        DriverAheadId = data.NewData.OpponentsAheadOnTrack[0].CarNumber;
-                        DriverAheadName = data.NewData.OpponentsAheadOnTrack[0].Name.Split(' ')[0];
+                    if (data.NewData.OpponentsAheadOnTrack.Count > 0) {
+                        if (data.NewData.OpponentsAheadOnTrack[0].RelativeGapToPlayer < 1.0) {
+                            DriverAheadId = data.NewData.OpponentsAheadOnTrack[0].CarNumber;
+                            DriverAheadName = data.NewData.OpponentsAheadOnTrack[0].Name.Split(' ')[0];
+                        }
+                        else {
+                            DriverAheadId = string.Empty;
+                            DriverAheadName = string.Empty;
+                        }
                     }
                     else {
                         DriverAheadId = string.Empty;
-                        
+                        DriverAheadName = string.Empty;
                     }
 
-                    if (data.NewData.OpponentsBehindOnTrack.Count > 0 & (data.NewData.OpponentsBehindOnTrack[0].RelativeGapToPlayer < 2.0)) {
-                        DriverBehindId = data.NewData.OpponentsBehindOnTrack[0].CarNumber;
-                        DriverBehindName = data.NewData.OpponentsBehindOnTrack[0].Name.Split(' ')[0];
+                    if (data.NewData.OpponentsBehindOnTrack.Count > 0 ) {
+                        if (data.NewData.OpponentsBehindOnTrack[0].RelativeGapToPlayer < 1.0) {
+                            DriverBehindId = data.NewData.OpponentsBehindOnTrack[0].CarNumber;
+                            DriverBehindName = data.NewData.OpponentsBehindOnTrack[0].Name.Split(' ')[0];
+                        }
+                        else {
+                            DriverBehindId = string.Empty;
+                            DriverBehindName = string.Empty;
+                        }
                     }
                     else {
                         DriverBehindId = string.Empty;
+                        DriverBehindName = string.Empty;
                     }
                 }
 

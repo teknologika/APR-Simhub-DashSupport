@@ -53,15 +53,17 @@ namespace APR.DashSupport {
         public void PrivateChatCarBehindAction(string Text) {
             if (DriverBehindId != string.Empty) {
                 Text = "/" + DriverBehindId + " " + Text;
+                RadioAndTextChat.iRacingChat(Text, false);
             }
-            RadioAndTextChat.iRacingChat(Text, false);
+            
         }
 
         public void PrivateChatCarAheadAction(string Text) {
             if (DriverAheadId != string.Empty) {
                 Text = "/" + DriverAheadId + " " + Text;
+                RadioAndTextChat.iRacingChat(Text, false);
             }
-            RadioAndTextChat.iRacingChat(Text, false);  
+            
         }
 
         public void InitRotaries(PluginManager pluginManager) {
@@ -191,7 +193,7 @@ namespace APR.DashSupport {
             }));
 
             pluginManager.AddAction("Chat.Behind.PittingIn", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                PrivateChatCarAheadAction("I'm pitting " + DriverAheadName + "." );
+                PrivateChatCarAheadAction("I'm pitting " + DriverBehindName  + "." );
             }));
 
             pluginManager.AddAction("Chat.Behind.Thanks", this.GetType(), (Action<PluginManager, string>)((a, b) => {
