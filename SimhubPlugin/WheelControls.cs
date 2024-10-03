@@ -187,15 +187,15 @@ namespace APR.DashSupport {
 
             // Opponent chat buttons
             pluginManager.AddAction("Chat.Ahead.BlueFlags", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                PrivateChatCarAheadAction("Can I pass please?");
+                PrivateChatCarAheadAction("Can I pass please " + DriverAheadName + "?");
             }));
 
             pluginManager.AddAction("Chat.Behind.PittingIn", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                PrivateChatCarAheadAction("I'm pitting.");
+                PrivateChatCarAheadAction("I'm pitting " + DriverAheadName + "." );
             }));
 
             pluginManager.AddAction("Chat.Behind.Thanks", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                PrivateChatCarAheadAction("Thank");
+                PrivateChatCarAheadAction("Thanks, " + DriverBehindName + "!!");
             }));
 
 
