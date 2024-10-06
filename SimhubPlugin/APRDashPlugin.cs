@@ -85,6 +85,9 @@ namespace APR.DashSupport
                 Relatves.Add(new relative() { position = positionIndex, trackPositionPercent = item.TrackPositionPercent });
                 positionIndex++;
             }
+            
+            List<relative> sorted = Relatves.OrderBy(x => x.trackPositionPercent).ToList();
+            Relatves = sorted;
 
             SetProp("Relative.Ahead.1.Position", GetPositionforDriverAheadBehind(-1));
             SetProp("Relative.Ahead.2.Position", GetPositionforDriverAheadBehind(-2));
@@ -166,8 +169,9 @@ namespace APR.DashSupport
 
 
         private void CheckIfUnderSafetyCar() {
-            var paceMode = this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.PaceMode");
-            if (2 == (int)paceMode ) {
+            
+            int paceMode = Convert.ToInt32(PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.PaceMode"));
+            if (paceMode == 2 ) {
                 IsUnderSafetyCar = true;
                 SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
                 return;
@@ -486,6 +490,12 @@ namespace APR.DashSupport
                     UpdateBrakeBar();
                 }
 
+                if (frameCounter == 40) {
+                    UpdateRelatives(data);
+                }
+
+
+
                 if (LogTelemetery) {
                     if ((frameCounter % 3) == 0) {
 
@@ -504,10 +514,6 @@ namespace APR.DashSupport
                                     LapTime = data.NewData.CurrentLapTime
                                 });
                         }
-                    }
-
-                    if (frameCounter == 45) {
-                        UpdateRelatives(data);
                     }
 
                     if (frameCounter == 55) {
