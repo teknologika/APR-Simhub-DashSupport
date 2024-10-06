@@ -62,8 +62,7 @@ namespace APR.DashSupport {
             if (DriverAheadId != string.Empty) {
                 Text = "/" + DriverAheadId + " " + Text;
                 RadioAndTextChat.iRacingChat(Text, false);
-            }
-            
+            } 
         }
 
         public void InitRotaries(PluginManager pluginManager) {

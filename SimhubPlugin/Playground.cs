@@ -9,6 +9,9 @@ using System.Collections;
 namespace APR.DashSupport {
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
+       
+
+
         public void TestStuff() {
 
             foreach (var iRacingdata in iRacing

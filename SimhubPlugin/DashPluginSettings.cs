@@ -150,6 +150,7 @@ namespace APR.DashSupport
         public int ColumnWidthFastestLap { get; set; } = 80;
         public int ColumnWidthLastLap { get; set; } = 80;
 
+   
 
         public int ColumnStartPosition {
             get {

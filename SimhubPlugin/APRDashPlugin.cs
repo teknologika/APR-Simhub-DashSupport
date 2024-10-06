@@ -61,11 +61,59 @@ namespace APR.DashSupport
         public bool CurrentLapHasIncidents;
         public bool IsCurrentLapValid = true;
 
+        // This is used for sending messages
         public string DriverAheadId = string.Empty;
         public string DriverAheadName = string.Empty;
         public string DriverBehindId = string.Empty;
         public string DriverBehindName = string.Empty;
 
+
+
+
+        public class relative {
+            public int position;
+            public double? trackPositionPercent;
+        }
+
+        public List<relative> Relatves = new List<relative>();
+
+        private void UpdateRelatives(GameData data) {
+            int numberOfOpponents = data.NewData.Opponents.Count;
+            int positionIndex = 1;
+            Relatves = new List<relative>();
+            foreach (var item in data.NewData.Opponents) {
+                Relatves.Add(new relative() { position = positionIndex, trackPositionPercent = item.TrackPositionPercent });
+                positionIndex++;
+            }
+
+            SetProp("Relative.Ahead.1.Position", GetPositionforDriverAheadBehind(-1));
+            SetProp("Relative.Ahead.2.Position", GetPositionforDriverAheadBehind(-2));
+            SetProp("Relative.Ahead.3.Position", GetPositionforDriverAheadBehind(-3));
+            SetProp("Relative.Ahead.4.Position", GetPositionforDriverAheadBehind(-4));
+            SetProp("Relative.Ahead.5.Position", GetPositionforDriverAheadBehind(-5));
+
+            SetProp("Relative.Behind.1.Position", GetPositionforDriverAheadBehind(1));
+            SetProp("Relative.Behind.2.Position", GetPositionforDriverAheadBehind(2));
+            SetProp("Relative.Behind.3.Position", GetPositionforDriverAheadBehind(3));
+            SetProp("Relative.Behind.4.Position", GetPositionforDriverAheadBehind(4));
+            SetProp("Relative.Behind.5.Position", GetPositionforDriverAheadBehind(5));
+
+            SetProp("Relative.Position", GetPositionforDriverAheadBehind(0));
+
+        }
+
+        public int GetPositionforDriverAheadBehind(int AheadBehind) {
+            var driverPosition =  (int)this.PluginManager.GetPropertyValue("IRacingExtraProperties.SpectatedCar_Position");
+
+            // Calculate the new index with wrapping
+            int newIndex = (driverPosition + AheadBehind) % Relatves.Count;
+
+            // Handle negative indices
+            if (newIndex < 0) {
+                newIndex += Relatves.Count; // Wrap around to the end
+            }
+            return Relatves[newIndex].position;
+        }
 
         private void UpdateSessionData(GameData data) {
             SessionType = data.NewData.SessionTypeName;
@@ -231,6 +279,19 @@ namespace APR.DashSupport
             AddProp("Strategy.Indicator.RCMode", false);
             AddProp("Strategy.Indicator.isiRacingAdmin", IsIRacingAdmin = false);
 
+            AddProp("Relative.Ahead.1.Position", "");
+            AddProp("Relative.Ahead.2.Position", "");
+            AddProp("Relative.Ahead.3.Position", "");
+            AddProp("Relative.Ahead.4.Position", "");
+            AddProp("Relative.Ahead.5.Position", "");
+
+            AddProp("Relative.Behind.1.Position", "");
+            AddProp("Relative.Behind.2.Position", "");
+            AddProp("Relative.Behind.3.Position", "");
+            AddProp("Relative.Behind.4.Position", "");
+            AddProp("Relative.Behind.5.Position", "");
+
+            AddProp("Relative.Position", "");
 
             //HERE
 
@@ -443,6 +504,10 @@ namespace APR.DashSupport
                                     LapTime = data.NewData.CurrentLapTime
                                 });
                         }
+                    }
+
+                    if (frameCounter == 45) {
+                        UpdateRelatives(data);
                     }
 
                     if (frameCounter == 55) {
