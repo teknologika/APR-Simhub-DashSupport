@@ -21,6 +21,7 @@ using System.Xml.Linq;
 using Newtonsoft.Json;
 using System.Windows.Media.Animation;
 using static iRacingSDK.SessionData._RadioInfo;
+using static APR.DashSupport.APRDashPlugin;
 
 namespace APR.DashSupport
 {
@@ -68,54 +69,125 @@ namespace APR.DashSupport
         public string DriverBehindName = string.Empty;
 
 
-
-
         public class relative {
             public int position;
-            public double? trackPositionPercent;
+            public double trackPositionPercent;
+            public bool onPitRoad;
+            public float relativeGap;
+
+
+
+
+            public override string ToString() {
+                return "P: " + position + " " + trackPositionPercent + " " + onPitRoad;
+            }
         }
 
         public List<relative> Relatves = new List<relative>();
 
         private void UpdateRelatives(GameData data) {
-            int numberOfOpponents = data.NewData.Opponents.Count;
-            int positionIndex = 1;
+
+
+
+            // Get the raw iracing data because simhub is broken
+            float[] rawPct = irData.Telemetry.CarIdxLapDistPct;
+            int[] rawPos = irData.Telemetry.CarIdxPosition;
+            bool[] rawOnPitRoad = irData.Telemetry.CarIdxOnPitRoad;
+            float[] rawCarEstTime = irData.Telemetry.CarIdxEstTime;
+            int[] rawCurrentLap = irData.Telemetry.CarIdxLap;
+
+            int spectatedCar = irData.Telemetry.CamCarIdx;
+            float spectatedCarEstTime = irData.Telemetry.CarIdxEstTime[spectatedCar];
+            int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCar];
+
+            //var observedEstTime = irData.SessionData. 
+
             Relatves = new List<relative>();
-            foreach (var item in data.NewData.Opponents) {
-                Relatves.Add(new relative() { position = positionIndex, trackPositionPercent = item.TrackPositionPercent });
-                positionIndex++;
+
+            for (int i = 0; i < rawPos.Length; i++) {
+                if (rawPos[i] > 0 && rawPct[i] > 0 ) {
+                    var estimatedLap = rawCurrentLap[i];
+                    var lapDifference = Convert.ToInt32(rawCurrentLap[i] - spectatedCarCurrentLap);
+                    var cappedLapDifference = Math.Max(Math.Min(lapDifference,1),-1);
+                    var relativeGap = spectatedCarEstTime - (rawCarEstTime[i] + cappedLapDifference * spectatedCarEstTime);
+
+                    Relatves.Add(new relative() { position = rawPos[i], trackPositionPercent = rawPct[i] , onPitRoad = rawOnPitRoad[i], relativeGap = relativeGap });
+                }
             }
             
             List<relative> sorted = Relatves.OrderBy(x => x.trackPositionPercent).ToList();
             Relatves = sorted;
 
-            SetProp("Relative.Ahead.1.Position", GetPositionforDriverAheadBehind(-1));
-            SetProp("Relative.Ahead.2.Position", GetPositionforDriverAheadBehind(-2));
-            SetProp("Relative.Ahead.3.Position", GetPositionforDriverAheadBehind(-3));
-            SetProp("Relative.Ahead.4.Position", GetPositionforDriverAheadBehind(-4));
-            SetProp("Relative.Ahead.5.Position", GetPositionforDriverAheadBehind(-5));
+            SetProp("Relative.Ahead.1.Position", GetPositionforDriverAheadBehind(1));
+            SetProp("Relative.Ahead.2.Position", GetPositionforDriverAheadBehind(2));
+            SetProp("Relative.Ahead.3.Position", GetPositionforDriverAheadBehind(3));
+            SetProp("Relative.Ahead.4.Position", GetPositionforDriverAheadBehind(4));
+            SetProp("Relative.Ahead.5.Position", GetPositionforDriverAheadBehind(5));
 
-            SetProp("Relative.Behind.1.Position", GetPositionforDriverAheadBehind(1));
-            SetProp("Relative.Behind.2.Position", GetPositionforDriverAheadBehind(2));
-            SetProp("Relative.Behind.3.Position", GetPositionforDriverAheadBehind(3));
-            SetProp("Relative.Behind.4.Position", GetPositionforDriverAheadBehind(4));
-            SetProp("Relative.Behind.5.Position", GetPositionforDriverAheadBehind(5));
+            SetProp("Relative.Behind.1.Position", GetPositionforDriverAheadBehind(-1));
+            SetProp("Relative.Behind.2.Position", GetPositionforDriverAheadBehind(-2));
+            SetProp("Relative.Behind.3.Position", GetPositionforDriverAheadBehind(-3));
+            SetProp("Relative.Behind.4.Position", GetPositionforDriverAheadBehind(-4));
+            SetProp("Relative.Behind.5.Position", GetPositionforDriverAheadBehind(-5));
 
             SetProp("Relative.Position", GetPositionforDriverAheadBehind(0));
+            SetProp("Relative.Gap", GetGapforDriverAheadBehind(0));
+
+            SetProp("Relative.Ahead.1.Gap", GetGapforDriverAheadBehind(1));
+            SetProp("Relative.Ahead.2.Gap", GetGapforDriverAheadBehind(2));
+            SetProp("Relative.Ahead.3.Gap", GetGapforDriverAheadBehind(3));
+            SetProp("Relative.Ahead.4.Gap", GetGapforDriverAheadBehind(4));
+            SetProp("Relative.Ahead.5.Gap", GetGapforDriverAheadBehind(5));
+
+            SetProp("Relative.Behind.1.Gap", GetGapforDriverAheadBehind(-1));
+            SetProp("Relative.Behind.2.Gap", GetGapforDriverAheadBehind(-2));
+            SetProp("Relative.Behind.3.Gap", GetGapforDriverAheadBehind(-3));
+            SetProp("Relative.Behind.4.Gap", GetGapforDriverAheadBehind(-4));
+            SetProp("Relative.Behind.5.Gap", GetGapforDriverAheadBehind(-5));
 
         }
+
+        public string GetTrackDistPctForPosition(int position) {
+            int index = Relatves.FindIndex(a => a.position == position);
+            return Relatves[index].trackPositionPercent.ToString("0.00");
+        }
+     
 
         public int GetPositionforDriverAheadBehind(int AheadBehind) {
             var driverPosition =  (int)this.PluginManager.GetPropertyValue("IRacingExtraProperties.SpectatedCar_Position");
 
+            int index = Relatves.FindIndex(a => a.position == driverPosition);
+
             // Calculate the new index with wrapping
-            int newIndex = (driverPosition + AheadBehind) % Relatves.Count;
+            int newIndex = (index + AheadBehind) % Relatves.Count;
 
             // Handle negative indices
             if (newIndex < 0) {
                 newIndex += Relatves.Count; // Wrap around to the end
             }
-            return Relatves[newIndex].position;
+            return Relatves[newIndex].position; ;
+        }
+
+        public string GetGapforDriverAheadBehind(int AheadBehind) {
+            int position = GetPositionforDriverAheadBehind(AheadBehind);
+            return GetTrackDistPctForPosition(position);
+
+            /*
+            var driverPosition = (int)this.PluginManager.GetPropertyValue("IRacingExtraProperties.SpectatedCar_Position");
+
+            int index = Relatves.FindIndex(a => a.position == driverPosition);
+
+            // Calculate the new index with wrapping
+            int newIndex = (index + AheadBehind) % Relatves.Count;
+
+            // Handle negative indices
+            if (newIndex < 0) {
+                newIndex += Relatves.Count; // Wrap around to the end
+            }
+
+            return Relatves[newIndex].trackPositionPercent.ToString("0.00");
+
+            */
         }
 
         private void UpdateSessionData(GameData data) {
@@ -296,6 +368,20 @@ namespace APR.DashSupport
             AddProp("Relative.Behind.5.Position", "");
 
             AddProp("Relative.Position", "");
+            AddProp("Relative.Gap", "");
+
+            AddProp("Relative.Ahead.1.Gap", "");
+            AddProp("Relative.Ahead.2.Gap", "");
+            AddProp("Relative.Ahead.3.Gap", "");
+            AddProp("Relative.Ahead.4.Gap", "");
+            AddProp("Relative.Ahead.5.Gap", "");
+
+            AddProp("Relative.Behind.1.Gap", "");
+            AddProp("Relative.Behind.2.Gap", "");
+            AddProp("Relative.Behind.3.Gap", "");
+            AddProp("Relative.Behind.4.Gap", "");
+            AddProp("Relative.Behind.5.Gap", "");
+        
 
             //HERE
 
