@@ -25,6 +25,7 @@ using static APR.DashSupport.APRDashPlugin;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
 using System.Runtime.InteropServices.ComTypes;
 using FMOD;
+using static SimHub.Plugins.DataPlugins.PersistantTracker.PersistantTrackerPluginAttachedData;
 
 namespace APR.DashSupport
 {
@@ -132,6 +133,7 @@ namespace APR.DashSupport
             public SessionData._DriverInfo._Drivers _competitor;
             public float _trackLength;
             public float _specatedCarLapDistPct;
+            public int _spectatedCarCurrentLap;
 
             public float DistanceToSpectatedCar { get; set; }
             public int CarIdx { get { return Convert.ToInt32(_competitor.CarIdx); } }
@@ -151,11 +153,32 @@ namespace APR.DashSupport
 
             public double LapDistSpectatedCar {
                 get {
-                    return ((_specatedCarLapDistPct * _trackLength) - LapDist)*1000;
+
+                    // Do we need to add or subtract a lap
+                    var lapDifference = Convert.ToInt32(CurrentLap - _spectatedCarCurrentLap);
+                    var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
+                    double distanceAdjustment = 0;
+                    
+                    if (cappedLapDifference == 1) {
+                        distanceAdjustment = - _trackLength*1000;
+                    }
+                    else if (cappedLapDifference == -1) {
+                        distanceAdjustment = _trackLength*1000;
+                    }
+
+                        return ((_specatedCarLapDistPct * _trackLength) - LapDist)*1000 + distanceAdjustment;
                 }
             }
 
-            public TimeSpan LastLapTime { get { return _opponent.LastLapTime; } }
+
+            // Calculate the lap difference
+            
+            
+
+                       
+
+
+    public TimeSpan LastLapTime { get { return _opponent.LastLapTime; } }
             public double LastLapTimeSeconds {  get { return LastLapTime.TotalSeconds; } }
             public TimeSpan BestLapTime { get { return _opponent.BestLapTime; } }
             public double BestLapTimeSeconds { get { return BestLapTime.TotalSeconds; } }
@@ -213,17 +236,15 @@ namespace APR.DashSupport
             SessionData._DriverInfo._Drivers[] competitors = irData.SessionData.DriverInfo.CompetingDrivers;
             this.opponents = data.NewData.Opponents;
             this.OpponentsExtended = new List<ExtendedOpponent>();
+
             int spectatedCar = irData.Telemetry.CamCarIdx;
             float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCar];
+            float spectatedCarEstTime = irData.Telemetry.CarIdxEstTime[spectatedCar];
+            int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCar];
+            float trackLength = float.Parse(irData.SessionData.WeekendInfo.TrackLength.Split(' ')[0]);
 
             for (int i = 0; i < competitors.Length; ++i) {
                 for (int j = 0; j < opponents.Count; ++j) {
-
-                    // Create a competitors <> opponents lookup
-                    //if (string.Equals(competitors[i].CarNumber, this.opponents[j].CarNumber))
-                    //    this.opponentsCarIdx[j] = Convert.ToInt32(competitors[i].CarIdx);
-
-                    // Calculate the lap difference
 
 
                     // Add the aligned Opponents and Competitor data to our ExtendedOpponent list
@@ -231,7 +252,8 @@ namespace APR.DashSupport
                         OpponentsExtended.Add(new ExtendedOpponent() {
                             _opponent = opponents[j],
                             _competitor = competitors[i],
-                            _trackLength = float.Parse(irData.SessionData.WeekendInfo.TrackLength.Split(' ')[0]),
+                            _trackLength = trackLength,
+                            _spectatedCarCurrentLap = spectatedCarCurrentLap,
                             _specatedCarLapDistPct = spectatedCarLapDistPct
                         });
                     }
@@ -239,7 +261,7 @@ namespace APR.DashSupport
             }
 
             
-            var bob = this.OpponentsInClass;
+            var bob = this.OpponentsInClass[2].DistanceToSpectatedCar;
             var ahead = this.OpponentsAhead;
             var behind = this.OpponentsBehind;
 
@@ -257,8 +279,8 @@ namespace APR.DashSupport
             
 
       
-            float spectatedCarEstTime = irData.Telemetry.CarIdxEstTime[spectatedCar];
-            int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCar];
+            
+           
             var spectatedCarLastLapTime = irData.Telemetry.LapLastLapTime;
              
 
