@@ -126,6 +126,7 @@
     <Compile Include="APRDashPlugin.cs" />
     <Compile Include="CarSettings.cs" />
     <Compile Include="DashPluginSettings.cs" />
+    <Compile Include="ExtendedOpponent.cs" />
     <Compile Include="LapDataStore.cs" />
     <Compile Include="PitStrategyCalculations.cs" />
     <Compile Include="Playground.cs" />
@@ -171,6 +172,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
