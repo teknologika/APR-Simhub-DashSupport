@@ -69,9 +69,13 @@ namespace APR.DashSupport
         public string DriverBehindId = string.Empty;
         public string DriverBehindName = string.Empty;
 
-        // this is used for something :-)
-
         private List<Opponent> opponents;
+        private List<ExtendedOpponent> OpponentsExtended;
+        private readonly Dictionary<int, int> opponentsCarIdx = new Dictionary<int, int>();
+
+        // this is used for something :-)
+        /*
+        
         private List<Opponent> opponentsOld;
         private List<Opponent> opponentsClass;
         private List<Opponent> opponentsAhead;
@@ -80,13 +84,25 @@ namespace APR.DashSupport
         private List<Opponent> opponentsBehindInClass;
         private List<ExtendedOpponent> OpponentsExtended;
 
-        private readonly Dictionary<int, int> opponentsCarIdx = new Dictionary<int, int>();
+        
         private readonly Dictionary<int, int> opponentsInClassCarIdx = new Dictionary<int, int>();
         private readonly Dictionary<int, int> opponentsAheadCarIdx = new Dictionary<int, int>();
         private readonly Dictionary<int, int> opponentsBehindCarIdx = new Dictionary<int, int>();
         private readonly Dictionary<int, int> opponentsAheadInClassCarIdx = new Dictionary<int, int>();
         private readonly Dictionary<int, int> opponentsBehindInClassCarIdx = new Dictionary<int, int>();
 
+        */
+
+        private ExtendedOpponent SpectatedCar {
+            get { return this.OpponentsExtended.Find(a => a.CarIdx == irData.Telemetry.CamCarIdx); }
+        }
+
+        private List<ExtendedOpponent> OpponentsInClass {
+            get {
+                // TODO : add logic so if driving use that Id instead of spectated car
+                return OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
+            }
+        }
 
         public class ExtendedOpponent {
             public Opponent _opponent;
@@ -118,12 +134,6 @@ namespace APR.DashSupport
             }
         }
 
-        public class opponentsCarClass {
-            public int classId;
-            public string carClass;
-            public double classAverageLapTime;
-        }
-
         public class relative {
             public int position;
             public double trackPositionPercent;
@@ -153,12 +163,16 @@ namespace APR.DashSupport
 
 
         this.opponents = data.NewData.Opponents;
+
+        /*
         this.opponentsOld = data.OldData.Opponents;
         this.opponentsClass = data.NewData.OpponentsPlayerClass;
         this.opponentsAhead = data.NewData.OpponentsAheadOnTrack;
         this.opponentsBehind = data.NewData.OpponentsBehindOnTrack;
         this.opponentsAheadInClass = data.NewData.OpponentsAheadOnTrackPlayerClass;
         this.opponentsBehindInClass = data.NewData.OpponentsBehindOnTrackPlayerClass;
+
+        */
 
         SessionData._DriverInfo._Drivers[] competitors = irData.SessionData.DriverInfo.CompetingDrivers;
         this.opponents = data.NewData.Opponents;
@@ -168,36 +182,21 @@ namespace APR.DashSupport
         for (int i = 0; i < competitors.Length; ++i) {
             for (int j = 0; j < opponents.Count; ++j) {
 
-                    // Create a competitors <> opponents lookup
-                    if (string.Equals(competitors[i].CarNumber, this.opponents[j].CarNumber))
-                        this.opponentsCarIdx[j] = Convert.ToInt32(competitors[i].CarIdx);
+                // Create a competitors <> opponents lookup
+                //if (string.Equals(competitors[i].CarNumber, this.opponents[j].CarNumber))
+                //    this.opponentsCarIdx[j] = Convert.ToInt32(competitors[i].CarIdx);
 
-                    if (string.Equals(competitors[i].CarNumber, opponents[j].CarNumber)) {
-                        OpponentsExtended.Add(new ExtendedOpponent() {
-                            _opponent = opponents[j],
-                            _competitor = competitors[i],
-                         });
+                // Add the aligned Opponents and Competitor data to our ExtendedOpponent list
+                if (string.Equals(competitors[i].CarNumber, opponents[j].CarNumber)) {
+                    OpponentsExtended.Add(new ExtendedOpponent() {
+                        _opponent = opponents[j],
+                        _competitor = competitors[i],
+                        });
                 }
             }
-            for (int k = 0; k < this.opponentsClass.Count; ++k) {
-                if (string.Equals(competitors[i].CarNumber, this.opponentsClass[k].CarNumber))
-                    this.opponentsInClassCarIdx[k] = Convert.ToInt32(competitors[i].CarIdx);
-            }
-            if (competitors[i].UserID != 0L) { }
         }
+            var bob = this.OpponentsInClass;
 
-
-
-
-                    //  int curentSessionIndex = irData.SessionData.SessionInfo.Sessions.Length -1;
-                    //  var currentSession = irData.SessionData.SessionInfo.Sessions[curentSessionIndex];
-                    //  var results = currentSession.ResultsPositions;
-                    // results[3].
-
-                    //var spectatedCarClass = irData.SessionData..Sessions[curentSessionIndex].;
-                    //ar spectatedCarSimhubID = irData.Telemetr
-
-                    //new update relative
 
 
 
