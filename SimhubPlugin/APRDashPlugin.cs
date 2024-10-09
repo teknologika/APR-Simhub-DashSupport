@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using System.Windows.Media.Animation;
 using static iRacingSDK.SessionData._RadioInfo;
 using static APR.DashSupport.APRDashPlugin;
+using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
 
 namespace APR.DashSupport
 {
@@ -68,24 +69,135 @@ namespace APR.DashSupport
         public string DriverBehindId = string.Empty;
         public string DriverBehindName = string.Empty;
 
+        // this is used for something :-)
+
+        private List<Opponent> opponents;
+        private List<Opponent> opponentsOld;
+        private List<Opponent> opponentsClass;
+        private List<Opponent> opponentsAhead;
+        private List<Opponent> opponentsBehind;
+        private List<Opponent> opponentsAheadInClass;
+        private List<Opponent> opponentsBehindInClass;
+        private List<ExtendedOpponent> OpponentsExtended;
+
+        private readonly Dictionary<int, int> opponentsCarIdx = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> opponentsInClassCarIdx = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> opponentsAheadCarIdx = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> opponentsBehindCarIdx = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> opponentsAheadInClassCarIdx = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> opponentsBehindInClassCarIdx = new Dictionary<int, int>();
+
+
+        public class ExtendedOpponent {
+            public Opponent _opponent;
+            public SessionData._DriverInfo._Drivers _competitor;
+            public int CarIdx { get { return Convert.ToInt32(_competitor.CarIdx); } }
+            public string DriverName { get { return _opponent.Name; } }
+            public string TeamName { get { return _opponent.TeamName; } }
+            public string CarClass {  get { return _opponent.CarClass; } }
+            public int CarClassID { get { return (int)_competitor.CarClassID; } }
+
+            public int Position { get { return _opponent.Position; } }
+            public int PositionInClass { get { return _opponent.PositionInClass; } }
+
+            public int CurrentLap { get { return _opponent.CurrentLap ?? -1; } }
+            public int LapsToLeader { get { return _opponent.LapsToLeader ?? -1; } }
+            public double TrackPositionPercent { get { return _opponent.TrackPositionPercent ?? 0.0; } }
+            public string TrackPositionPercentString { get { return TrackPositionPercent.ToString("0.000"); } }
+
+            public TimeSpan LastLapTime { get { return _opponent.LastLapTime; } }
+            public double LastLapTimeSeconds {  get { return LastLapTime.TotalSeconds; } }
+            public TimeSpan BestLapTime { get { return _opponent.BestLapTime; } }
+            public double BestLapTimeSeconds { get { return BestLapTime.TotalSeconds; } }
+
+            public TimeSpan? CurrentLapTime { get { return _opponent.CurrentLapTime ; } }
+            public double CurrentLapTimeSeonds { get { return CurrentLapTime.GetValueOrDefault().TotalSeconds; } }
+
+            public override string ToString() {
+                return "Idx: " + CarIdx + " P:" + Position + " " + DriverName + " " + TrackPositionPercent + "%";
+            }
+        }
+
+        public class opponentsCarClass {
+            public int classId;
+            public string carClass;
+            public double classAverageLapTime;
+        }
 
         public class relative {
             public int position;
             public double trackPositionPercent;
             public bool onPitRoad;
-            public float relativeGap;
-
-
-
+            public double relativeGap;
 
             public override string ToString() {
                 return "P: " + position + " " + trackPositionPercent + " " + onPitRoad;
             }
         }
 
+   
+        public class holder {
+            public long CarIdx;
+            public double value;
+        }
+
         public List<relative> Relatves = new List<relative>();
 
+        
+        
+
         private void UpdateRelatives(GameData data) {
+
+
+        // Loop through iRacing competitors and simhub Opponents and create a shiny new structure
+
+
+        this.opponents = data.NewData.Opponents;
+        this.opponentsOld = data.OldData.Opponents;
+        this.opponentsClass = data.NewData.OpponentsPlayerClass;
+        this.opponentsAhead = data.NewData.OpponentsAheadOnTrack;
+        this.opponentsBehind = data.NewData.OpponentsBehindOnTrack;
+        this.opponentsAheadInClass = data.NewData.OpponentsAheadOnTrackPlayerClass;
+        this.opponentsBehindInClass = data.NewData.OpponentsBehindOnTrackPlayerClass;
+
+        SessionData._DriverInfo._Drivers[] competitors = irData.SessionData.DriverInfo.CompetingDrivers;
+        this.opponents = data.NewData.Opponents;
+        this.OpponentsExtended = new List<ExtendedOpponent>();
+
+
+        for (int i = 0; i < competitors.Length; ++i) {
+            for (int j = 0; j < opponents.Count; ++j) {
+
+                    // Create a competitors <> opponents lookup
+                    if (string.Equals(competitors[i].CarNumber, this.opponents[j].CarNumber))
+                        this.opponentsCarIdx[j] = Convert.ToInt32(competitors[i].CarIdx);
+
+                    if (string.Equals(competitors[i].CarNumber, opponents[j].CarNumber)) {
+                        OpponentsExtended.Add(new ExtendedOpponent() {
+                            _opponent = opponents[j],
+                            _competitor = competitors[i],
+                         });
+                }
+            }
+            for (int k = 0; k < this.opponentsClass.Count; ++k) {
+                if (string.Equals(competitors[i].CarNumber, this.opponentsClass[k].CarNumber))
+                    this.opponentsInClassCarIdx[k] = Convert.ToInt32(competitors[i].CarIdx);
+            }
+            if (competitors[i].UserID != 0L) { }
+        }
+
+
+
+
+                    //  int curentSessionIndex = irData.SessionData.SessionInfo.Sessions.Length -1;
+                    //  var currentSession = irData.SessionData.SessionInfo.Sessions[curentSessionIndex];
+                    //  var results = currentSession.ResultsPositions;
+                    // results[3].
+
+                    //var spectatedCarClass = irData.SessionData..Sessions[curentSessionIndex].;
+                    //ar spectatedCarSimhubID = irData.Telemetr
+
+                    //new update relative
 
 
 
@@ -95,10 +207,31 @@ namespace APR.DashSupport
             bool[] rawOnPitRoad = irData.Telemetry.CarIdxOnPitRoad;
             float[] rawCarEstTime = irData.Telemetry.CarIdxEstTime;
             int[] rawCurrentLap = irData.Telemetry.CarIdxLap;
+            var sessionInf = irData.SessionData.SessionInfo.Sessions.Last();
+            var pos = data.NewData.Opponents;
+
 
             int spectatedCar = irData.Telemetry.CamCarIdx;
             float spectatedCarEstTime = irData.Telemetry.CarIdxEstTime[spectatedCar];
             int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCar];
+            var spectatedCarLastLapTime = irData.Telemetry.LapLastLapTime;
+            var spectatedCarLapDistPct = rawPct[spectatedCar];
+
+            var ResultsPositions = irData.SessionData.SessionInfo.Sessions[irData.SessionData.SessionInfo.Sessions.Length-1].ResultsPositions;
+
+            List<holder> LastLaps = new List<holder>();
+
+            foreach ( var result in ResultsPositions ) {
+                LastLaps.Add(new holder() { CarIdx = result.CarIdx, value = result.LastTime } );
+            }
+
+
+
+            //  NewRawData().Telemetry["CarIdxLastLapTime"]
+
+            //  NewRawData().AllSessionData["SessionInfo"]["Sessions"][2]["ResultsPositions"]
+
+            //   NewRawData().AllSessionData["WeekendInfo"]["SimMode"]
 
             //var observedEstTime = irData.SessionData. 
 
@@ -107,9 +240,30 @@ namespace APR.DashSupport
             for (int i = 0; i < rawPos.Length; i++) {
                 if (rawPos[i] > 0 && rawPct[i] > 0 ) {
                     var estimatedLap = rawCurrentLap[i];
+                   
+
+                    var spectatedBase = spectatedCarLastLapTime * spectatedCarLapDistPct;  
+                 
+                    
                     var lapDifference = Convert.ToInt32(rawCurrentLap[i] - spectatedCarCurrentLap);
                     var cappedLapDifference = Math.Max(Math.Min(lapDifference,1),-1);
-                    var relativeGap = spectatedCarEstTime - (rawCarEstTime[i] + cappedLapDifference * spectatedCarEstTime);
+                    var relativeGap = rawCarEstTime[i] - spectatedCarEstTime;
+                    if (cappedLapDifference == 1) {
+                        relativeGap = relativeGap - spectatedCarEstTime;
+                    }
+                    else if (cappedLapDifference == -1) {
+                        relativeGap = relativeGap + spectatedCarEstTime;
+                    }
+
+                    // relativeGap = spectatedCarEstTime - (rawCarEstTime[i] + cappedLapDifference * spectatedCarEstTime);
+
+
+                  //  NewRawData().Telemetry["CarIdxLastLapTime"]
+
+                  //  NewRawData().AllSessionData["SessionInfo"]["Sessions"][2]["ResultsPositions"]
+
+                 //   NewRawData().AllSessionData["WeekendInfo"]["SimMode"]
+
 
                     Relatves.Add(new relative() { position = rawPos[i], trackPositionPercent = rawPct[i] , onPitRoad = rawOnPitRoad[i], relativeGap = relativeGap });
                 }
@@ -151,7 +305,6 @@ namespace APR.DashSupport
             int index = Relatves.FindIndex(a => a.position == position);
             return Relatves[index].trackPositionPercent.ToString("0.00");
         }
-     
 
         public int GetPositionforDriverAheadBehind(int AheadBehind) {
             var driverPosition =  (int)this.PluginManager.GetPropertyValue("IRacingExtraProperties.SpectatedCar_Position");
@@ -170,24 +323,8 @@ namespace APR.DashSupport
 
         public string GetGapforDriverAheadBehind(int AheadBehind) {
             int position = GetPositionforDriverAheadBehind(AheadBehind);
-            return GetTrackDistPctForPosition(position);
-
-            /*
-            var driverPosition = (int)this.PluginManager.GetPropertyValue("IRacingExtraProperties.SpectatedCar_Position");
-
-            int index = Relatves.FindIndex(a => a.position == driverPosition);
-
-            // Calculate the new index with wrapping
-            int newIndex = (index + AheadBehind) % Relatves.Count;
-
-            // Handle negative indices
-            if (newIndex < 0) {
-                newIndex += Relatves.Count; // Wrap around to the end
-            }
-
-            return Relatves[newIndex].trackPositionPercent.ToString("0.00");
-
-            */
+            int index = Relatves.FindIndex(a => a.position == position);
+            return Relatves[index].relativeGap.ToString("0.00");
         }
 
         private void UpdateSessionData(GameData data) {
