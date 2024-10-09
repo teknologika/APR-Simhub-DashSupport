@@ -108,20 +108,13 @@ namespace APR.DashSupport
 
         private List<ExtendedOpponent> OpponentsAhead {
             get {
-                
-                return OpponentsExtended.FindAll(
-                    a => ( this.SpectatedCar.TrackPositionPercent - a.TrackPositionPercent < 0) ||
-                         (this.SpectatedCar.TrackPositionPercent - a.TrackPositionPercent > 50)
-                );
+                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar < 0);
             }
         }
 
         private List<ExtendedOpponent> OpponentsBehind {
             get {
-                return OpponentsExtended.FindAll(
-                    a => (this.SpectatedCar.TrackPositionPercent - a.TrackPositionPercent > 0) ||
-                         (this.SpectatedCar.TrackPositionPercent - a.TrackPositionPercent < 50)
-);
+                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar > 0);
             }
         }
 
@@ -134,8 +127,6 @@ namespace APR.DashSupport
             public float _trackLength;
             public float _specatedCarLapDistPct;
             public int _spectatedCarCurrentLap;
-
-            public float DistanceToSpectatedCar { get; set; }
             public int CarIdx { get { return Convert.ToInt32(_competitor.CarIdx); } }
             public string DriverName { get { return _opponent.Name; } }
             public string TeamName { get { return _opponent.TeamName; } }
@@ -261,7 +252,7 @@ namespace APR.DashSupport
             }
 
             
-            var bob = this.OpponentsInClass[2].DistanceToSpectatedCar;
+            var bob = this.OpponentsInClass;
             var ahead = this.OpponentsAhead;
             var behind = this.OpponentsBehind;
 
