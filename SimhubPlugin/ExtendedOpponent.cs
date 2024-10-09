@@ -13,16 +13,39 @@ namespace APR.DashSupport {
 
         private List<Opponent> opponents;
         private List<ExtendedOpponent> OpponentsExtended;
+        private List<carClass> carClasses = new List<carClass>();
+
+        public class carClass {
+            public int carClassID;
+            public string carClassShortName;
+        }
+
+        public void CheckAndAddCarClass(int CarClassID, string CarClassShortName) {
+            bool has = this.carClasses.Any(a  => a.carClassID == CarClassID);
+
+            if (has == false) {
+
+                this.carClasses.Add(new carClass() {carClassID = CarClassID, carClassShortName = CarClassShortName});
+            }
+            
+        }
 
         private ExtendedOpponent SpectatedCar {
             get { return this.OpponentsExtended.Find(a => a.CarIdx == irData.Telemetry.CamCarIdx); }
         }
 
-        private List<ExtendedOpponent> OpponentsInClass {
+        private List<ExtendedOpponent> OpponentsInClasss {
             get {
                 // TODO : add logic so if driving use that Id instead of spectated car
                 return OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
             }
+        }
+        private List<ExtendedOpponent> OpponentsInClass() {
+            return this.OpponentsInClass(this.SpectatedCar.CarClassID);
+        }
+
+        private List<ExtendedOpponent> OpponentsInClass(int CarClassID) {
+            return this.OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
         }
 
         private List<ExtendedOpponent> OpponentsAhead {
@@ -37,8 +60,61 @@ namespace APR.DashSupport {
             }
         }
 
-    }
+        private double GetReferenceClassLaptime() {
+            double averageLapTime = 0;
+            int count = 0;
+            foreach (var item in this.OpponentsInClass()) {
 
+                // use the  last lap time
+                if (item.LastLapTimeSeconds > 0 &&
+                        (item.LastLapTimeSeconds < (item.LastLapTimeSeconds * 1.05)) &&
+                        (item.LastLapTimeSeconds > (item.LastLapTimeSeconds * 0.95))) {
+                    averageLapTime += item.LastLapTimeSeconds;
+                    count++;
+                }
+                // if the last lap time is empty, try and use the best
+                else if (item.BestLapTimeSeconds > 0 &&
+                        (item.BestLapTimeSeconds < (item.BestLapTimeSeconds * 1.05)) &&
+                        (item.BestLapTimeSeconds > (item.BestLapTimeSeconds * 0.95))) {
+                    averageLapTime += item.BestLapTimeSeconds;
+                    count++;
+                    
+                }
+            }
+            if (count > 0) {
+                averageLapTime = averageLapTime / count;
+            }
+            
+            return averageLapTime;
+         }
+
+        private double ReferenceClassLaptime {
+            get {
+                double averageLapTime = 0;
+                int count = 0;
+                foreach (var item in this.OpponentsInClass()) {
+
+                    // use the  last lap time
+                    if (item.LastLapTimeSeconds > 0 &&
+                         (item.LastLapTimeSeconds < (item.LastLapTimeSeconds * 1.05)) &&
+                         (item.LastLapTimeSeconds > (item.LastLapTimeSeconds * 0.95))) {
+                        averageLapTime += item.LastLapTimeSeconds;
+                        count++;
+                        averageLapTime = averageLapTime / count;
+                    }
+                    // if the last lap time is empty, try and use the best
+                    else if (item.BestLapTimeSeconds > 0 &&
+                         (item.BestLapTimeSeconds < (item.BestLapTimeSeconds * 1.05)) &&
+                         (item.BestLapTimeSeconds > (item.BestLapTimeSeconds * 0.95))) {
+                        averageLapTime += item.BestLapTimeSeconds;
+                        count++;
+                        averageLapTime = averageLapTime / count;
+                    }
+                }
+                return averageLapTime;
+            }
+        }
+    }
 
     public class ExtendedOpponent {
         public Opponent _opponent;

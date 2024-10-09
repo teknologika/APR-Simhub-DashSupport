@@ -72,7 +72,7 @@ namespace APR.DashSupport
         public string DriverBehindId = string.Empty;
         public string DriverBehindName = string.Empty;
 
-
+        
 
         // this is used for something :-)
         /*
@@ -165,6 +165,8 @@ namespace APR.DashSupport
 
                     // Add the aligned Opponents and Competitor data to our ExtendedOpponent list
                     if (string.Equals(competitors[i].CarNumber, opponents[j].CarNumber)) {
+                        
+                        // Add to the Extended Opponents class
                         OpponentsExtended.Add(new ExtendedOpponent() {
                             _opponent = opponents[j],
                             _competitor = competitors[i],
@@ -172,12 +174,18 @@ namespace APR.DashSupport
                             _spectatedCarCurrentLap = spectatedCarCurrentLap,
                             _specatedCarLapDistPct = spectatedCarLapDistPct
                         });
+
+                        ;
+                        // Update the car class info
+                        CheckAndAddCarClass((int)competitors[i].CarClassID, competitors[i].CarClassShortName);
+                        
                     }
                 }
             }
 
-            
-            var bob = this.OpponentsInClass;
+                       
+            var bob = this.OpponentsInClass();
+            var tim = this.GetReferenceClassLaptime();
             var ahead = this.OpponentsAhead;
             var behind = this.OpponentsBehind;
 
