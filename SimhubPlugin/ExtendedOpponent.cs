@@ -6,14 +6,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Animation;
 
 namespace APR.DashSupport {
 
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
         private List<Opponent> opponents;
-        private List<ExtendedOpponent> OpponentsExtended;
+        private List<ExtendedOpponent> OpponentsExtended = new List<ExtendedOpponent>();
         private List<carClass> carClasses = new List<carClass>();
+        private float trackLength;
 
         public class carClass {
             public int carClassID;
@@ -27,7 +29,6 @@ namespace APR.DashSupport {
 
                 this.carClasses.Add(new carClass() {carClassID = CarClassID, carClassShortName = CarClassShortName});
             }
-            
         }
 
         private ExtendedOpponent SpectatedCar {
@@ -50,20 +51,24 @@ namespace APR.DashSupport {
 
         private List<ExtendedOpponent> OpponentsAhead {
             get {
-                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar < 0);
+                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar < 0).OrderByDescending(a => a.LapDistSpectatedCar).ToList();  
             }
         }
 
         private List<ExtendedOpponent> OpponentsBehind {
             get {
-                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar > 0);
+                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar > 0).OrderBy(a => a.LapDistSpectatedCar).ToList();
             }
         }
 
         private double GetReferenceClassLaptime() {
+            return GetReferenceClassLaptime(this.SpectatedCar.CarClassID);
+        } 
+
+        private double GetReferenceClassLaptime(int CarClassID) {
             double averageLapTime = 0;
             int count = 0;
-            foreach (var item in this.OpponentsInClass()) {
+            foreach (var item in this.OpponentsInClass(CarClassID)) {
 
                 // use the  last lap time
                 if (item.LastLapTimeSeconds > 0 &&
@@ -84,35 +89,26 @@ namespace APR.DashSupport {
             if (count > 0) {
                 averageLapTime = averageLapTime / count;
             }
-            
+            // if no time, just use 2 mins
+            if (averageLapTime == 0) {
+                return 120.0;
+            }
             return averageLapTime;
          }
 
         private double ReferenceClassLaptime {
             get {
-                double averageLapTime = 0;
-                int count = 0;
-                foreach (var item in this.OpponentsInClass()) {
-
-                    // use the  last lap time
-                    if (item.LastLapTimeSeconds > 0 &&
-                         (item.LastLapTimeSeconds < (item.LastLapTimeSeconds * 1.05)) &&
-                         (item.LastLapTimeSeconds > (item.LastLapTimeSeconds * 0.95))) {
-                        averageLapTime += item.LastLapTimeSeconds;
-                        count++;
-                        averageLapTime = averageLapTime / count;
-                    }
-                    // if the last lap time is empty, try and use the best
-                    else if (item.BestLapTimeSeconds > 0 &&
-                         (item.BestLapTimeSeconds < (item.BestLapTimeSeconds * 1.05)) &&
-                         (item.BestLapTimeSeconds > (item.BestLapTimeSeconds * 0.95))) {
-                        averageLapTime += item.BestLapTimeSeconds;
-                        count++;
-                        averageLapTime = averageLapTime / count;
-                    }
-                }
-                return averageLapTime;
+                return GetReferenceClassLaptime();
             }
+        }
+
+        private double GetGapAsTimeForClass(int CarClassID, double DistanceToTarget) {
+            return (GetReferenceClassLaptime(CarClassID) / trackLength) * DistanceToTarget;
+
+        }
+
+        public double RelativeGapToSpectatedCar(int CarIdx) {
+            return this.GetGapAsTimeForClass(this.SpectatedCar.CarClassID, this.OpponentsExtended[CarIdx].LapDistSpectatedCar );
         }
     }
 
@@ -127,6 +123,7 @@ namespace APR.DashSupport {
         public string TeamName { get { return _opponent.TeamName; } }
         public string CarClass { get { return _opponent.CarClass; } }
         public int CarClassID { get { return (int)_competitor.CarClassID; } }
+        public double CarClassReferenceLapTime { get;set; } 
 
         public int Position { get { return _opponent.Position; } }
         public int PositionInClass { get { return _opponent.PositionInClass; } }
@@ -139,20 +136,25 @@ namespace APR.DashSupport {
 
         public double LapDistSpectatedCar {
             get {
-
                 // Do we need to add or subtract a lap
                 var lapDifference = Convert.ToInt32(CurrentLap - _spectatedCarCurrentLap);
                 var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
                 double distanceAdjustment = 0;
 
                 if (cappedLapDifference == 1) {
-                    distanceAdjustment = -_trackLength * 1000;
+                    distanceAdjustment = -_trackLength;
                 }
                 else if (cappedLapDifference == -1) {
-                    distanceAdjustment = _trackLength * 1000;
+                    distanceAdjustment = _trackLength;
                 }
 
-                return ((_specatedCarLapDistPct * _trackLength) - LapDist) * 1000 + distanceAdjustment;
+                return ((_specatedCarLapDistPct * _trackLength) - LapDist) + distanceAdjustment;
+            }
+        }
+
+        public double GapSpectatedCar {
+            get {
+                return CarClassReferenceLapTime / _trackLength  * LapDistSpectatedCar;
             }
         }
 
@@ -165,7 +167,7 @@ namespace APR.DashSupport {
         public double CurrentLapTimeSeonds { get { return CurrentLapTime.GetValueOrDefault().TotalSeconds; } }
 
         public override string ToString() {
-            return "Idx: " + CarIdx + " P:" + Position + " " + DriverName + " " + LapDistSpectatedCar.ToString("0.00");
+            return "Idx: " + CarIdx + " P:" + Position + " " + DriverName + " " + LapDistSpectatedCar.ToString("0.00") + " " + GapSpectatedCar.ToString("0.00");
         }
     }
 }

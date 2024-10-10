@@ -19,6 +19,8 @@ namespace APR.DashSupport
     public class DashPluginSettings :INotifyPropertyChanged
     {
         public int MaxCars = 64;
+        public int RelativeShowCarsAhead { get; set; } = 5;
+        public int RelativeShowCarsBehind { get; set; } = 5;
 
         public bool EnableRPMBar { get; set; } = true;
         public bool EnableBrakeAndThrottleBars { get; set; } = true;
