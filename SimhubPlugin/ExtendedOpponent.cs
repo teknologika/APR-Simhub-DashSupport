@@ -141,12 +141,12 @@ namespace APR.DashSupport {
                 var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
                 double distanceAdjustment = 0;
 
-                if (cappedLapDifference == 1) {
-                    distanceAdjustment = -_trackLength;
-                }
-                else if (cappedLapDifference == -1) {
-                    distanceAdjustment = _trackLength;
-                }
+                //if (cappedLapDifference == 1) {
+                //    distanceAdjustment = -_trackLength;
+                //}
+                // else if (cappedLapDifference == -1) {
+                //    distanceAdjustment = _trackLength;
+                // }
 
                 return ((_specatedCarLapDistPct * _trackLength) - LapDist) + distanceAdjustment;
             }

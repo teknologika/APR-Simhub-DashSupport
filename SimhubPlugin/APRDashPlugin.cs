@@ -201,14 +201,7 @@ namespace APR.DashSupport
             var ahead = this.OpponentsAhead;
             var behind = this.OpponentsBehind;
 
-            SetProp("Relative.Behind.1.Position", "999");
-
-            for (int i = 1; i < Settings.RelativeShowCarsAhead; i++)
-            {
-                SetProp("Relative.Ahead." + i + ".Position", "");
-                SetProp("Relative.Ahead." + i + ".Distance","");
-                SetProp("Relative.Ahead." + i + ".Gap", "");
-            }
+            ClearRelatives();
 
             int count = 1;
             foreach (var opponent in OpponentsAhead) {
@@ -218,11 +211,6 @@ namespace APR.DashSupport
                 count++;
             }
 
-            for (int i = 1; i < Settings.RelativeShowCarsBehind; i++) {
-                SetProp("Relative.Behind." + i + ".Position", "");
-                SetProp("Relative.Behind." + i + ".Distance", "");
-                SetProp("Relative.Behind." + i + ".Gap", "");
-            }
 
             count = 1;
             foreach (var opponent in OpponentsBehind) {
@@ -451,6 +439,24 @@ namespace APR.DashSupport
             AddStandingsRelatedProperties();
 
             InitPitCalculations();
+        }
+
+        private void ClearRelatives() {
+            for (int i = 1; i < Settings.RelativeShowCarsAhead; i++) {
+                SetProp("Relative.Ahead." + i + ".Position", "");
+                SetProp("Relative.Ahead." + i + ".Distance", "");
+                SetProp("Relative.Ahead." + i + ".Gap", "");
+            }
+
+            for (int i = 1; i < Settings.RelativeShowCarsBehind; i++) {
+                SetProp("Relative.Behind." + i + ".Position", "");
+                SetProp("Relative.Behind." + i + ".Distance", "");
+                SetProp("Relative.Behind." + i + ".Gap", "");
+            }
+
+            SetProp("Relative.Position", "");
+            SetProp("Relative.Gap", "");
+
         }
 
 
@@ -786,8 +792,12 @@ namespace APR.DashSupport
         private void OnSessionChange(PluginManager pluginManager) {
             // Standins support removed 18/06/2023
             ClearStandings();
+            ClearRelatives();
 
            
+
+
+
         }
 
         private void PluginManager_NewLap(int completedLapNumber, bool testLap, PluginManager manager, ref GameData data) {
