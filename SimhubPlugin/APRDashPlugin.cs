@@ -37,7 +37,25 @@ namespace APR.DashSupport
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2
     {
         public DashPluginSettings Settings;
+
+        // Timers
         public int frameCounter = 0;
+
+        DateTime now;
+        private long time;
+
+        private long endTime1Sec;
+        private readonly int every1sec = 10000000;
+        private bool runEvery1Sec;
+
+
+        private long endTime5Sec;
+        private readonly int every5sec = 50000000;
+        private bool runEvery5Sec;
+
+
+        private bool IsRaceSession;
+
 
         DataSampleEx irData;
        
@@ -162,7 +180,8 @@ namespace APR.DashSupport
                             _competitor = competitors[i],
                             _trackLength = trackLength,
                             _spectatedCarCurrentLap = spectatedCarCurrentLap,
-                            _specatedCarLapDistPct = spectatedCarLapDistPct
+                            _specatedCarLapDistPct = spectatedCarLapDistPct,
+                            LicenseColor = LicenseColor(opponents[j].LicenceString)
                         });
 
                        
@@ -172,12 +191,20 @@ namespace APR.DashSupport
                     }
                 }
             }
-
+     
             // update car reference lap time
-
             foreach (var item in OpponentsExtended) {
                 item.CarClassReferenceLapTime = GetReferenceClassLaptime(item.CarClassID);
             }
+
+            if (IsRaceSession) {
+                // update iRating gain / loss
+                foreach (var item in OpponentsExtended) {
+                    item.iRatingChange = CalculateMultiClassIREstimation(item);
+                }
+            }
+
+                //ClearRelatives();
 
             var bob = this.OpponentsInClass();
             var tim = this.GetReferenceClassLaptime();
@@ -185,18 +212,22 @@ namespace APR.DashSupport
             var ahead = this.OpponentsAhead;
             var behind = this.OpponentsBehind;
 
-            ClearRelatives();
+            
 
             int count = 1;
             foreach (var opponent in OpponentsAhead) {
                 SetProp("Relative.Ahead." + count + ".Position", opponent.Position.ToString());
                 SetProp("Relative.Ahead." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Ahead." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
+                
                 SetProp("Relative.Ahead." + count + ".DriverNameColor", opponent.DriverNameColour);
                 SetProp("Relative.Ahead." + count + ".CarClassColor", opponent.CarClassColor);
+                SetProp("Relative.Ahead." + count + ".LicenseColor", opponent.LicenseColor);
+
                 SetProp("Relative.Ahead." + count + ".SR", opponent.SafetyRating);
-                SetProp("Relative.Ahead." + count + ".IR", opponent.iRating);
+                SetProp("Relative.Ahead." + count + ".IR", opponent.iRatingString);
                 SetProp("Relative.Ahead." + count + ".IRChange", opponent.iRatingChange);
+                SetProp("Relative.Ahead." + count + ".PitInfo", opponent.PitInfo);
                 count++;
             }
 
@@ -205,19 +236,29 @@ namespace APR.DashSupport
                 SetProp("Relative.Behind." + count + ".Position", opponent.Position.ToString());
                 SetProp("Relative.Behind." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Behind." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
+
                 SetProp("Relative.Behind." + count + ".DriverNameColor", opponent.DriverNameColour);
                 SetProp("Relative.Behind." + count + ".CarClassColor", opponent.CarClassColor);
+                SetProp("Relative.Behind." + count + ".LicenseColor", opponent.LicenseColor);
+
                 SetProp("Relative.Behind." + count + ".SR", opponent.SafetyRating);
-                SetProp("Relative.Behind." + count + ".IR", opponent.iRating);
+                SetProp("Relative.Behind." + count + ".IR", opponent.iRatingString);
                 SetProp("Relative.Behind." + count + ".IRChange", opponent.iRatingChange);
+                SetProp("Relative.Behind." + count + ".PitInfo", opponent.PitInfo);
                 count++;
             }
 
-            SetProp("Relative.Spectated.Position", OpponentsExtended[spectatedCarIdx].Position.ToString());
-            SetProp("Relative.Spectated.Gap", "");
-            SetProp("Relative.Spectated.SR", "");
-            SetProp("Relative.Spectated.IR", "");
-            SetProp("Relative.Spectated.IRChange", "");
+            ExtendedOpponent spectator = OpponentsExtended[spectatedCarIdx];
+            SetProp("Relative.Spectated.Position", spectator.Position.ToString());
+            SetProp("Relative.Spectated.Gap", 0.0);
+            SetProp("Relative.Spectated.SR", spectator.SafetyRating);
+            SetProp("Relative.Spectated.IR", spectator.iRatingString);
+            SetProp("Relative.Spectated.IRChange", spectator.iRatingChange);
+
+            SetProp("Relative.Spectated.DriverNameColor", spectator.DriverNameColour);
+            SetProp("Relative.Spectated.CarClassColor", spectator.CarClassColor);
+            SetProp("Relative.Spectated.LicenseColor", spectator.LicenseColor);
+
         }
 
         public string GetTrackDistPctForPosition(int position) {
@@ -414,10 +455,12 @@ namespace APR.DashSupport
                 AddProp("Relative.Ahead." + i + ".Gap", "");
                 AddProp("Relative.Ahead." + i + ".DriverNameColor", "");
                 AddProp("Relative.Ahead." + i + ".CarClassColor", "");
+                AddProp("Relative.Ahead." + i + ".LicenseColor", "");
                 AddProp("Relative.Ahead." + i + ".Show", "False");
                 AddProp("Relative.Ahead." + i + ".SR", "False");
                 AddProp("Relative.Ahead." + i + ".IR", "False");
                 AddProp("Relative.Ahead." + i + ".IRChange", "False");
+                AddProp("Relative.Ahead." + i + ".PitInfo", "");
             }
 
             for (int i = 1; i < Settings.NumberOfCarsAheadToBehind; i++) {
@@ -426,10 +469,12 @@ namespace APR.DashSupport
                 AddProp("Relative.Behind." + i + ".Gap", "");
                 AddProp("Relative.Behind." + i + ".DriverNameColor", "");
                 AddProp("Relative.Behind." + i + ".CarClassColor", "");
+                AddProp("Relative.Behind." + i + ".LicenseColor", "");
                 AddProp("Relative.Behind." + i + ".Show", "False");
                 AddProp("Relative.Behind." + i + ".SR", "");
                 AddProp("Relative.Behind." + i + ".IR", "");
                 AddProp("Relative.Behind." + i + ".IRChange", "");
+                AddProp("Relative.Behind." + i + ".PitInfo", "");
             }
 
             AddProp("Relative.Spectated.Position","");
@@ -437,11 +482,14 @@ namespace APR.DashSupport
             AddProp("Relative.Spectated.Distance", "0.0");
             AddProp("Relative.Spectated.DriverNameColor", "#FFFFFF");
             AddProp("Relative.Spectated.CarClassColor", "#000000");
+            AddProp("Relative.Spectated.LicenseColor", "#FFFFFF");
+
             AddProp("Relative.Spectated.Position", "");
             AddProp("Relative.Spectated.Show", "False");
             AddProp("Relative.Spectated.SR", "");
             AddProp("Relative.Spectated.IR", "");
             AddProp("Relative.Spectated.IRChange", "");
+            AddProp("Relative.Spectated.PitInfo", "");
 
             AddProp("Relative.Layout.FontSize", Settings.RelativeFontSize);
             AddProp("Relative.Layout.RowHeight", Settings.RelativeRowHeight);
@@ -512,6 +560,12 @@ namespace APR.DashSupport
                 //Gaining access to raw data
                 if (data?.NewData?.GetRawDataObject() is DataSampleEx) { irData = data.NewData.GetRawDataObject() as DataSampleEx; }
 
+                // Setup timers
+                this.time = DateTime.Now.Ticks;
+                this.runEvery1Sec = this.time - this.endTime1Sec >= (long)this.every1sec;
+                this.runEvery5Sec = this.time - this.endTime5Sec >= (long)this.every5sec;
+
+
                 // TODO: Add logic to reset everything when the session changes
                 int CurrentSessionState = (int)GetProp("DataCorePlugin.GameRawData.Telemetry.SessionState");
                 int num = CurrentSessionState % 3 == 0 || CurrentSessionState >= 5 ? PreviousSessionState : CurrentSessionState;
@@ -533,6 +587,7 @@ namespace APR.DashSupport
 
                     }
                     this.PreviousSessionState = num;
+                    this.IsRaceSession = data.NewData.SessionTypeName == "Race";
                 }
 
                 bool sessionStartSetupCompleted = false;
@@ -544,6 +599,12 @@ namespace APR.DashSupport
                 // Frames are used to reduce calculation frequency
 
                 if (frameCounter == 1) {
+
+                    // Timer
+                    if (this.runEvery5Sec) {
+                        now = DateTime.Now;
+                        this.endTime5Sec = now.Ticks;
+                    }
 
                     UpdateStandingsRelatedProperties(ref data);
 
@@ -660,7 +721,9 @@ namespace APR.DashSupport
                 }
 
                 if (frameCounter == 40) {
-                    UpdateRelatives(data);
+                    if (runEvery1Sec) {
+                        UpdateRelatives(data);
+                    }
                 }
 
 

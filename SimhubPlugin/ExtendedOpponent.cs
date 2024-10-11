@@ -155,23 +155,24 @@ namespace APR.DashSupport {
                 return _opponent.LicenceString.Remove(5,1).Replace(" ","");
             }
         }
-        public string iRating {
+
+        public string LicenseColor { get; set;}
+       
+        public int iRating {
             get {
                 double? iRatingRaw = _opponent.IRacing_IRating;
                 if (iRatingRaw.HasValue) {
-                    return (_opponent.IRacing_IRating.Value / 1000).ToString("0.0") + "k";
+                    return (int)_opponent.IRacing_IRating.Value;
                 }
                 else {
-                    return "";
+                    return 0;
                 }
             }
         }
-
-        public string iRatingChange {
-            get {
-                return "";
-            }
-        }
+    
+        public string iRatingString { get { return (iRating/1000).ToString("0.0") + "k"; } }
+               
+        public string iRatingChange { get; set; }
 
         public double LapDistSpectatedCar {
             get {
@@ -205,8 +206,28 @@ namespace APR.DashSupport {
         public TimeSpan? CurrentLapTime { get { return _opponent.CurrentLapTime; } }
         public double CurrentLapTimeSeonds { get { return CurrentLapTime.GetValueOrDefault().TotalSeconds; } }
 
+        public string PitInfo {
+            get {
+                if (_opponent.IsCarInPit) {
+                    return "BOX";
+                }
+
+                if (_opponent.IsCarInPitLane) {
+                    return "LANE";
+                }
+
+                if (_opponent.IsOutLap) {
+                    return "OUT";
+                }
+
+                return "";
+            }
+        }
+
+
         public override string ToString() {
             return "Idx: " + CarIdx + " P:" + Position + " " + DriverName + " " + LapDistSpectatedCar.ToString("0.00") + " " + GapSpectatedCar.ToString("0.00");
         }
+
     }
 }
