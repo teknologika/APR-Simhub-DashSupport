@@ -170,7 +170,14 @@ namespace APR.DashSupport {
             }
         }
     
-        public string iRatingString { get { return (iRating/1000).ToString("0.0") + "k"; } }
+        public string iRatingString {
+            get {
+                if(iRating < 1) {
+                    return "";
+                }
+                return (iRating/1000).ToString("0.0") + "k";
+            }
+        }
                
         public string iRatingChange { get; set; }
 

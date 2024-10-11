@@ -21,12 +21,11 @@ namespace APR.DashSupport
         public int MaxCars = 64;
 
         // Relative Settings
-        public int NumberOfCarsAheadToShow { get; set; } = 5;
-        public int NumberOfCarsAheadToBehind { get; set; } = 5;
+        public int RelativeNumberOfCarsAheadToShow { get; set; } = 5;
+        public int RelativeNumberOfCarsBehindToShow { get; set; } = 5;
         public int RelativeFontSize { get; set; } = 14;
         public int RelativeRowHeight { get; set; } = 25;
-        public int RelativeRowOffset { get; set; } = 30;
-        public int RelativeRowBackgroundColor { get; set; } = 30;
+        public int RelativeRowOffset { get; set; } = 4;
 
         public bool EnableRPMBar { get; set; } = true;
         public bool EnableBrakeAndThrottleBars { get; set; } = true;
