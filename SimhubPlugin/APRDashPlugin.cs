@@ -135,24 +135,9 @@ namespace APR.DashSupport
             
         }
 
-
         private void UpdateRelatives(GameData data) {
 
-
-            // Loop through iRacing competitors and simhub Opponents and create a shiny new structure
-
-
             this.opponents = data.NewData.Opponents;
-
-            /*
-            this.opponentsOld = data.OldData.Opponents;
-            this.opponentsClass = data.NewData.OpponentsPlayerClass;
-            this.opponentsAhead = data.NewData.OpponentsAheadOnTrack;
-            this.opponentsBehind = data.NewData.OpponentsBehindOnTrack;
-            this.opponentsAheadInClass = data.NewData.OpponentsAheadOnTrackPlayerClass;
-            this.opponentsBehindInClass = data.NewData.OpponentsBehindOnTrackPlayerClass;
-
-            */
 
             SessionData._DriverInfo._Drivers[] competitors = irData.SessionData.DriverInfo.CompetingDrivers;
             this.opponents = data.NewData.Opponents;
@@ -184,7 +169,6 @@ namespace APR.DashSupport
                         // Update the car class info
                         CheckAndAddCarClass((int)competitors[i].CarClassID, competitors[i].CarClassShortName);
 
-
                     }
                 }
             }
@@ -208,20 +192,32 @@ namespace APR.DashSupport
                 SetProp("Relative.Ahead." + count + ".Position", opponent.Position.ToString());
                 SetProp("Relative.Ahead." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Ahead." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
+                SetProp("Relative.Ahead." + count + ".DriverNameColor", opponent.DriverNameColour);
+                SetProp("Relative.Ahead." + count + ".CarClassColor", opponent.CarClassColor);
+                SetProp("Relative.Ahead." + count + ".SR", opponent.SafetyRating);
+                SetProp("Relative.Ahead." + count + ".IR", opponent.iRating);
+                SetProp("Relative.Ahead." + count + ".IRChange", opponent.iRatingChange);
                 count++;
             }
-
 
             count = 1;
             foreach (var opponent in OpponentsBehind) {
                 SetProp("Relative.Behind." + count + ".Position", opponent.Position.ToString());
                 SetProp("Relative.Behind." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Behind." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
+                SetProp("Relative.Behind." + count + ".DriverNameColor", opponent.DriverNameColour);
+                SetProp("Relative.Behind." + count + ".CarClassColor", opponent.CarClassColor);
+                SetProp("Relative.Behind." + count + ".SR", opponent.SafetyRating);
+                SetProp("Relative.Behind." + count + ".IR", opponent.iRating);
+                SetProp("Relative.Behind." + count + ".IRChange", opponent.iRatingChange);
                 count++;
             }
 
-            AddProp("Relative.Position", OpponentsExtended[spectatedCarIdx].Position.ToString());
-            AddProp("Relative.Gap", "");
+            SetProp("Relative.Spectated.Position", OpponentsExtended[spectatedCarIdx].Position.ToString());
+            SetProp("Relative.Spectated.Gap", "");
+            SetProp("Relative.Spectated.SR", "");
+            SetProp("Relative.Spectated.IR", "");
+            SetProp("Relative.Spectated.IRChange", "");
         }
 
         public string GetTrackDistPctForPosition(int position) {
@@ -412,22 +408,45 @@ namespace APR.DashSupport
             AddProp("Strategy.Indicator.RCMode", false);
             AddProp("Strategy.Indicator.isiRacingAdmin", IsIRacingAdmin = false);
 
-            for (int i = 1; i < Settings.RelativeShowCarsAhead; i++) {
+            for (int i = 1; i < Settings.NumberOfCarsAheadToShow; i++) {
                 AddProp("Relative.Ahead." + i + ".Position", "");
                 AddProp("Relative.Ahead." + i + ".Distance", "");
                 AddProp("Relative.Ahead." + i + ".Gap", "");
+                AddProp("Relative.Ahead." + i + ".DriverNameColor", "");
+                AddProp("Relative.Ahead." + i + ".CarClassColor", "");
+                AddProp("Relative.Ahead." + i + ".Show", "False");
+                AddProp("Relative.Ahead." + i + ".SR", "False");
+                AddProp("Relative.Ahead." + i + ".IR", "False");
+                AddProp("Relative.Ahead." + i + ".IRChange", "False");
             }
 
-            for (int i = 1; i < Settings.RelativeShowCarsBehind; i++) {
+            for (int i = 1; i < Settings.NumberOfCarsAheadToBehind; i++) {
                 AddProp("Relative.Behind." + i + ".Position","") ;
                 AddProp("Relative.Behind." + i + ".Distance","" );
                 AddProp("Relative.Behind." + i + ".Gap", "");
+                AddProp("Relative.Behind." + i + ".DriverNameColor", "");
+                AddProp("Relative.Behind." + i + ".CarClassColor", "");
+                AddProp("Relative.Behind." + i + ".Show", "False");
+                AddProp("Relative.Behind." + i + ".SR", "");
+                AddProp("Relative.Behind." + i + ".IR", "");
+                AddProp("Relative.Behind." + i + ".IRChange", "");
             }
 
-            AddProp("Relative.Position","");
-            AddProp("Relative.Gap", "");
+            AddProp("Relative.Spectated.Position","");
+            AddProp("Relative.Spectated.Gap", "0.0");
+            AddProp("Relative.Spectated.Distance", "0.0");
+            AddProp("Relative.Spectated.DriverNameColor", "#FFFFFF");
+            AddProp("Relative.Spectated.CarClassColor", "#000000");
+            AddProp("Relative.Spectated.Position", "");
+            AddProp("Relative.Spectated.Show", "False");
+            AddProp("Relative.Spectated.SR", "");
+            AddProp("Relative.Spectated.IR", "");
+            AddProp("Relative.Spectated.IRChange", "");
 
-        
+            AddProp("Relative.Layout.FontSize", Settings.RelativeFontSize);
+            AddProp("Relative.Layout.RowHeight", Settings.RelativeRowHeight);
+            AddProp("Relative.Layout.RowOffset", Settings.RelativeRowOffset);
+            AddProp("Relative.Layout.BackgroundColor", Settings.RelativeRowBackgroundColor);
 
             //HERE
 
@@ -442,13 +461,13 @@ namespace APR.DashSupport
         }
 
         private void ClearRelatives() {
-            for (int i = 1; i < Settings.RelativeShowCarsAhead; i++) {
+            for (int i = 1; i < Settings.NumberOfCarsAheadToShow; i++) {
                 SetProp("Relative.Ahead." + i + ".Position", "");
                 SetProp("Relative.Ahead." + i + ".Distance", "");
                 SetProp("Relative.Ahead." + i + ".Gap", "");
             }
 
-            for (int i = 1; i < Settings.RelativeShowCarsBehind; i++) {
+            for (int i = 1; i < Settings.NumberOfCarsAheadToBehind; i++) {
                 SetProp("Relative.Behind." + i + ".Position", "");
                 SetProp("Relative.Behind." + i + ".Distance", "");
                 SetProp("Relative.Behind." + i + ".Gap", "");

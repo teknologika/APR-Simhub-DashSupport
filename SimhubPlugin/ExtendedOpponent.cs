@@ -123,7 +123,12 @@ namespace APR.DashSupport {
         public string TeamName { get { return _opponent.TeamName; } }
         public string CarClass { get { return _opponent.CarClass; } }
         public int CarClassID { get { return (int)_competitor.CarClassID; } }
-        public double CarClassReferenceLapTime { get;set; } 
+        public double CarClassReferenceLapTime { get;set; }
+        public string CarClassColor {
+            get {
+                return _competitor.CarClassColor;
+            }
+        }
 
         public int Position { get { return _opponent.Position; } }
         public int PositionInClass { get { return _opponent.PositionInClass; } }
@@ -133,6 +138,40 @@ namespace APR.DashSupport {
         public double TrackPositionPercent { get { return _opponent.TrackPositionPercent ?? 0.0; } }
         public string TrackPositionPercentString { get { return TrackPositionPercent.ToString("0.000"); } }
         public double LapDist { get { return TrackPositionPercent * _trackLength; } }
+        public string DriverNameColour {
+            get {
+                if (_opponent.LapsToLeader > 0 ) {
+                    return "#FF0000";
+                }
+                else if (_opponent.LapsToLeader < 0) {
+                    return "#OOOOFF";
+                }
+                return "#FFFFFF";
+            }
+        }
+
+        public string SafetyRating {
+            get {
+                return _opponent.LicenceString.Remove(5,1).Replace(" ","");
+            }
+        }
+        public string iRating {
+            get {
+                double? iRatingRaw = _opponent.IRacing_IRating;
+                if (iRatingRaw.HasValue) {
+                    return (_opponent.IRacing_IRating.Value / 1000).ToString("0.0") + "k";
+                }
+                else {
+                    return "";
+                }
+            }
+        }
+
+        public string iRatingChange {
+            get {
+                return "";
+            }
+        }
 
         public double LapDistSpectatedCar {
             get {
