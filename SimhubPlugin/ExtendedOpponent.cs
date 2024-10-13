@@ -126,7 +126,18 @@ namespace APR.DashSupport {
         public double CarClassReferenceLapTime { get;set; }
         public string CarClassColor {
             get {
-                return _competitor.CarClassColor;
+                return _competitor.CarClassColor.ToLower().Replace("0x", "#ff"); ;
+            }
+        }
+
+        public string CarClassTextColor {
+            get {
+                if (CarClassColor == "#ff000000") {
+                    return "#ffffffff";
+                }
+                else {
+                    return "#ff000000";
+                }
             }
         }
 
@@ -138,15 +149,36 @@ namespace APR.DashSupport {
         public double TrackPositionPercent { get { return _opponent.TrackPositionPercent ?? 0.0; } }
         public string TrackPositionPercentString { get { return TrackPositionPercent.ToString("0.000"); } }
         public double LapDist { get { return TrackPositionPercent * _trackLength; } }
+        
+        public int CappedLapToSpectatedCar(ExtendedOpponent opponent) {
+            
+           var lapDifference = Convert.ToInt32(_spectatedCarCurrentLap - opponent.CurrentLap);
+           var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
+
+           // -1 is behind, 0 same, +1 ahead  
+           return cappedLapDifference;
+        }
+
+        public int AheadBehind {
+            get {
+                return CappedLapToSpectatedCar(this);
+            }
+        }
+
         public string DriverNameColour {
             get {
-                if (_opponent.LapsToLeader > 0 ) {
-                    return "#FF0000";
+                // driver is behind so blue
+                if (AheadBehind > 0 ) {
+                    return "#ff0000ff";
                 }
-                else if (_opponent.LapsToLeader < 0) {
-                    return "#OOOOFF";
+
+                // driver is ahead so red
+                else if (AheadBehind < 0) {
+                    return "#ffff0000";
                 }
-                return "#FFFFFF";
+
+                // same lap so white
+                return "#ffffffff";
             }
         }
 
@@ -184,7 +216,7 @@ namespace APR.DashSupport {
         public double LapDistSpectatedCar {
             get {
                 // Do we need to add or subtract a lap
-                var lapDifference = Convert.ToInt32(CurrentLap - _spectatedCarCurrentLap);
+                var lapDifference = Convert.ToInt32(_spectatedCarCurrentLap - CurrentLap);
                 var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
                 double distanceAdjustment = 0;
 
@@ -202,6 +234,12 @@ namespace APR.DashSupport {
         public double GapSpectatedCar {
             get {
                 return CarClassReferenceLapTime / _trackLength  * LapDistSpectatedCar;
+            }
+        }
+
+        public int LapSpectatedCar { 
+            get {
+                return _spectatedCarCurrentLap;
             }
         }
 

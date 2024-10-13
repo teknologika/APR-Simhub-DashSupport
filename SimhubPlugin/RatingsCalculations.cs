@@ -18,6 +18,8 @@ namespace APR.DashSupport {
             int driverIRating = (int)driver._opponent.IRacing_IRating.GetValueOrDefault();
             int classPosition = driver.PositionInClass;
    
+            // if no opponents return
+            if (classOpponentsCount <= 1) { return ""; }
 
             double weight = 1600 / Math.Log(2);
             double fudge = (classOpponentsCount / 2.0 - classPosition) / 100.0;

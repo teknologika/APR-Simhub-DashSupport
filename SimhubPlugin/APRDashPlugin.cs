@@ -220,15 +220,21 @@ namespace APR.DashSupport
                 SetProp("Relative.Ahead." + count + ".Name", opponent.DriverName);
                 SetProp("Relative.Ahead." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Ahead." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
-                
+                SetProp("Relative.Ahead." + count + ".AheadBehind", opponent.AheadBehind.ToString());
+
+
                 SetProp("Relative.Ahead." + count + ".DriverNameColor", opponent.DriverNameColour);
                 SetProp("Relative.Ahead." + count + ".CarClassColor", opponent.CarClassColor);
+                SetProp("Relative.Ahead." + count + ".CarClassTextColor", opponent.CarClassTextColor);
                 SetProp("Relative.Ahead." + count + ".LicenseColor", opponent.LicenseColor);
 
                 SetProp("Relative.Ahead." + count + ".SR", opponent.SafetyRating);
                 SetProp("Relative.Ahead." + count + ".IR", opponent.iRatingString);
                 SetProp("Relative.Ahead." + count + ".IRChange", opponent.iRatingChange);
                 SetProp("Relative.Ahead." + count + ".PitInfo", opponent.PitInfo);
+
+
+
                 count++;
             }
 
@@ -238,9 +244,11 @@ namespace APR.DashSupport
                 SetProp("Relative.Behind." + count + ".Name", opponent.DriverName);
                 SetProp("Relative.Behind." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Behind." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
+                SetProp("Relative.Behind." + count + ".AheadBehind", opponent.AheadBehind.ToString());
 
                 SetProp("Relative.Behind." + count + ".DriverNameColor", opponent.DriverNameColour);
                 SetProp("Relative.Behind." + count + ".CarClassColor", opponent.CarClassColor);
+                SetProp("Relative.Behind." + count + ".CarClassTextColor", opponent.CarClassTextColor);
                 SetProp("Relative.Behind." + count + ".LicenseColor", opponent.LicenseColor);
 
                 SetProp("Relative.Behind." + count + ".SR", opponent.SafetyRating);
@@ -253,12 +261,15 @@ namespace APR.DashSupport
             ExtendedOpponent spectator = OpponentsExtended[spectatedCarIdx];
             SetProp("Relative.Spectated.Position", spectator.Position.ToString());
             SetProp("Relative.Spectated.Gap", 0.0);
+            SetProp("Relative.Spectated.AheadBehind", "0");
+
             SetProp("Relative.Spectated.SR", spectator.SafetyRating);
             SetProp("Relative.Spectated.IR", spectator.iRatingString);
             SetProp("Relative.Spectated.IRChange", spectator.iRatingChange);
 
             SetProp("Relative.Spectated.DriverNameColor", spectator.DriverNameColour);
             SetProp("Relative.Spectated.CarClassColor", spectator.CarClassColor);
+            SetProp("Relative.Spectated.CarClassTextColor", spectator.CarClassTextColor);
             SetProp("Relative.Spectated.LicenseColor", spectator.LicenseColor);
 
         }
@@ -456,6 +467,8 @@ namespace APR.DashSupport
                 AddProp("Relative.Ahead." + i + ".Name", "");
                 AddProp("Relative.Ahead." + i + ".Distance", "");
                 AddProp("Relative.Ahead." + i + ".Gap", "");
+                AddProp("Relative.Ahead." + i + ".AheadBehind", "");
+                AddProp("Relative.Ahead." + i + ".CarClassTextColor", "");
                 AddProp("Relative.Ahead." + i + ".DriverNameColor", "");
                 AddProp("Relative.Ahead." + i + ".CarClassColor", "");
                 AddProp("Relative.Ahead." + i + ".LicenseColor", "");
@@ -471,6 +484,8 @@ namespace APR.DashSupport
                 AddProp("Relative.Behind." + i + ".Name", "");
                 AddProp("Relative.Behind." + i + ".Distance","" );
                 AddProp("Relative.Behind." + i + ".Gap", "");
+                AddProp("Relative.Behind." + i + ".AheadBehind", "");
+                AddProp("Relative.Behind." + i + ".CarClassTextColor", "");
                 AddProp("Relative.Behind." + i + ".DriverNameColor", "");
                 AddProp("Relative.Behind." + i + ".CarClassColor", "");
                 AddProp("Relative.Behind." + i + ".LicenseColor", "");
@@ -484,6 +499,8 @@ namespace APR.DashSupport
             AddProp("Relative.Spectated.Position","");
             AddProp("Relative.Spectated.Name", "");
             AddProp("Relative.Spectated.Gap", "0.0");
+            AddProp("Relative.Spectated.AheadBehind", "");
+            AddProp("Relative.Spectated.CarClassTextColor", "");
             AddProp("Relative.Spectated.Distance", "0.0");
             AddProp("Relative.Spectated.DriverNameColor", "#FFFFFF");
             AddProp("Relative.Spectated.CarClassColor", "#000000");
