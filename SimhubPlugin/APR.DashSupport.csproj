@@ -127,6 +127,7 @@
     <Compile Include="CarSettings.cs" />
     <Compile Include="DashPluginSettings.cs" />
     <Compile Include="ExtendedOpponent.cs" />
+    <Compile Include="iRacingRelative.cs" />
     <Compile Include="LapDataStore.cs" />
     <Compile Include="PitStrategyCalculations.cs" />
     <Compile Include="Playground.cs" />

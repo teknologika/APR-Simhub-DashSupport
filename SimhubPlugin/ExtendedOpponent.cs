@@ -129,7 +129,6 @@ namespace APR.DashSupport {
                 return _competitor.CarClassColor.ToLower().Replace("0x", "#ff"); ;
             }
         }
-
         public string CarClassTextColor {
             get {
                 if (CarClassColor == "#ff000000") {
@@ -140,10 +139,8 @@ namespace APR.DashSupport {
                 }
             }
         }
-
         public int Position { get { return _opponent.Position; } }
         public int PositionInClass { get { return _opponent.PositionInClass; } }
-
         public int CurrentLap { get { return _opponent.CurrentLap ?? -1; } }
         public int LapsToLeader { get { return _opponent.LapsToLeader ?? -1; } }
         public double TrackPositionPercent { get { return _opponent.TrackPositionPercent ?? 0.0; } }
@@ -167,14 +164,14 @@ namespace APR.DashSupport {
 
         public string DriverNameColour {
             get {
-                // driver is behind so blue
+                // driver is behind so LightSkyBlue
                 if (AheadBehind > 0 ) {
-                    return "#ff0000ff";
+                    return "#FF87CEFA";
                 }
 
-                // driver is ahead so red
+                // driver is ahead so Salmon
                 else if (AheadBehind < 0) {
-                    return "#ffff0000";
+                    return "#FFFA8072";
                 }
 
                 // same lap so white
@@ -192,13 +189,7 @@ namespace APR.DashSupport {
        
         public int iRating {
             get {
-                double? iRatingRaw = _opponent.IRacing_IRating;
-                if (iRatingRaw.HasValue) {
-                    return (int)_opponent.IRacing_IRating.Value;
-                }
-                else {
-                    return 0;
-                }
+                return (int)_competitor.IRating;
             }
         }
     
@@ -207,25 +198,50 @@ namespace APR.DashSupport {
                 if(iRating < 1) {
                     return "";
                 }
-                return (iRating/1000).ToString("0.0") + "k";
+                return (iRating / 1000d).ToString("0.0") + "k";
             }
         }
                
         public string iRatingChange { get; set; }
 
+        public double LapDistPctSpectatedCar {
+            get {
+                Console.WriteLine(this.DriverName);
+                // Do we need to add or subtract a lap
+                var lapDifference = Convert.ToInt32(_spectatedCarCurrentLap - CurrentLap);
+                var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
+                double percentAdjustment = 0;
+
+                //if ((_opponent.TrackPositionPercent.Value - _specatedCarLapDistPct) < -0.50 ) {
+                //    percentAdjustment = 1;
+               // }
+
+                if (_specatedCarLapDistPct < 0 && _specatedCarLapDistPct > -50) {
+                    return 1d - _specatedCarLapDistPct;
+                }
+
+                return _opponent.TrackPositionPercent.Value - _specatedCarLapDistPct;
+            }
+        }
+
         public double LapDistSpectatedCar {
             get {
+                Console.WriteLine(this.DriverName);
                 // Do we need to add or subtract a lap
                 var lapDifference = Convert.ToInt32(_spectatedCarCurrentLap - CurrentLap);
                 var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
                 double distanceAdjustment = 0;
 
-                //if (cappedLapDifference == 1) {
-                //    distanceAdjustment = -_trackLength;
-                //}
-                // else if (cappedLapDifference == -1) {
-                //    distanceAdjustment = _trackLength;
-                // }
+                if (cappedLapDifference == 1) {
+                    //distanceAdjustment = +_trackLength;
+                 }
+                else if (cappedLapDifference == -1) {
+                  //distanceAdjustment = -_trackLength;
+                }
+
+                if(_specatedCarLapDistPct < 0 && _specatedCarLapDistPct > -50) {
+                    return 1d - _specatedCarLapDistPct;
+                }
 
                 return ((_specatedCarLapDistPct * _trackLength) - LapDist) + distanceAdjustment;
             }

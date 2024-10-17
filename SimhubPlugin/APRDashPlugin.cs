@@ -62,10 +62,18 @@ namespace APR.DashSupport
         public PluginManager PluginManager { get; set; }
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.sdkmenuicon);
         public string LeftMenuTitle => "APR Dash Support";
+       
+        // Session information
         public int PreviousSessionState = 0;
         public double PreviousSessionTick;
         public long PreviousSessionID;
         public string SessionType;
+        public int SessionIndexNumber = 0;
+        public int SessionLaps;
+
+
+
+
         public bool IsV8VetsSession = false;
         public bool IsV8VetsRaceSession = false;
         public bool IsUnderSafetyCar = false;
@@ -91,39 +99,6 @@ namespace APR.DashSupport
         public string DriverBehindId = string.Empty;
         public string DriverBehindName = string.Empty;
 
-        
-
-        // this is used for something :-)
-        /*
-        
-        private List<Opponent> opponentsOld;
-        private List<Opponent> opponentsClass;
-        private List<Opponent> opponentsAhead;
-        private List<Opponent> opponentsBehind;
-        private List<Opponent> opponentsAheadInClass;
-        private List<Opponent> opponentsBehindInClass;
-        private List<ExtendedOpponent> OpponentsExtended;
-
-        
-        private readonly Dictionary<int, int> opponentsInClassCarIdx = new Dictionary<int, int>();
-        private readonly Dictionary<int, int> opponentsAheadCarIdx = new Dictionary<int, int>();
-        private readonly Dictionary<int, int> opponentsBehindCarIdx = new Dictionary<int, int>();
-        private readonly Dictionary<int, int> opponentsAheadInClassCarIdx = new Dictionary<int, int>();
-        private readonly Dictionary<int, int> opponentsBehindInClassCarIdx = new Dictionary<int, int>();
-
-        */
-
-      
-
-            // Calculate the lap difference
-            
-            
-
-                       
-
-
-
-
         public class relative {
             public int position;
             public double trackPositionPercent;
@@ -136,12 +111,7 @@ namespace APR.DashSupport
         }
 
    
-        public class holder {
-            public long CarIdx;
-            public double value;
-        }
-
-        public List<relative> Relatves = new List<relative>();
+       
 
         public float GetTrackLength() {
             if (irData != null) {
@@ -165,7 +135,6 @@ namespace APR.DashSupport
             // Get the Spectated car info
             int spectatedCarIdx = irData.Telemetry.CamCarIdx;
             float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCarIdx];
-            float spectatedCarEstTime = irData.Telemetry.CarIdxEstTime[spectatedCarIdx];
             int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCarIdx];
             
 
@@ -184,7 +153,6 @@ namespace APR.DashSupport
                             LicenseColor = LicenseColor(opponents[j].LicenceString)
                         });
 
-                       
                         // Update the car class info
                         CheckAndAddCarClass((int)competitors[i].CarClassID, competitors[i].CarClassShortName);
 
@@ -213,16 +181,14 @@ namespace APR.DashSupport
             var behind = this.OpponentsBehind;
 
             
-
             int count = 1;
             foreach (var opponent in OpponentsAhead) {
                 SetProp("Relative.Ahead." + count + ".Position", opponent.Position.ToString());
                 SetProp("Relative.Ahead." + count + ".Name", opponent.DriverName);
+                SetProp("Relative.Ahead." + count + ".TrackPct", Math.Abs(opponent.LapDistPctSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Ahead." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Ahead." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Ahead." + count + ".AheadBehind", opponent.AheadBehind.ToString());
-
-
                 SetProp("Relative.Ahead." + count + ".DriverNameColor", opponent.DriverNameColour);
                 SetProp("Relative.Ahead." + count + ".CarClassColor", opponent.CarClassColor);
                 SetProp("Relative.Ahead." + count + ".CarClassTextColor", opponent.CarClassTextColor);
@@ -232,9 +198,6 @@ namespace APR.DashSupport
                 SetProp("Relative.Ahead." + count + ".IR", opponent.iRatingString);
                 SetProp("Relative.Ahead." + count + ".IRChange", opponent.iRatingChange);
                 SetProp("Relative.Ahead." + count + ".PitInfo", opponent.PitInfo);
-
-
-
                 count++;
             }
 
@@ -242,6 +205,8 @@ namespace APR.DashSupport
             foreach (var opponent in OpponentsBehind) {
                 SetProp("Relative.Behind." + count + ".Position", opponent.Position.ToString());
                 SetProp("Relative.Behind." + count + ".Name", opponent.DriverName);
+                SetProp("Relative.Behind." + count + ".TrackPct", Math.Abs(opponent.LapDistPctSpectatedCar).ToString("0.0"));
+
                 SetProp("Relative.Behind." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Behind." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Behind." + count + ".AheadBehind", opponent.AheadBehind.ToString());
@@ -258,25 +223,22 @@ namespace APR.DashSupport
                 count++;
             }
 
-            ExtendedOpponent spectator = OpponentsExtended[spectatedCarIdx];
-            SetProp("Relative.Spectated.Position", spectator.Position.ToString());
+   
+            SetProp("Relative.Spectated.Position", SpectatedCar.Position.ToString());
+            SetProp("Relative.Spectated.Name", SpectatedCar.DriverName);
+            SetProp("Relative.Spectated.PitInfo", SpectatedCar.PitInfo);
             SetProp("Relative.Spectated.Gap", 0.0);
             SetProp("Relative.Spectated.AheadBehind", "0");
 
-            SetProp("Relative.Spectated.SR", spectator.SafetyRating);
-            SetProp("Relative.Spectated.IR", spectator.iRatingString);
-            SetProp("Relative.Spectated.IRChange", spectator.iRatingChange);
+            SetProp("Relative.Spectated.SR", SpectatedCar.SafetyRating);
+            SetProp("Relative.Spectated.IR", SpectatedCar.iRatingString);
+            SetProp("Relative.Spectated.IRChange", SpectatedCar.iRatingChange);
 
-            SetProp("Relative.Spectated.DriverNameColor", spectator.DriverNameColour);
-            SetProp("Relative.Spectated.CarClassColor", spectator.CarClassColor);
-            SetProp("Relative.Spectated.CarClassTextColor", spectator.CarClassTextColor);
-            SetProp("Relative.Spectated.LicenseColor", spectator.LicenseColor);
+            SetProp("Relative.Spectated.DriverNameColor", SpectatedCar.DriverNameColour);
+            SetProp("Relative.Spectated.CarClassColor", SpectatedCar.CarClassColor);
+            SetProp("Relative.Spectated.CarClassTextColor", SpectatedCar.CarClassTextColor);
+            SetProp("Relative.Spectated.LicenseColor", SpectatedCar.LicenseColor);
 
-        }
-
-        public string GetTrackDistPctForPosition(int position) {
-            int index = Relatves.FindIndex(a => a.position == position);
-            return Relatves[index].trackPositionPercent.ToString("0.00");
         }
 
         public string GetPositionforDriverAhead(int carAhead, List<ExtendedOpponent> opponentsAhead) {
@@ -298,8 +260,17 @@ namespace APR.DashSupport
 
         private void UpdateSessionData(GameData data) {
             SessionType = data.NewData.SessionTypeName;
-            PreviousSessionTick = (double)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.SessionTime");
-            PreviousSessionID = (long)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionData.WeekendInfo.SessionID");
+            int sessionCount = this.irData.SessionData.SessionInfo.Sessions.Count();
+            if (sessionCount > 0) {
+                SessionIndexNumber = sessionCount -1;
+            }
+
+            SessionLaps = Convert.ToInt16(this.irData.SessionData.SessionInfo.Sessions[SessionIndexNumber].SessionLaps);
+
+
+            PreviousSessionTick = (double)irData.Telemetry.SessionTime;
+            PreviousSessionID = (long)this.irData.SessionData.WeekendInfo.SessionID;
+
             IsV8VetsLeagueSession();
             trackLength = GetTrackLength();
 
@@ -378,8 +349,6 @@ namespace APR.DashSupport
             SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
         }
 
-
-
         /// <summary>
         /// Called once after plugins startup
         /// Plugins are rebuilt at game change
@@ -388,7 +357,6 @@ namespace APR.DashSupport
         public void Init(PluginManager pluginManager) {
 
             SimHub.Logging.Current.Info("Starting APR plugin");
-
 
             // Load settings
             Settings = this.ReadCommonSettings<DashPluginSettings>("GeneralSettings", () => new DashPluginSettings());
@@ -453,7 +421,6 @@ namespace APR.DashSupport
             AddProp("LaunchPreferFullThrottleStarts", Settings.PreferFullThrottleStarts);
             AddProp("LaunchUsingDualClutchPaddles", Settings.LaunchUsingDualClutchPaddles);
 
-
             AddProp("Strategy.Indicator.StratMode", "A");
             AddProp("Strategy.Indicator.UnderSC", false);
             AddProp("Strategy.Indicator.CPS1Served", false);
@@ -498,6 +465,7 @@ namespace APR.DashSupport
 
             AddProp("Relative.Spectated.Position","");
             AddProp("Relative.Spectated.Name", "");
+            AddProp("Relative.Spectated.PitInfo", "");
             AddProp("Relative.Spectated.Gap", "0.0");
             AddProp("Relative.Spectated.AheadBehind", "");
             AddProp("Relative.Spectated.CarClassTextColor", "");
