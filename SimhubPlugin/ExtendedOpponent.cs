@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Markup;
 using System.Windows.Media.Animation;
 
 namespace APR.DashSupport {
@@ -114,6 +115,7 @@ namespace APR.DashSupport {
 
     public class ExtendedOpponent {
         public Opponent _opponent;
+        public string _sessionType;
         public SessionData._DriverInfo._Drivers _competitor;
         public float _trackLength;
         public float _specatedCarLapDistPct;
@@ -140,7 +142,24 @@ namespace APR.DashSupport {
             }
         }
         public int Position { get { return _opponent.Position; } }
+        public string PositionString {
+            get {
+                if (_opponent.Position < 1 ) {
+                    return "";
+                }
+                return _opponent.Position.ToString();
+            }
+        }
+
         public int PositionInClass { get { return _opponent.PositionInClass; } }
+        public string PositionInClassString {
+            get {
+                if (_opponent.PositionInClass < 1) {
+                    return "";
+                }
+                return _opponent.PositionInClass.ToString();
+            }
+        }
         public int CurrentLap { get { return _opponent.CurrentLap ?? -1; } }
         public int LapsToLeader { get { return _opponent.LapsToLeader ?? -1; } }
         public double TrackPositionPercent { get { return _opponent.TrackPositionPercent ?? 0.0; } }
@@ -164,17 +183,21 @@ namespace APR.DashSupport {
 
         public string DriverNameColour {
             get {
-                // driver is behind so LightSkyBlue
-                if (AheadBehind > 0 ) {
-                    return "#FF87CEFA";
+                if(_opponent.IsCarInPit || _opponent.IsCarInPitLane) {
+                    return "#FF808080";
                 }
 
-                // driver is ahead so Salmon
-                else if (AheadBehind < 0) {
-                    return "#FFFA8072";
-                }
+                if (_sessionType == "Race") {
 
-                // same lap so white
+                    // driver is behind so LightSkyBlue
+                    if (AheadBehind > 0) {
+                        return "#FF87CEFA";
+                    }
+                    // driver is ahead so Salmon
+                    else if (AheadBehind < 0) {
+                        return "#FFFA8072";
+                    }
+                }
                 return "#ffffffff";
             }
         }

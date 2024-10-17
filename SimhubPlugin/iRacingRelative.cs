@@ -115,8 +115,9 @@ namespace APR.DashSupport {
 
                 string color = DetermineColor(i, playerCarIdx, lap, playerLap, pitRoad);
                 AddToRelativePositionTable($"{racePos} {numStr} {nameStr} {timeStr}", color);
- */
-            }
+              }
+            */
+            
 
         }
 

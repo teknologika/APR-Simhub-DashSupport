@@ -71,9 +71,6 @@ namespace APR.DashSupport
         public int SessionIndexNumber = 0;
         public int SessionLaps;
 
-
-
-
         public bool IsV8VetsSession = false;
         public bool IsV8VetsRaceSession = false;
         public bool IsUnderSafetyCar = false;
@@ -145,13 +142,14 @@ namespace APR.DashSupport
 
                         // Add to the Extended Opponents class
                         OpponentsExtended.Add(new ExtendedOpponent() {
+                            _sessionType = SessionType,
                             _opponent = opponents[j],
                             _competitor = competitors[i],
                             _trackLength = trackLength,
                             _spectatedCarCurrentLap = spectatedCarCurrentLap,
                             _specatedCarLapDistPct = spectatedCarLapDistPct,
                             LicenseColor = LicenseColor(opponents[j].LicenceString)
-                        });
+                        }); ; ;
 
                         // Update the car class info
                         CheckAndAddCarClass((int)competitors[i].CarClassID, competitors[i].CarClassShortName);
@@ -183,7 +181,7 @@ namespace APR.DashSupport
             
             int count = 1;
             foreach (var opponent in OpponentsAhead) {
-                SetProp("Relative.Ahead." + count + ".Position", opponent.Position.ToString());
+                SetProp("Relative.Ahead." + count + ".Position", opponent.PositionString);
                 SetProp("Relative.Ahead." + count + ".Name", opponent.DriverName);
                 SetProp("Relative.Ahead." + count + ".TrackPct", Math.Abs(opponent.LapDistPctSpectatedCar).ToString("0.0"));
                 SetProp("Relative.Ahead." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
@@ -203,7 +201,7 @@ namespace APR.DashSupport
 
             count = 1;
             foreach (var opponent in OpponentsBehind) {
-                SetProp("Relative.Behind." + count + ".Position", opponent.Position.ToString());
+                SetProp("Relative.Behind." + count + ".Position", opponent.PositionString);
                 SetProp("Relative.Behind." + count + ".Name", opponent.DriverName);
                 SetProp("Relative.Behind." + count + ".TrackPct", Math.Abs(opponent.LapDistPctSpectatedCar).ToString("0.0"));
 
@@ -224,7 +222,7 @@ namespace APR.DashSupport
             }
 
    
-            SetProp("Relative.Spectated.Position", SpectatedCar.Position.ToString());
+            SetProp("Relative.Spectated.Position", SpectatedCar.PositionString);
             SetProp("Relative.Spectated.Name", SpectatedCar.DriverName);
             SetProp("Relative.Spectated.PitInfo", SpectatedCar.PitInfo);
             SetProp("Relative.Spectated.Gap", 0.0);
