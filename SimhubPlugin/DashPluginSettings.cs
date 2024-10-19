@@ -59,7 +59,7 @@ namespace APR.DashSupport
 
 
         // Enable Standings Properties and calculations
-        public bool EnableStandings { get; set; } = false;
+        public bool EnableStandings { get; set; } = true;
 
         // Enable Multi-class in standings
         public bool Multiclass { get; set; } = false;
@@ -102,6 +102,11 @@ namespace APR.DashSupport
 
             }
         }
+
+        // Relatives Settings
+        public bool EnableRelatives { get; set; } = true;
+
+
 
         // Pit Strategy Calculator Settings
         public bool EnableStrategyCalculation { get; set; } = false;
