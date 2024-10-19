@@ -51,15 +51,16 @@ namespace APR.DashSupport {
             return this.OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
         }
 
-        private List<ExtendedOpponent> OpponentsAhead {
+        private List<ExtendedOpponent> OpponentsBehind{
             get {
-                return OpponentsExtended.FindAll(a => (a.LapDistSpectatedCar < 0 && a.IsConnected)).OrderByDescending(a => a.LapDistSpectatedCar).ToList();
+                var tmp = OpponentsExtended.FindAll(a => (a.LapDistPctSpectatedCar < 0  && a.IsConnected && a.IsInWorld)).OrderBy(a => a.LapDistPctSpectatedCar).ToList();
+                return tmp;
             }
         }
 
-        private List<ExtendedOpponent> OpponentsBehind {
+        private List<ExtendedOpponent> OpponentsAhead {
             get {
-                var tmp = OpponentsExtended.FindAll(a => (a.LapDistSpectatedCar > 0 && a.IsConnected && a.IsInWorld)).OrderBy(a => a.LapDistSpectatedCar).ToList();
+                var tmp = OpponentsExtended.FindAll(a => (a.LapDistPctSpectatedCar > 0  && a.IsConnected && a.IsInWorld)).OrderBy(a => a.LapDistPctSpectatedCar).ToList();
 
                 return tmp; 
             }
