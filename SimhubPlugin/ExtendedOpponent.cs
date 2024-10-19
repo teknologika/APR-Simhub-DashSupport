@@ -53,13 +53,15 @@ namespace APR.DashSupport {
 
         private List<ExtendedOpponent> OpponentsAhead {
             get {
-                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar < 0).OrderByDescending(a => a.LapDistSpectatedCar).ToList();
+                return OpponentsExtended.FindAll(a => (a.LapDistSpectatedCar < 0 && a.IsConnected)).OrderByDescending(a => a.LapDistSpectatedCar).ToList();
             }
         }
 
         private List<ExtendedOpponent> OpponentsBehind {
             get {
-                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar > 0).OrderBy(a => a.LapDistSpectatedCar).ToList();
+                var tmp = OpponentsExtended.FindAll(a => (a.LapDistSpectatedCar > 0 && a.IsConnected && a.IsInWorld)).OrderBy(a => a.LapDistSpectatedCar).ToList();
+
+                return tmp; 
             }
         }
 
@@ -113,6 +115,91 @@ namespace APR.DashSupport {
             return this.GetGapAsTimeForClass(this.SpectatedCar.CarClassID, this.OpponentsExtended[CarIdx].LapDistSpectatedCar);
         }
 
+
+        private void UpdateRelatives(GameData data) {
+
+            if (Settings.EnableRelatives) {
+
+
+                this.opponents = data.NewData.Opponents;
+
+                SessionData._DriverInfo._Drivers[] competitors = irData.SessionData.DriverInfo.CompetingDrivers;
+                this.opponents = data.NewData.Opponents;
+                this.OpponentsExtended = new List<ExtendedOpponent>();
+
+
+                // Get the Spectated car info
+                int spectatedCarIdx = irData.Telemetry.CamCarIdx;
+                float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCarIdx];
+                int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCarIdx];
+
+
+                for (int i = 0; i < competitors.Length; ++i) {
+                    for (int j = 0; j < opponents.Count; ++j) {
+                        // Add the aligned Opponents and Competitor data to our ExtendedOpponent list
+                        if (string.Equals(competitors[i].CarNumber, opponents[j].CarNumber)) {
+
+                            // Add to the Extended Opponents class
+                            OpponentsExtended.Add(new ExtendedOpponent() {
+                                _sessionType = SessionType,
+                                _opponent = opponents[j],
+                                _competitor = competitors[i],
+                                _trackSurface = (int)irData.Telemetry.CarIdxTrackSurface[competitors[i].CarIdx],
+                                _trackLength = trackLength,
+                                _spectatedCarIdx = spectatedCarIdx,
+                                _spectatedCarCurrentLap = spectatedCarCurrentLap,
+                                _specatedCarLapDistPct = spectatedCarLapDistPct,
+                                LicenseColor = LicenseColor(opponents[j].LicenceString)
+                            });
+
+                            // Update the car class info
+                            CheckAndAddCarClass((int)competitors[i].CarClassID, competitors[i].CarClassShortName);
+
+                        }
+                    }
+                }
+
+                // update car reference lap time
+                foreach (var item in OpponentsExtended) {
+                    item.CarClassReferenceLapTime = GetReferenceClassLaptime(item.CarClassID);
+                }
+
+                if (IsRaceSession) {
+                    // update iRating gain / loss
+                    foreach (var item in OpponentsExtended) {
+                        item.iRatingChange = CalculateMultiClassIREstimation(item);
+                    }
+                }
+
+#if DEBUG
+                // this is for debugging only
+                var bob = this.OpponentsInClass();
+                var tim = this.GetReferenceClassLaptime();
+                var fred = this.RelativeGapToSpectatedCar(0);
+                var ahead = this.OpponentsAhead;
+                var behind = this.OpponentsBehind;
+#endif
+                UpdateRelativeProperties();
+
+            }
+        }
+
+        public string GetPositionforDriverAhead(int carAhead, List<ExtendedOpponent> opponentsAhead) {
+            return "";
+        }
+
+        public string GetGapforDriverAhead(int index, List<ExtendedOpponent> opponentsAhead) {
+            index = index - 1;
+            if (index + 1 > opponentsAhead.Count || index < 0) {
+                return "";
+            }
+
+            var carAhead = opponentsAhead[index];
+
+            return RelativeGapToSpectatedCar(carAhead.CarIdx).ToString("0.00");
+
+        }
+
         public void UpdateRelativeProperties() {
 
             if (Settings.EnableRelatives) {
@@ -120,50 +207,55 @@ namespace APR.DashSupport {
 
                 int count = 1;
                 foreach (var opponent in OpponentsAhead) {
-                    SetProp("Relative.Ahead." + count + ".Position", opponent.PositionString);
-                    SetProp("Relative.Ahead." + count + ".Name", opponent.DriverName);
-                    SetProp("Relative.Ahead." + count + ".Show", opponent.DriverName != "");
-                    SetProp("Relative.Ahead." + count + ".CarNumber", opponent.CarNumber);
-                    SetProp("Relative.Ahead." + count + ".TrackPct", Math.Abs(opponent.LapDistPctSpectatedCar).ToString("0.0"));
-                    SetProp("Relative.Ahead." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
-                    SetProp("Relative.Ahead." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
-                    SetProp("Relative.Ahead." + count + ".AheadBehind", opponent.AheadBehind.ToString());
-                    SetProp("Relative.Ahead." + count + ".DriverNameColor", opponent.DriverNameColour);
-                    SetProp("Relative.Ahead." + count + ".CarClassColor", opponent.CarClassColor);
-                    SetProp("Relative.Ahead." + count + ".CarClassTextColor", opponent.CarClassTextColor);
-                    SetProp("Relative.Ahead." + count + ".LicenseColor", opponent.LicenseColor);
+                    
+                    if (Settings.RelativeShowCarsInPits || (! Settings.RelativeShowCarsInPits && !opponent._opponent.IsCarInPitLane)){
+                        SetProp("Relative.Ahead." + count + ".Position", opponent.PositionString);
+                        SetProp("Relative.Ahead." + count + ".Name", opponent.DriverName);
+                        SetProp("Relative.Ahead." + count + ".Show", opponent.DriverName != "");
+                        SetProp("Relative.Ahead." + count + ".CarNumber", opponent.CarNumber);
+                        SetProp("Relative.Ahead." + count + ".TrackPct", Math.Abs(opponent.LapDistPctSpectatedCar).ToString("0.0"));
+                        SetProp("Relative.Ahead." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
+                        SetProp("Relative.Ahead." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
+                        SetProp("Relative.Ahead." + count + ".AheadBehind", opponent.AheadBehind.ToString());
+                        SetProp("Relative.Ahead." + count + ".DriverNameColor", opponent.DriverNameColour);
+                        SetProp("Relative.Ahead." + count + ".CarClassColor", opponent.CarClassColor);
+                        SetProp("Relative.Ahead." + count + ".CarClassTextColor", opponent.CarClassTextColor);
+                        SetProp("Relative.Ahead." + count + ".LicenseColor", opponent.LicenseColor);
 
-                    SetProp("Relative.Ahead." + count + ".SR", opponent.SafetyRating);
-                    SetProp("Relative.Ahead." + count + ".IR", opponent.iRatingString);
-                    SetProp("Relative.Ahead." + count + ".SRSimple", opponent.SafetyRatingSimple);
-                    SetProp("Relative.Ahead." + count + ".IRChange", opponent.iRatingChange);
-                    SetProp("Relative.Ahead." + count + ".PitInfo", opponent.PitInfo);
-                    count++;
+                        SetProp("Relative.Ahead." + count + ".SR", opponent.SafetyRating);
+                        SetProp("Relative.Ahead." + count + ".IR", opponent.iRatingString);
+                        SetProp("Relative.Ahead." + count + ".SRSimple", opponent.SafetyRatingSimple);
+                        SetProp("Relative.Ahead." + count + ".IRChange", opponent.iRatingChange);
+                        SetProp("Relative.Ahead." + count + ".PitInfo", opponent.PitInfo);
+                        count++;
+                    }
                 }
 
                 count = 1;
                 foreach (var opponent in OpponentsBehind) {
-                    SetProp("Relative.Behind." + count + ".Position", opponent.PositionString);
-                    SetProp("Relative.Behind." + count + ".Name", opponent.DriverName);
-                    SetProp("Relative.Behind." + count + ".Show", opponent.DriverName != "");
-                    SetProp("Relative.Behind." + count + ".CarNumber", opponent.CarNumber);
-                    SetProp("Relative.Behind." + count + ".TrackPct", Math.Abs(opponent.LapDistPctSpectatedCar).ToString("0.0"));
+                    if (Settings.RelativeShowCarsInPits || (!Settings.RelativeShowCarsInPits && !opponent._opponent.IsCarInPitLane)) {
+                        SetProp("Relative.Behind." + count + ".Position", opponent.PositionString);
+                        SetProp("Relative.Behind." + count + ".Name", opponent.DriverName);
+                        SetProp("Relative.Behind." + count + ".Show", opponent.DriverName != "");
+                        SetProp("Relative.Behind." + count + ".CarNumber", opponent.CarNumber);
+                        SetProp("Relative.Behind." + count + ".TrackPct", Math.Abs(opponent.LapDistPctSpectatedCar).ToString("0.0"));
 
-                    SetProp("Relative.Behind." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
-                    SetProp("Relative.Behind." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
-                    SetProp("Relative.Behind." + count + ".AheadBehind", opponent.AheadBehind.ToString());
+                        SetProp("Relative.Behind." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
+                        SetProp("Relative.Behind." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
+                        SetProp("Relative.Behind." + count + ".AheadBehind", opponent.AheadBehind.ToString());
 
-                    SetProp("Relative.Behind." + count + ".DriverNameColor", opponent.DriverNameColour);
-                    SetProp("Relative.Behind." + count + ".CarClassColor", opponent.CarClassColor);
-                    SetProp("Relative.Behind." + count + ".CarClassTextColor", opponent.CarClassTextColor);
-                    SetProp("Relative.Behind." + count + ".LicenseColor", opponent.LicenseColor);
+                        SetProp("Relative.Behind." + count + ".DriverNameColor", opponent.DriverNameColour);
+                        SetProp("Relative.Behind." + count + ".CarClassColor", opponent.CarClassColor);
+                        SetProp("Relative.Behind." + count + ".CarClassTextColor", opponent.CarClassTextColor);
+                        SetProp("Relative.Behind." + count + ".LicenseColor", opponent.LicenseColor);
 
-                    SetProp("Relative.Behind." + count + ".SR", opponent.SafetyRating);
-                    SetProp("Relative.Behind." + count + ".SRSimple", opponent.SafetyRatingSimple);
-                    SetProp("Relative.Behind." + count + ".IR", opponent.iRatingString);
-                    SetProp("Relative.Behind." + count + ".IRChange", opponent.iRatingChange);
-                    SetProp("Relative.Behind." + count + ".PitInfo", opponent.PitInfo);
-                    count++;
+                        SetProp("Relative.Behind." + count + ".SR", opponent.SafetyRating);
+                        SetProp("Relative.Behind." + count + ".SRSimple", opponent.SafetyRatingSimple);
+                        SetProp("Relative.Behind." + count + ".IR", opponent.iRatingString);
+                        SetProp("Relative.Behind." + count + ".IRChange", opponent.iRatingChange);
+                        SetProp("Relative.Behind." + count + ".PitInfo", opponent.PitInfo);
+                        count++;
+                    }
                 }
 
                 SetProp("Relative.Spectated.Position", SpectatedCar.PositionString);
@@ -258,7 +350,7 @@ namespace APR.DashSupport {
                 int totalRowHeight = (Settings.RelativeRowHeight + Settings.RelativeRowOffset);
                 int headerHeight = 50;
                 int headerTop = 0;
-                int aheadTop = headerTop + headerHeight + (totalRowHeight * Settings.RelativeNumberOfCarsAheadToShow);
+                int aheadTop = (totalRowHeight * Settings.RelativeNumberOfCarsAheadToShow);
                 int spectatorTop = aheadTop + totalRowHeight;
                 int behindTop = spectatorTop + totalRowHeight;
                 int footerHeight = 50;
@@ -266,7 +358,7 @@ namespace APR.DashSupport {
 
                 int windowHeight = footerTop + footerHeight;
 
-                AddProp("Relative.Layout.HeaderTop", "0");
+                AddProp("Relative.Layout.HeaderTop", headerTop);
                 AddProp("Relative.Layout.HeaderHeight", headerHeight);
                 AddProp("Relative.Layout.AheadTop", aheadTop);
                 AddProp("Relative.Layout.SpectatorTop", spectatorTop);
@@ -292,7 +384,7 @@ namespace APR.DashSupport {
                     SetProp("Relative.Ahead." + i + ".DriverNameColor", "");
                     SetProp("Relative.Ahead." + i + ".CarClassColor", "");
                     SetProp("Relative.Ahead." + i + ".LicenseColor", "");
-                    SetProp("Relative.Ahead." + i + ".Show", "");
+                    SetProp("Relative.Ahead." + i + ".Show", false);
                     SetProp("Relative.Ahead." + i + ".SR", "");
                     SetProp("Relative.Ahead." + i + ".SRSimple", "");
                     SetProp("Relative.Ahead." + i + ".IR", "");
@@ -311,7 +403,7 @@ namespace APR.DashSupport {
                     SetProp("Relative.Behind." + i + ".DriverNameColor", "");
                     SetProp("Relative.Behind." + i + ".CarClassColor", "");
                     SetProp("Relative.Behind." + i + ".LicenseColor", "");
-                    SetProp("Relative.Behind." + i + ".Show", "False");
+                    SetProp("Relative.Behind." + i + ".Show", false);
                     SetProp("Relative.Behind." + i + ".SR", "");
                     SetProp("Relative.Behind." + i + ".SRSimple", "");
                     SetProp("Relative.Behind." + i + ".IR", "");
@@ -332,7 +424,7 @@ namespace APR.DashSupport {
                 SetProp("Relative.Spectated.LicenseColor", "#FFFFFF");
 
                 SetProp("Relative.Spectated.Position", "");
-                SetProp("Relative.Spectated.Show", "False");
+                SetProp("Relative.Spectated.Show", false);
                 SetProp("Relative.Spectated.SR", "");
                 SetProp("Relative.Spectated.SRSimple", "");
                 SetProp("Relative.Spectated.IR", "");
@@ -349,6 +441,38 @@ namespace APR.DashSupport {
             public string _sessionType;
             public SessionData._DriverInfo._Drivers _competitor;
             public float _trackLength;
+            public int _trackSurface;
+
+            
+            public bool IsOnTrack { get { return (_trackSurface == 3); } }
+            public bool IsOffTrack { get { return (_trackSurface == 0); } }
+            public bool IsInWorld { get { return (_trackSurface > -1); } }
+            public bool IsSlow { get { return (IsOnTrack && (Speed > 30.0)); } }
+
+            public double Speed { get { return _opponent.Speed.GetValueOrDefault(); } }
+     
+            public string TrackLocation {
+                get {
+                    
+                    switch (_trackSurface) {
+                        case 0:
+                            return "Off Track";  
+                            
+                        case 1:
+                            return "In Pit Stall";
+
+                        case 2:
+                            return "Approaching Pits";
+
+                        case 3:
+                            return "On Track";
+
+                        default:
+                            return "Not In World";
+                    } 
+                }
+            }
+            public long _spectatedCarIdx;
             public float _specatedCarLapDistPct;
             public int _spectatedCarCurrentLap;
             public int CarIdx { get { return Convert.ToInt32(_competitor.CarIdx); } }
@@ -381,6 +505,15 @@ namespace APR.DashSupport {
                     return _opponent.Position.ToString();
                 }
             }
+
+            public bool IsConnected { get {  return _opponent.IsConnected; } }
+            public bool IsCarInPit { get { return _opponent.IsCarInPit; } }
+            public bool IsCarInPitLane { get { return _opponent.IsCarInPitLane; } }
+            public bool IsCarInGarage { get { return _opponent.IsCarInGarage.GetValueOrDefault(); } }
+            public bool IsOutlap { get { return _opponent.IsOutLap; } }
+            public bool IsPlayer { get { return _opponent.IsPlayer; } }
+            public bool IsSpectator { get { return _spectatedCarIdx == _competitor.CarIdx; } }
+
 
             public string CarNumber { get { return _opponent.CarNumber; } }
 
@@ -416,7 +549,7 @@ namespace APR.DashSupport {
 
             public string DriverNameColour {
                 get {
-                    if (_opponent.IsCarInPit || _opponent.IsCarInPitLane) {
+                    if (IsCarInPit || IsCarInPitLane || IsCarInGarage || !IsConnected) {
                         return "#FF808080";
                     }
 
@@ -488,7 +621,7 @@ namespace APR.DashSupport {
 
             public double LapDistSpectatedCar {
                 get {
-                    Console.WriteLine(this.DriverName);
+
                     // Do we need to add or subtract a lap
                     var lapDifference = Convert.ToInt32(_spectatedCarCurrentLap - CurrentLap);
                     var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);

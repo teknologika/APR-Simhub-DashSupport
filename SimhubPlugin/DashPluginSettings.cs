@@ -105,6 +105,7 @@ namespace APR.DashSupport
 
         // Relatives Settings
         public bool EnableRelatives { get; set; } = true;
+        public bool RelativeShowCarsInPits { get; set; } = false;
 
 
 

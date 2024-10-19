@@ -127,7 +127,7 @@ namespace APR.DashSupport {
 
                 // TODO: Get this for the spectated car
                 CurrentLap = irData.Telemetry.Lap;
-                CurrentLapText = SessionType != "Practice" ? $"{CurrentLap} / {SessionLaps}" : $"{CurrentLap}";
+                CurrentLapText = SessionType != "Practice" ? $"{CurrentLap} / {SessionLapsString}" : $"{CurrentLap}";
             }
             else {
                 LapDisplayVisibility = false;

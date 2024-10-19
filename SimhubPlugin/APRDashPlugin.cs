@@ -69,13 +69,17 @@ namespace APR.DashSupport
         public long PreviousSessionID;
         public string SessionType;
         public int SessionIndexNumber = 0;
-        public int SessionLaps;
+        public string SessionLapsString;
+
 
         public bool IsV8VetsSession = false;
         public bool IsV8VetsRaceSession = false;
         public bool IsUnderSafetyCar = false;
         public string[] V8VetsSafetyCarNames = { "BMW M4 GT4", "Mercedes AMG GT3" };
+        
+        
         public bool IsIRacingAdmin = false;
+        public bool IsLeagueSession = false;
 
         public bool LogTelemetery = false;
         public string _telemFeed = "";
@@ -120,84 +124,6 @@ namespace APR.DashSupport
             
         }
 
-        private void UpdateRelatives(GameData data) {
-
-            this.opponents = data.NewData.Opponents;
-
-            SessionData._DriverInfo._Drivers[] competitors = irData.SessionData.DriverInfo.CompetingDrivers;
-            this.opponents = data.NewData.Opponents;
-            this.OpponentsExtended = new List<ExtendedOpponent>();
-            
-
-            // Get the Spectated car info
-            int spectatedCarIdx = irData.Telemetry.CamCarIdx;
-            float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCarIdx];
-            int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCarIdx];
-            
-
-            for (int i = 0; i < competitors.Length; ++i) {
-                for (int j = 0; j < opponents.Count; ++j) {
-                    // Add the aligned Opponents and Competitor data to our ExtendedOpponent list
-                    if (string.Equals(competitors[i].CarNumber, opponents[j].CarNumber)) {
-
-                        // Add to the Extended Opponents class
-                        OpponentsExtended.Add(new ExtendedOpponent() {
-                            _sessionType = SessionType,
-                            _opponent = opponents[j],
-                            _competitor = competitors[i],
-                            _trackLength = trackLength,
-                            _spectatedCarCurrentLap = spectatedCarCurrentLap,
-                            _specatedCarLapDistPct = spectatedCarLapDistPct,
-                            LicenseColor = LicenseColor(opponents[j].LicenceString)
-                        }); ; ;
-
-                        // Update the car class info
-                        CheckAndAddCarClass((int)competitors[i].CarClassID, competitors[i].CarClassShortName);
-
-                    }
-                }
-            }
-     
-            // update car reference lap time
-            foreach (var item in OpponentsExtended) {
-                item.CarClassReferenceLapTime = GetReferenceClassLaptime(item.CarClassID);
-            }
-
-            if (IsRaceSession) {
-                // update iRating gain / loss
-                foreach (var item in OpponentsExtended) {
-                    item.iRatingChange = CalculateMultiClassIREstimation(item);
-                }
-            }
-
-                       
-
-            var bob = this.OpponentsInClass();
-            var tim = this.GetReferenceClassLaptime();
-            var fred = this.RelativeGapToSpectatedCar(0);
-            var ahead = this.OpponentsAhead;
-            var behind = this.OpponentsBehind;
-
-            UpdateRelativeProperties();
-
-        }
-
-        public string GetPositionforDriverAhead(int carAhead, List<ExtendedOpponent> opponentsAhead) {
-            return "";
-        }
-
-        public string GetGapforDriverAhead(int index, List<ExtendedOpponent> opponentsAhead) {
-            index = index - 1;
-            if (index + 1 > opponentsAhead.Count || index < 0 ) {
-                return "";
-            }
- 
-            var carAhead = opponentsAhead[index];
-        
-            return RelativeGapToSpectatedCar(carAhead.CarIdx).ToString("0.00");
-       
-        }
-
 
         private void UpdateSessionData(GameData data) {
             SessionType = data.NewData.SessionTypeName;
@@ -206,13 +132,18 @@ namespace APR.DashSupport
                 SessionIndexNumber = sessionCount -1;
             }
 
-            SessionLaps = Convert.ToInt16(this.irData.SessionData.SessionInfo.Sessions[SessionIndexNumber].SessionLaps);
-
-
+            SessionLapsString = this.irData.SessionData.SessionInfo.Sessions[SessionIndexNumber].SessionLaps;
+              
+           
             PreviousSessionTick = (double)irData.Telemetry.SessionTime;
             PreviousSessionID = (long)this.irData.SessionData.WeekendInfo.SessionID;
 
-            IsV8VetsLeagueSession();
+            CheckIfV8VetsLeagueSession();
+            CheckIfLeagueSession();
+            SetProp("General.IsLeagueSession", IsLeagueSession);
+            SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
+            SetProp("Strategy.Vets.IsVetsRaceSession", IsV8VetsRaceSession);
+
             trackLength = GetTrackLength();
 
         }
@@ -236,9 +167,16 @@ namespace APR.DashSupport
             }         
         }
 
+        private void CheckIfLeagueSession () {
+            var leagueID = irData.SessionData.WeekendInfo.LeagueID;
+            if (leagueID < 0) {
+                IsLeagueSession = true;
+            }
+        }
 
-        private void IsV8VetsLeagueSession() {
-            var leagueID = (long)this.PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionData.WeekendInfo.LeagueID");
+
+        private void CheckIfV8VetsLeagueSession() {
+            var leagueID = irData.SessionData.WeekendInfo.LeagueID;
 
             if ((leagueID == 6455) || (leagueID == 10129) || (leagueID == 6788)) {
                 IsV8VetsSession = true;
@@ -319,11 +257,36 @@ namespace APR.DashSupport
 
             this.AttachDelegate("DriverNameStyle_0", () => Settings.DriverNameStyle_0);
             this.AttachDelegate("DriverNameStyle_1", () => Settings.DriverNameStyle_1);
+
+
             this.AttachDelegate("General.EnableStandings", () => Settings.EnableStandings);
             this.AttachDelegate("General.EnableRelative", () => Settings.EnableRelatives);
-
+            this.AttachDelegate("Relative.ShowCarsInPits", () => Settings.RelativeShowCarsInPits);
+            
             pluginManager.AddProperty<double>("Version", this.GetType(), 1.1);
             pluginManager.AddProperty<string>("MainMenuSelected", this.GetType(), "none");
+
+            SetProp("General.IsLeagueSession", false);
+
+
+            // Dashboard specific properties > move to a dashboard Styles Class
+            AddProp("Dash.Styles.BoxWithBorder.Border.Color", "#FF808080"); // Gray
+            AddProp("Dash.Styles.BoxWithBorder.Border.LineThickness", 4); 
+            AddProp("Dash.Styles.BoxWithBorder.Border.CornerRadius", 12);
+            AddProp("Dash.Styles.BoxWithBorder.Background.Color", "#00000000"); // Transparent
+            AddProp("Dash.Styles.BoxWithOutBorder.Border.Color", "#00000000"); // Transparent
+
+            AddProp("Dash.Styles.BoxWithOutBorder.Border.LineThickness", 0);
+            AddProp("Dash.Styles.BoxWithOutBorder.Border.CornerRadius", 12);
+
+            AddProp("Dash.Styles.BoxWithOutBorder.Background.Color", "#FF2D2D2D"); // Transparent
+            AddProp("Dash.Styles.Colors.Lap.SessionBest", "#Ff990099"); // Purple
+            AddProp("Dash.Styles.Colors.Lap.PersonalBest", "#FF009933"); // Green
+            AddProp("Dash.Styles.Colors.Lap.Latest", "#FFFFFFFF"); // white
+            AddProp("Dash.Styles.Colors.Lap.Default", "#FFFFFF00"); // yellow
+
+            AddProp("Dash.Mode.NightMode", false);
+
 
             AddProp("BrakeBarColour", "Red");
             AddProp("BrakeBiasColour", "Black");
@@ -360,6 +323,7 @@ namespace APR.DashSupport
             AddProp("LaunchPreferFullThrottleStarts", Settings.PreferFullThrottleStarts);
             AddProp("LaunchUsingDualClutchPaddles", Settings.LaunchUsingDualClutchPaddles);
 
+            // Strategy Specific Properties
             AddProp("Strategy.Indicator.StratMode", "A");
             AddProp("Strategy.Indicator.UnderSC", false);
             AddProp("Strategy.Indicator.CPS1Served", false);
