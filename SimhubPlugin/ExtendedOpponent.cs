@@ -1,6 +1,7 @@
 ﻿using GameReaderCommon;
 using iRacingSDK;
 using SimHub.Plugins;
+using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,97 @@ namespace APR.DashSupport {
         private List<ExtendedOpponent> OpponentsInClass(int CarClassID) {
             return this.OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
         }
+
+        private class RelativePositions {
+
+            public Dictionary<string, List<int>> PositionCarIdx { get; private set; } = new Dictionary<string, List<int>>();
+            public List<int[]> TrackPosCarIdx { get; private set; } = new List<int[]>();
+
+            public List<ExtendedOpponent> SortInWorldOpponentsByTrackPct(List<ExtendedOpponent> opponents) {
+
+                // Ensure the car is in world
+                List<ExtendedOpponent> opponentsInWorld = opponents.FindAll(a => a.IsInWorld).ToList();
+
+                // Sort by position around track in descending order
+                List<ExtendedOpponent> SortedOpponents = opponentsInWorld.OrderByDescending(a => a.TrackPositionPercent).ToList();
+
+                return SortedOpponents;
+            }
+
+
+
+            private List<ExtendedOpponent> _relativePositions = new List<ExtendedOpponent>();
+            private RelativeTable _relativeTable = new RelativeTable();
+
+            public void  Clear() {
+                _relativeTable.Clear();
+                _relativePositions.Clear(); }
+
+            public void Add(ExtendedOpponent item) {
+                _relativePositions.Add(item);
+            }
+
+            public RelativeTable Get() {
+                return _relativeTable;
+            }
+
+            private string TimeToStr_ms(double time, int precision) {
+                // Convert time to a formatted string
+                return time.ToString($"F{precision}");
+            }
+
+            private string FormatDriverNumber(int carIdx, bool pitRoad) {
+                // Format driver number string based on carIdx and pitRoad status
+                return pitRoad ? $"#{carIdx} (P)" : $"#{carIdx}";
+            }
+
+            private string DetermineColor(int i, int playerCarIdx, int lap, int playerLap, bool pitRoad) {
+                if (i == playerCarIdx) {
+                    return "#FFB923"; // Player car color
+                }
+                else if (lap > playerLap) {
+                    return pitRoad ? "#7F1818" : "#FE3030"; // Lapping you
+                }
+                else if (lap == playerLap) {
+                    return pitRoad ? "#7F7F7F" : "#FFFFFF"; // Same lap as you
+                }
+                else {
+                    return pitRoad ? "#00607F" : "#00C0FF"; // Being lapped by you
+                }
+            }
+
+            public RelativeTable Update(List<ExtendedOpponent> opponents, ExtendedOpponent spectator) {
+                this.Clear();
+                List<ExtendedOpponent> sortedOponents = SortInWorldOpponentsByTrackPct(opponents);
+
+                int spectatorIdx = spectator.CarIdx;
+                double spectatorTime = spectatorIdx >= 0 ? spectator.CarEstTime : 0;
+                int spectatorLap = spectatorIdx >= 0 ? spectator.CurrentLap : 0;
+
+                for (int i = 0; i < sortedOponents.Count; i++) {
+
+                    int carIdx = sortedOponents[i].CarIdx;
+                    int lap = sortedOponents[i].Lap;
+                    bool pitRoad = sortedOponents[i].IsCarInPitLane;
+                    int racePos = sortedOponents[i].Position;
+                    double remoteTime = sortedOponents[i].CarEstTime;
+                    string timeStr = TimeToStr_ms(remoteTime - spectatorTime,1);
+                    string numStr = FormatDriverNumber(carIdx, pitRoad);
+                    string nameStr = sortedOponents[i].DriverName;
+                    string color = DetermineColor(i, spectatorIdx, lap, spectatorLap, pitRoad);
+
+                    _relativeTable.Add(racePos, numStr, nameStr, timeStr, color); 
+                }
+
+                return _relativeTable;
+            }
+
+        }
+
+        private void UpdateRelativeTable() {
+
+        }
+
 
         private List<ExtendedOpponent> OpponentsBehind{
             get {
@@ -133,7 +225,7 @@ namespace APR.DashSupport {
                 int spectatedCarIdx = irData.Telemetry.CamCarIdx;
                 float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCarIdx];
                 int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCarIdx];
-
+                
 
                 for (int i = 0; i < competitors.Length; ++i) {
                     for (int j = 0; j < opponents.Count; ++j) {
@@ -145,6 +237,7 @@ namespace APR.DashSupport {
                                 _sessionType = SessionType,
                                 _opponent = opponents[j],
                                 _competitor = competitors[i],
+                                _carEstTime = irData.Telemetry.CarIdxEstTime[competitors[i].CarIdx],
                                 _trackSurface = (int)irData.Telemetry.CarIdxTrackSurface[competitors[i].CarIdx],
                                 _trackLength = trackLength,
                                 _spectatedCarIdx = spectatedCarIdx,
@@ -160,6 +253,9 @@ namespace APR.DashSupport {
                     }
                 }
 
+                // Create the spectator
+                ExtendedOpponent spectator = OpponentsExtended.Find(a => a.CarIdx == spectatedCarIdx);
+
                 // update car reference lap time
                 foreach (var item in OpponentsExtended) {
                     item.CarClassReferenceLapTime = GetReferenceClassLaptime(item.CarClassID);
@@ -172,7 +268,15 @@ namespace APR.DashSupport {
                     }
                 }
 
+                
+                RelativePositions relpos = new RelativePositions();
+                relpos.Update(OpponentsExtended, spectator);
+
+
+
 #if DEBUG
+                var ben = relpos.Get();
+
                 // this is for debugging only
                 var bob = this.OpponentsInClass();
                 var tim = this.GetReferenceClassLaptime();
@@ -443,14 +547,16 @@ namespace APR.DashSupport {
             public SessionData._DriverInfo._Drivers _competitor;
             public float _trackLength;
             public int _trackSurface;
+            public double _carEstTime;
+            public double CarEstTime { get {return _carEstTime;} } 
 
-            
             public bool IsOnTrack { get { return (_trackSurface == 3); } }
             public bool IsOffTrack { get { return (_trackSurface == 0); } }
             public bool IsInWorld { get { return (_trackSurface > -1); } }
             public bool IsSlow { get { return (IsOnTrack && (Speed > 30.0)); } }
 
             public double Speed { get { return _opponent.Speed.GetValueOrDefault(); } }
+            
      
             public string TrackLocation {
                 get {
@@ -528,6 +634,7 @@ namespace APR.DashSupport {
                 }
             }
             public int CurrentLap { get { return _opponent.CurrentLap ?? -1; } }
+            public int Lap { get { return  CurrentLap; } }
             public int LapsToLeader { get { return _opponent.LapsToLeader ?? -1; } }
             public double TrackPositionPercent { get { return _opponent.TrackPositionPercent ?? 0.0; } }
             public string TrackPositionPercentString { get { return TrackPositionPercent.ToString("0.000"); } }
