@@ -440,7 +440,10 @@ namespace APR.DashSupport {
 
         public void UpdateRelativeProperties() {
 
-            if (Settings.EnableRelatives) {
+            if ( Settings.EnableRelatives &&
+                    ( SpectatedCar._specatedCarLapDistPct > 0.01 ||
+                     SpectatedCar._specatedCarLapDistPct > 0.99)) {
+
                 ClearRelativeProperties();
 
                 int count = 1;
@@ -514,6 +517,7 @@ namespace APR.DashSupport {
                 SetProp("Relative.Spectated.CarClassTextColor", SpectatedCar.CarClassTextColor);
                 SetProp("Relative.Spectated.LicenseColor", SpectatedCar.LicenseColor);
             }
+       
         }
 
         public void AddRelativeProperties() {
@@ -859,7 +863,6 @@ namespace APR.DashSupport {
                 }
             }
 
-     
             public int LapSpectatedCar {
                 get {
                     return _spectatedCarCurrentLap;
@@ -928,9 +931,6 @@ namespace APR.DashSupport {
                 }
             }
             public string iRatingChange { get; set; }
-
-
-
 
             public TimeSpan LastLapTime { get { return _opponent.LastLapTime; } }
             public double LastLapTimeSeconds { get { return LastLapTime.TotalSeconds; } }
