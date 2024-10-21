@@ -39,23 +39,41 @@ namespace APR.DashSupport {
                 _relativePositions.Clear();
             }
 
-            public void Add(int racePos, string numStr, string nameStr, string timeStr, string color) {
+            public List<RelativePosition> Get() {
+                return _relativePositions;
+            }
+
+
+            public void Add(int carIdx, int racePos, string carNumberString, string nameStr, double simpleRelativeGapToSpectator, int aheadBehind) {
+               
+                
                 _relativePositions.Add(new RelativePosition() {
-                    racePos = racePos,
-                    numStr = numStr,
+                    carIdx = carIdx,
+                    racePosition = racePos,
+                    carNumberString = carNumberString,
                     nameStr = nameStr,
-                    timeStr = timeStr,
-                    color = color
+                    simpleRelativeGapToSpectator = simpleRelativeGapToSpectator,
+                    aheadBehind = aheadBehind
                 });
             }
         }
 
         public class RelativePosition {
-            public int racePos;
-            public string numStr;
+            public int carIdx;
+            public int racePosition;
+            public string carNumberString;
+            public double sortingRelativeGapToSpectator;
+            public double simpleRelativeGapToSpectator;
+            public string simpleRelativeGapToSpectatorString {
+                get {
+                    return simpleRelativeGapToSpectator.ToString($"0.0");
+                }
+            }
+              
             public string nameStr;
-            public string timeStr;
+            public string relGapStr;
             public string color;
+            public int aheadBehind; // 1 = ahead, 0 = ignore, -1 = behind
         }
 
         public void HandleF3Update(ref GameData data) {
