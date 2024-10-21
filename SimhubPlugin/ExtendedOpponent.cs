@@ -67,8 +67,15 @@ namespace APR.DashSupport {
                 // we do this by adding or subtracting g_sessionObj.DriverInfo.DriverCarEstLapTime from time
 
                 foreach (var car in opponents) {
-         
-                    double refLapTime = car.CarClassReferenceLapTime;
+
+
+                    double refLapTime;
+                    if (car.CarEstTime > 0) {
+                        refLapTime = car.CarEstTime;
+                    }
+                    else {
+                        refLapTime = car.CarClassReferenceLapTime;
+                    }
 
                     // if the gap is more than 50 of a lap ahead, they are actually behind
                     if (car.GapSpectatedCar > refLapTime / 2) {
@@ -211,8 +218,14 @@ namespace APR.DashSupport {
 
                     foreach (var item in _relativeTable.Get()) {
                         var car = opponents.Find(a => a.CarIdx == item.carIdx);
-                        double refLapTime = car.CarClassReferenceLapTime;
 
+                        double refLapTime;
+                        if (car.CarEstTime > 0) {
+                            refLapTime = car.CarEstTime;
+                        }
+                        else {
+                            refLapTime = car.CarClassReferenceLapTime;
+                        }
                         // if the gap is more than 50 of a lap ahead, they are actually behind
                         if (item.simpleRelativeGapToSpectator > refLapTime / 2) {
 
@@ -254,14 +267,7 @@ namespace APR.DashSupport {
                     }
 
                 }
-
-
-
             }
-
-        }
-
-        private void UpdateRelativeTable() {
 
         }
 
@@ -269,22 +275,46 @@ namespace APR.DashSupport {
             OpponentsAhead = OpponentsAhead.OrderBy(a => a.SortingRelativeGapToSpectator).ToList();
         }
 
-        public List<ExtendedOpponent> OpponentsAhead = new List<ExtendedOpponent>();
-        public List<ExtendedOpponent> OpponentsBehind = new List<ExtendedOpponent>();
+        public void RemoveCarsInPitlane() {
+            if (Settings.RelativeShowCarsInPits) {
+                _opponentsAhead = OpponentsAhead.FindAll(a => (!a.IsCarInPitLane || !a.IsCarInPit || !a.IsCarInGarage));
+                _opponentsBehind = OpponentsBehind.FindAll(a => (!a.IsCarInPitLane || !a.IsCarInPit || !a.IsCarInGarage));
+            }
+        }
+
+        public List<ExtendedOpponent> OpponentsAhead1 = new List<ExtendedOpponent>();
+        public List<ExtendedOpponent> OpponentsBehind1 = new List<ExtendedOpponent>();
 
 
         private List<ExtendedOpponent> _opponentsAhead = new List<ExtendedOpponent>();
         private List<ExtendedOpponent> _opponentsBehind = new List<ExtendedOpponent>();
 
-        public List<ExtendedOpponent> OpponentsAhead2 {
+        public List<ExtendedOpponent> OpponentsAhead {
             get {
-                return OpponentsExtended.FindAll(a => a.SortingRelativeGapToSpectator > 0).OrderBy(a=> a.SortingRelativeGapToSpectator).ToList();
+
+                return _opponentsAhead.FindAll(a => a.SortingRelativeGapToSpectator > 0).OrderBy(a=> a.SortingRelativeGapToSpectator).ToList();
+            }
+            set {
+                if (Settings.RelativeShowCarsInPits) {
+                    _opponentsAhead = value.FindAll(a => (!a.IsCarInPitLane || !a.IsCarInPit || !a.IsCarInGarage));
+                }
+                else {
+                    _opponentsAhead = value;
+                }
             }
         }
 
-        public List<ExtendedOpponent> OpponentsBehind2 {
+        public List<ExtendedOpponent> OpponentsBehind {
             get {
-                return OpponentsExtended.FindAll(a => a.SortingRelativeGapToSpectator < 0).OrderByDescending(a => a.SortingRelativeGapToSpectator).ToList();
+                return _opponentsBehind.FindAll(a => a.SortingRelativeGapToSpectator < 0).OrderByDescending(a => a.SortingRelativeGapToSpectator).ToList();
+            }
+            set {
+                if (Settings.RelativeShowCarsInPits) {
+                    _opponentsBehind = value.FindAll(a => (!a.IsCarInPitLane || !a.IsCarInPit || !a.IsCarInGarage));
+                }
+                else {
+                    _opponentsBehind = value;
+                }
             }
         }
 
@@ -343,19 +373,16 @@ namespace APR.DashSupport {
 
             if (Settings.EnableRelatives) {
 
-
                 this.opponents = data.NewData.Opponents;
 
                 SessionData._DriverInfo._Drivers[] competitors = irData.SessionData.DriverInfo.CompetingDrivers;
                 this.opponents = data.NewData.Opponents;
                 this.OpponentsExtended = new List<ExtendedOpponent>();
 
-
                 // Get the Spectated car info
                 int spectatedCarIdx = irData.Telemetry.CamCarIdx;
                 float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCarIdx];
                 int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCarIdx];
-
 
                 for (int i = 0; i < competitors.Length; ++i) {
                     for (int j = 0; j < opponents.Count; ++j) {
@@ -405,16 +432,12 @@ namespace APR.DashSupport {
                 this.OpponentsBehind = relpos.Behind;
 
 
-
 #if DEBUG
 
 
                 // this is for debugging only
-                var bob = this.OpponentsInClass();
-                var tim = this.GetReferenceClassLaptime();
-                var fred = this.RelativeGapToSpectatedCar(0);
+
                 var ahead = this.OpponentsAhead;
-                var aheadd = this.OpponentsAhead2;
                 var behind = this.OpponentsBehind;
 #endif
                 UpdateRelativeProperties();
@@ -422,9 +445,6 @@ namespace APR.DashSupport {
             }
         }
 
-        public string GetPositionforDriverAhead(int carAhead, List<ExtendedOpponent> opponentsAhead) {
-            return "";
-        }
 
         public string GetGapforDriverAhead(int index, List<ExtendedOpponent> opponentsAhead) {
             index = index - 1;
@@ -440,9 +460,7 @@ namespace APR.DashSupport {
 
         public void UpdateRelativeProperties() {
 
-            if ( Settings.EnableRelatives &&
-                    ( SpectatedCar._specatedCarLapDistPct > 0.01 ||
-                     SpectatedCar._specatedCarLapDistPct > 0.99)) {
+            if ( Settings.EnableRelatives ) {
 
                 ClearRelativeProperties();
 
@@ -687,7 +705,15 @@ namespace APR.DashSupport {
 
             public double _carEstTime;
             public double CarEstTime { get { return _carEstTime; } }
-
+            public double SafeCarEstTime {
+                get {
+                    if (_carEstTime > 0) {
+                        return _carEstTime;
+                    }
+                    return CarClassReferenceLapTime;
+                }
+            }
+             
             public bool IsOnTrack { get { return (_trackSurface == 3); } }
             public bool IsOffTrack { get { return (_trackSurface == 0); } }
             public bool IsInWorld { get { return (_trackSurface > -1); } }
@@ -822,11 +848,6 @@ namespace APR.DashSupport {
                     // Do we need to add or subtract a lap
                     var lapDifference = Convert.ToInt32(_spectatedCarCurrentLap - CurrentLap);
                     var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
-                    double percentAdjustment = 0;
-
-                    //if ((_opponent.TrackPositionPercent.Value - _specatedCarLapDistPct) < -0.50 ) {
-                    //    percentAdjustment = 1;
-                    // }
 
                     if (_specatedCarLapDistPct < 0 && _specatedCarLapDistPct > -50) {
                         return 1d - _specatedCarLapDistPct;
@@ -871,38 +892,25 @@ namespace APR.DashSupport {
 
             public string DriverNameColour {
                 get {
-                     
-                    if (CurrentLap > _spectatedCarCurrentLap) {
-                        return IsCarInPitLane ? "#7F1818" : "#FE3030"; // Lapping you
-                    }
-                    else if (CurrentLap == _spectatedCarCurrentLap) {
-                        return IsCarInPitLane ? "#7F7F7F" : "#FFFFFF"; // Same lap as you
-                    }
-                    else {
-                        return IsCarInPitLane ? "#00607F" : "#00C0FF"; // Being lapped by you
-                    }
-                }
-            }
-
-            public string DriverNameColour1 {
-                get {
-     
                     if (IsCarInPit || IsCarInPitLane || IsCarInGarage || !IsConnected) {
                         return "#FF808080";
                     }
 
                     if (_sessionType == "Race") {
 
-                        // driver is behind so LightSkyBlue
-                        if (AheadBehind > 0) {
-                            return "#FF87CEFA";
+                        if (CurrentLap > _spectatedCarCurrentLap) {
+                            return IsCarInPitLane ? "#7F1818" : "#FE3030"; // Lapping you
                         }
-                        // driver is ahead so Salmon
-                        else if (AheadBehind < 0) {
-                            return "#FFFA8072";
+                        else if (CurrentLap == _spectatedCarCurrentLap) {
+                            return IsCarInPitLane ? "#7F7F7F" : "#FFFFFF"; // Same lap as you
+                        }
+                        else {
+                            return IsCarInPitLane ? "#00607F" : "#00C0FF"; // Being lapped by you
                         }
                     }
-                    return "#ffffffff";
+                    else {
+                        return "#ffffffff";
+                    }
                 }
             }
 
