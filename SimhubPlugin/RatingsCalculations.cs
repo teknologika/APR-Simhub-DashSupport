@@ -33,6 +33,7 @@ namespace APR.DashSupport {
 
             double tmpexpScore = 0;
     
+            //FIXME - This breaks with a lot of classes
             try {
                 for (int i = 0; i < classOpponentsCount; i++) {
                     tmpexpScore +=

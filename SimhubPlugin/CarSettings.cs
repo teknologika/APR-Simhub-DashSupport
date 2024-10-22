@@ -64,7 +64,7 @@ namespace APR.DashSupport {
 				SetProp("ARBColourFront", "Green");
 			}
 			else {
-				SetProp("ARBColourFront", "White");
+				SetProp("ARBColourFront", Settings.Color_White);
 			}
 		}
 
@@ -85,7 +85,7 @@ namespace APR.DashSupport {
                 SetProp("JackerColour", "Green");
             }
             else {
-                SetProp("JackerColour", "White");
+                SetProp("JackerColour", Settings.Color_White);
             }
         }
 
@@ -114,7 +114,7 @@ namespace APR.DashSupport {
 				SetProp("ARBColourRear", "Green");
 			}
 			else {
-				SetProp("ARBColourRear", "White");
+				SetProp("ARBColourRear", Settings.Color_White);
 			}
 		}
 
@@ -145,20 +145,29 @@ namespace APR.DashSupport {
                 setupBias = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.InCarAdjustments.BrakePressureBias");
             }
 
-            
-
-
             Settings.SetupBrakeBiasPercentage = double.Parse(setupBias.Replace("%", ""));
-			double bias = GetProp("BrakeBias");
+            double bias = GetProp("BrakeBias");
 
-			if (bias == Settings.SetupBrakeBiasPercentage) {
-				SetProp("BrakeBiasColour", "Green");
+            SetProp("Common.Bias.Setup", Settings.SetupBrakeBiasPercentage);
+			SetProp("Common.Bias.Preferred", Settings.PreferredBrakeBiasPercentage);
+            SetProp("Common.Bias.Delta", (bias - Settings.SetupBrakeBiasPercentage).ToString("-0.0"));
+
+			if (bias < Settings.SetupBrakeBiasPercentage) {
+                SetProp("Common.Bias.Color", Settings.Color_Green);
+                SetProp("BrakeBiasColour", Settings.Color_Green);
 			}
 			else if (bias == Settings.PreferredBrakeBiasPercentage) {
-				SetProp("BrakeBiasColour", "DeepSkyBlue");
+                SetProp("Common.Bias.Color", Settings.Color_LightBlue);
+                SetProp("BrakeBiasColour", "DeepSkyBlue");
 			}
-			else {
-				SetProp("BrakeBiasColour", "White");
+            else if (bias > Settings.SetupBrakeBiasPercentage) {
+                SetProp("Common.Bias.Color", Settings.Color_Red);
+                SetProp("BrakeBiasColour", Settings.Color_Red);
+            }
+
+            else {
+                SetProp("Common.Bias.Color", Settings.Color_White);
+                SetProp("BrakeBiasColour", Settings.Color_White);
 			}
 		}
 
@@ -193,7 +202,7 @@ namespace APR.DashSupport {
 				SetProp("TCColour", "Green");
 			}
 			else {
-				SetProp("TCColour", "White");
+				SetProp("TCColour", Settings.Color_White);
 			}
 		}
 
@@ -224,7 +233,7 @@ namespace APR.DashSupport {
 				SetProp("ABSColour", "Green");
 			}
 			else {
-				SetProp("ABSColour", "White");
+				SetProp("ABSColour", Settings.Color_White);
 			}
 		}
 
@@ -254,7 +263,7 @@ namespace APR.DashSupport {
 				SetProp("MAPColour", "Green");
 			}
 			else {
-				SetProp("MAPColour", "White");
+				SetProp("MAPColour", Settings.Color_White);
 			}
 
 			//Throttle Shape (MAP)
@@ -278,7 +287,7 @@ namespace APR.DashSupport {
 				SetProp("ThrottleShapeColour", "Green");
 			}
 			else {
-				SetProp("ThrottleShapeColour", "White");
+				SetProp("ThrottleShapeColour", Settings.Color_White);
 			}
 		}
 

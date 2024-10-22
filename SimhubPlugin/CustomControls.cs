@@ -46,7 +46,7 @@ namespace APR.DashSupport {
             // If we need to pit this lap .. shout it out
             if (ddFuelAlert) {
                 SetProp("PitWindowMessage", "BOX");
-                SetProp("PitWindowTextColour", "White");
+                SetProp("PitWindowTextColour", Settings.Color_White);
                 SetProp("pitWindowBackGroundColour", "Red");
             }
             else {

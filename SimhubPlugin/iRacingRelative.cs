@@ -100,6 +100,7 @@ namespace APR.DashSupport {
             UpdateLapOrTimeString(data);
 
 
+
         }
 
         private void UpdateRelativePositionTable() {

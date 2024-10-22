@@ -76,7 +76,7 @@ namespace APR.DashSupport
         public bool IsV8VetsSession = false;
         public bool IsV8VetsRaceSession = false;
         public bool IsUnderSafetyCar = false;
-        public string[] V8VetsSafetyCarNames = { "BMW M4 GT4", "Mercedes AMG GT3" };
+        public string[] V8VetsSafetyCarNames = { "BMW M4 GT4", "Mercedes AMG GT3", "McLaren 720S GT3 EVO" };
         
         
         public bool IsIRacingAdmin = false;
@@ -193,33 +193,24 @@ namespace APR.DashSupport
         }
 
         private void CheckIfUnderSafetyCar() {
-            
-            int paceMode = Convert.ToInt32(PluginManager.GetPropertyValue("DataCorePlugin.GameRawData.Telemetry.PaceMode"));
-            if (paceMode == 2 ) {
-                IsUnderSafetyCar = true;
-                SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
-                return;
-            }
-            else {
-                if (IsV8VetsRaceSession) {
-                    for (int i = 1; i < Settings.MaxCars; i++) {
-                        string carName = (string)this.PluginManager.GetPropertyValue($"IRacingExtraProperties.iRacing_Leaderboard_Driver_{i:00}_CarName");
-                        if (V8VetsSafetyCarNames.Contains(carName)) {
-                            bool isInPit = (bool)this.PluginManager.GetPropertyValue($"IRacingExtraProperties.iRacing_Leaderboard_Driver_{i:00}_IsInPit");
-                            if (!isInPit) {
-                                IsUnderSafetyCar = true;
-                                SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
-                                return;
-                            }
+
+            bool IsUnderSafetyCar = irData.Telemetry.UnderPaceCar;
+            if (IsV8VetsRaceSession) {
+                foreach (var item in OpponentsExtended) {
+                    if (V8VetsSafetyCarNames.Contains(item._competitor.CarScreenName)) {
+                        if (!item.IsCarInPit && SessionType == "Race") {
+                            IsUnderSafetyCar = true;
+                            SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
+                            return;
                         }
                     }
                 }
-                else {
-                    IsUnderSafetyCar = false;
-                    SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
-                }
             }
-            IsUnderSafetyCar = false;
+            else {
+                IsUnderSafetyCar = false;
+                SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
+            }
+
             SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
         }
 
@@ -253,9 +244,8 @@ namespace APR.DashSupport
             this.AttachDelegate("DriverNameStyle_0", () => Settings.DriverNameStyle_0);
             this.AttachDelegate("DriverNameStyle_1", () => Settings.DriverNameStyle_1);
 
-
-            this.AttachDelegate("General.EnableStandings", () => Settings.EnableStandings);
-            this.AttachDelegate("General.EnableRelative", () => Settings.EnableRelatives);
+            this.AttachDelegate("Common.EnableStandings", () => Settings.EnableStandings);
+            this.AttachDelegate("Common.EnableRelative", () => Settings.EnableRelatives);
             this.AttachDelegate("Relative.ShowCarsInPits", () => Settings.RelativeShowCarsInPits);
             
             pluginManager.AddProperty<double>("Version", this.GetType(), 1.1);
@@ -263,54 +253,58 @@ namespace APR.DashSupport
 
             CreateCommonProperties();
 
-            SetProp("General.IsLeagueSession", false);
+            SetProp("Common.IsLeagueSession", false);
 
             // Dashboard specific properties > move to a dashboard Styles Class
-            AddProp("Dash.Styles.BoxWithBorder.Border.Color", "#FF808080"); // Gray
+            AddProp("Dash.Styles.BoxWithBorder.Border.Color", Settings.Color_LightGrey); // Gray
             AddProp("Dash.Styles.BoxWithBorder.Border.LineThickness", 4); 
             AddProp("Dash.Styles.BoxWithBorder.Border.CornerRadius", 12);
-            AddProp("Dash.Styles.BoxWithBorder.Background.Color", "#00000000"); // Transparent
-            AddProp("Dash.Styles.BoxWithOutBorder.Border.Color", "#00000000"); // Transparent
+            AddProp("Dash.Styles.BoxWithBorder.Background.Color", Settings.Color_Transparent); // Transparent
+            AddProp("Dash.Styles.BoxWithOutBorder.Border.Color", Settings.Color_Transparent); // Transparent
 
             AddProp("Dash.Styles.BoxWithOutBorder.Border.LineThickness", 0);
             AddProp("Dash.Styles.BoxWithOutBorder.Border.CornerRadius", 12);
 
-            AddProp("Dash.Styles.BoxWithOutBorder.Background.Color", "#FF2D2D2D"); // Transparent
-            AddProp("Dash.Styles.Colors.Lap.SessionBest", "#Ff990099"); // Purple
-            AddProp("Dash.Styles.Colors.Lap.PersonalBest", "#FF009933"); // Green
-            AddProp("Dash.Styles.Colors.Lap.Latest", "#FFFFFFFF"); // white
-            AddProp("Dash.Styles.Colors.Lap.Default", "#FFFFFF00"); // yellow
+            AddProp("Dash.Styles.BoxWithOutBorder.Background.Color", Settings.Color_DarkBackground); // Transparent
+            AddProp("Dash.Styles.Colors.Lap.SessionBest", Settings.Color_Purple); // Purple
+            AddProp("Dash.Styles.Colors.Lap.PersonalBest", Settings.Color_Green); // Green
+            AddProp("Dash.Styles.Colors.Lap.Latest", Settings.Color_White); // white
+            AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow); // yellow
 
             AddProp("Dash.Mode.NightMode", false);
 
+            AddProp("Common.Bias.Preferred", Settings.PreferredBrakeBiasPercentage);
+            AddProp("Common.Bias.Setup", Settings.SetupBrakeBiasPercentage);
+            AddProp("Common.Bias.Delta", "0.0");
+            AddProp("Common.Bias.Color", "");
 
-            AddProp("BrakeBarColour", "Red");
-            AddProp("BrakeBiasColour", "Black");
+            AddProp("BrakeBarColour", Settings.Color_Red);
+            AddProp("BrakeBiasColour", Settings.Color_DarkBackground);
             AddProp("BrakeBarTargetTrailPercentage",0);
             AddProp("BrakeBarTargetPercentage", 0);
 
-            AddProp("ARBColourFront", "White");
-            AddProp("ARBColourRear", "White");
-            AddProp("JackerColour", "White");
+            AddProp("ARBColourFront", Settings.Color_White);
+            AddProp("ARBColourRear", Settings.Color_White);
+            AddProp("JackerColour", Settings.Color_White);
 
             AddProp("TCHighValueLabel", "HI AID");
             AddProp("TCLowValueLabel", "OFF");
             AddProp("TCIsOff", false);
-            AddProp("TCColour", "White");
+            AddProp("TCColour", Settings.Color_White);
 
-            AddProp("ABSColour", "White");
+            AddProp("ABSColour", Settings.Color_White);
             AddProp("ABSHighValueLabel", "OFF");
             AddProp("ABSLowValueLabel", "HI AID");
             AddProp("ABSIsOff", false);
 
-            AddProp("MAPLabelColour", "White");
+            AddProp("MAPLabelColour", Settings.Color_White);
             AddProp("MAPLabel", "1");
             AddProp("MAPHighValueLabel", "RACE");
             AddProp("MAPLowValueLabel", "SAVE           SC");
 
             AddProp("PitWindowMessage", "");
-            AddProp("PitWindowTextColour", "Transparent");
-            AddProp("pitWindowBackGroundColour", "Transparent");
+            AddProp("PitWindowTextColour", Settings.Color_Transparent);
+            AddProp("pitWindowBackGroundColour", Settings.Color_Transparent);
 
             AddProp("FuelPopupPercentage", Settings.FuelPopupPercentage);
             AddProp("PitWindowPopupPercentage", Settings.PitWindowPopupPercentage);

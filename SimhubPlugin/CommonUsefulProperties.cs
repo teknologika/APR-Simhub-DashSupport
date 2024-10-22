@@ -56,18 +56,16 @@ namespace APR.DashSupport {
                 else {
                     CurrentLapText = sessionTimeLeft.Minutes + "m " + sessionTimeLeft.Seconds + "s";
                 }
-                
             }
         }
 
-        private void UpdateLastLapTimeStrings(GameData data) {
+        private void UpdateLapTimesForDisplay(GameData data) {
             //  return '--:--.---';
             // return isnull(driverbestlap($prop('DataCorePlugin.GameData.BestLapOpponentSameClassPosition') + 1), '0:00.000')
             if (IsSpectating) {
                 LastLapTime = SpectatedCar.LastLapTime;
                 PersonalBestLapTime = SpectatedCar.BestLapTime;
                 EstimatedLapTime = SpectatedCar.LastLapTime;
-               
             }
             else {
                 LastLapTime = data.NewData.LastLapTime;
@@ -106,17 +104,20 @@ namespace APR.DashSupport {
                     SingleDynamicColor = "#FFFFFFFF"; // white
                 }
                 }
-            catch (Exception) {
-                
+            catch (Exception) { }
+
+            if (LastLapTime == TimeSpan.Zero) {
+                SingleDynamicColor = "#FFFFFFFF";
             }
         }
 
         private void CheckIfLeagueSession() {
             var leagueID = irData.SessionData.WeekendInfo.LeagueID;
-            if (leagueID < 0) {
+            if (leagueID > 0) {
                 IsLeagueSession = true;
             }
             IsLeagueSession = false;
+            SetProp("Common.IsLeagueSession", IsLeagueSession);
         }
 
         private void CreateCommonProperties() {
@@ -127,11 +128,22 @@ namespace APR.DashSupport {
             AddProp("Common.Laps.OverallBestLapTime", "");
             AddProp("Common.Laps.PersonalBestLapTime", "");
             AddProp("Common.Laps.EstimatedLapTime", "");
+
+
+            AddProp("Dash.Styles.Colors.Lap.SingleDynamic", ""); // Purple
+            AddProp("Dash.Styles.Colors.Lap.SessionBest", "#Ff990099"); // Purple
+            AddProp("Dash.Styles.Colors.Lap.PersonalBest", "#FF009933"); // Green
+            AddProp("Dash.Styles.Colors.Lap.Latest", "#FFFFFFFF"); // white
+            AddProp("Dash.Styles.Colors.Lap.Estimated", "#FFFFFFFF"); // white
+            AddProp("Dash.Styles.Colors.Lap.Default", "#FFFFFF00"); // yellow
+
+            AddProp("Common.IsLeagueSession", false);
+
         }
 
         private void UpdateCommonProperties(GameData data ) {
             UpdateLapOrTimeString(data);
-            UpdateLastLapTimeStrings(data);
+            UpdateLapTimesForDisplay(data);
 
 
             SetProp("Common.LapOrTimeString", CurrentLapText);
@@ -140,20 +152,16 @@ namespace APR.DashSupport {
             SetProp("Common.Laps.ClassBestLapTime", ClassBestLapTime);
             SetProp("Common.Laps.OverallBestLapTime", OverallBestLapTime);
             SetProp("Common.Laps.PersonalBestLapTime", PersonalBestLapTime);
-
-
             SetProp("Common.Laps.EstimatedLapTime", EstimatedLapTime);
 
-            AddProp("Dash.Styles.Colors.Lap.SingleDynamic", SingleDynamicColor); // Purple
-            AddProp("Dash.Styles.Colors.Lap.SessionBest", "#Ff990099"); // Purple
-            AddProp("Dash.Styles.Colors.Lap.PersonalBest", "#FF009933"); // Green
-            AddProp("Dash.Styles.Colors.Lap.Latest", "#FFFFFFFF"); // white
-            AddProp("Dash.Styles.Colors.Lap.Estimated", "#FFFFFFFF"); // white
-            AddProp("Dash.Styles.Colors.Lap.Default", "#FFFFFF00"); // yellow
+            SetProp("Dash.Styles.Colors.Lap.SingleDynamic", SingleDynamicColor); // Purple
+            SetProp("Dash.Styles.Colors.Lap.SessionBest", "#Ff990099"); // Purple
+            SetProp("Dash.Styles.Colors.Lap.PersonalBest", "#FF009933"); // Green
+            SetProp("Dash.Styles.Colors.Lap.Latest", "#FFFFFFFF"); // white
+            SetProp("Dash.Styles.Colors.Lap.Estimated", "#FFFFFFFF"); // white
+            SetProp("Dash.Styles.Colors.Lap.Default", "#FFFFFF00"); // yellow
 
-
-
-            SetProp("General.IsLeagueSession", IsLeagueSession);
+            SetProp("Common.IsLeagueSession", IsLeagueSession);
         }
     }
 }

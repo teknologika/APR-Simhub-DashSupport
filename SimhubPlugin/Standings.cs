@@ -136,7 +136,7 @@ namespace APR.DashSupport {
 
             // Is this a Vets session?
             CheckIfLeagueSession();
-            SetProp("General.IsLeagueSession", IsLeagueSession);
+            SetProp("Common.IsLeagueSession", IsLeagueSession);
             CheckIfV8VetsLeagueSession();
             SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
             SetProp("Strategy.Vets.IsVetsRaceSession", IsV8VetsRaceSession);

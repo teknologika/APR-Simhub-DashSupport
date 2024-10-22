@@ -20,6 +20,21 @@ namespace APR.DashSupport
     {
         public int MaxCars = 64;
 
+        // General colours and layout settins
+
+
+        public string Color_DarkGrey = "#FF898989";
+        public string Color_LightGrey = "#FF808080";
+        public string Color_Purple = "#Ff990099";
+        public string Color_Green = "#FF009933";
+        public string Color_White = "#FFFFFFFF";
+        public string Color_Yellow = "#FFFFFF00";
+        public string Color_Red = "#FFFF0000";
+        public string Color_Transparent = "#00000000";
+        public string Color_DarkBackground = "#FF2D2D2D";
+        public string Color_LightBlue = "DeepSkyBlue";
+
+
         // Relative Settings
         public int RelativeNumberOfCarsAheadToShow { get; set; } = 5;
         public int RelativeNumberOfCarsBehindToShow { get; set; } = 5;
@@ -82,7 +97,6 @@ namespace APR.DashSupport
 
             }
         }
-
         public string StandingsBackgroundRowAlternateColourWithTransparency {
             get {
                 Color colour = ColorTranslator.FromHtml(StandingsBackgroundRowAlternateColour);
@@ -92,7 +106,6 @@ namespace APR.DashSupport
 
             }
         }
-
         public string StandingsBackgroundDriverReferenceRowColourWithTransparency {
             get {
                 Color colour = ColorTranslator.FromHtml(ReferenceDriverBackgroundColour);
@@ -106,7 +119,6 @@ namespace APR.DashSupport
         // Relatives Settings
         public bool EnableRelatives { get; set; } = true;
         public bool RelativeShowCarsInPits { get; set; } = false;
-
 
 
         // Pit Strategy Calculator Settings
