@@ -38,20 +38,27 @@ namespace APR.DashSupport {
 
 		public void UpdateFrontARBColour() {
 
+			//float inCar = irData.Telemetry.dcAntiRollFront;
 			int inCar = 0;
 			if (GetProp("GameRawData.Telemetry.dcAntiRollFront") != null) {
 				inCar = Convert.ToInt32(GetProp("GameRawData.Telemetry.dcAntiRollFront"));
 			}
-			int inSetup = 0;
-			if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBladeSetting") != null) {
-				inSetup = inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBladeSetting"));
+			int inSetup = -1;
+			try {
+                if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBladeSetting") != null) {
+                    inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBladeSetting"));
+                }
+                else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBlades") != null) {
+                    inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBlades"));
+                }
+                else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.BarBladePosition") != null) {
+                    inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.BarBladePosition"));
+                }
+            }
+			catch (Exception) {
+
 			}
-			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBlades") != null) {
-				inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.ArbBlades"));
-			}
-			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.BarBladePosition") != null) {
-				inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Front.BarBladePosition"));
-			}
+			
 
 			if (inCar == inSetup) {
 				SetProp("ARBColourFront", "Green");
@@ -88,18 +95,21 @@ namespace APR.DashSupport {
 			if (GetProp("GameRawData.Telemetry.dcAntiRollRear") != null) {
 				inCar = Convert.ToInt32(GetProp("GameRawData.Telemetry.dcAntiRollRear"));
 			}
-			int inSetup = 0;
-			if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBladeSetting") != null) {
-				inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBladeSetting"));
-			}
-			else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBlades") != null) {
-				inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBlades"));
-			}
-            else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.RearArb.ArbBlades") != null) {
-                inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.RearArb.ArbBlades"));
+			int inSetup = -1;
+			try {
+
+                if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBladeSetting") != null) {
+                    inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBladeSetting"));
+                }
+                else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBlades") != null) {
+                    inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.ArbBlades"));
+                }
+                else if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.RearArb.ArbBlades") != null) {
+                    inSetup = Convert.ToInt32(GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.RearArb.ArbBlades"));
+                }
             }
-
-
+			catch (Exception) {
+			}
             if (inCar == inSetup) {
 				SetProp("ARBColourRear", "Green");
 			}

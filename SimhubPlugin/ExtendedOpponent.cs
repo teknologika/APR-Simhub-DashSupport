@@ -20,10 +20,32 @@ namespace APR.DashSupport {
 
         private List<GameReaderCommon.Opponent> opponents;
         private List<ExtendedOpponent> OpponentsExtended = new List<ExtendedOpponent>();
+        
+
         private List<carClass> carClasses = new List<carClass>();
         private float trackLength;
 
-        public class ExtendedOpponent {
+
+        public void UpdateLivePositions() {
+            List<ExtendedOpponent> opponentsSortedLivePosition = OpponentsExtended.OrderBy(x => x.Lap).ThenByDescending(x => x.LapDist).ToList();
+            int livePosition = 1;
+            foreach (var item in opponentsSortedLivePosition) {
+                item.LivePosition = livePosition;
+                livePosition++;
+            }
+
+            foreach (var item in OpponentsExtended) {
+                item.LivePosition = opponentsSortedLivePosition.Find(x => x.CarIdx == item.CarIdx).LivePosition;
+            }
+        
+        }
+
+
+        
+
+
+
+    public class ExtendedOpponent {
             public GameReaderCommon.Opponent _opponent;
             
             public SessionData._DriverInfo._Drivers _competitor;
@@ -43,16 +65,7 @@ namespace APR.DashSupport {
             public long _spectatedCarIdx;
             public float _specatedCarLapDistPct;
             public int _spectatedCarCurrentLap;
-
-            public double SafeCarEstTime {
-                get {
-                    if (_carEstTime > 0) {
-                        return _carEstTime;
-                    }
-                    return CarClassReferenceLapTime;
-                }
-            }
-             
+  
             public bool IsOnTrack { get { return (_trackSurface == 3); } }
             public bool IsOffTrack { get { return (_trackSurface == 0); } }
             public bool IsInWorld { get { return (_trackSurface > -1); } }
@@ -103,19 +116,17 @@ namespace APR.DashSupport {
                     }
                 }
             }
+            public int LivePosition;
             public int Position {
                 get {
-                    if (_opponent.Position == 0) {
-                        if (PositionInClass != 0) {
-                            return PositionInClass;
+                    if (
+                        _opponent.Position == 0) {
+
+                        if (Lap < 1) {
+                            // If we have not completed a lap
+                            return LivePosition;
                         }
-                        else {
-                            if (Lap < 1) {
-                                // If we have not completed a lap
-                                return _opponent.StartPosition.GetValueOrDefault();
-                            }
-                            // Todo return live position 
-                        }
+                        // Todo return live position 
                     }
                     return _opponent.Position;
                 }
@@ -123,10 +134,10 @@ namespace APR.DashSupport {
 
             public string PositionString {
                 get {
-                    if (_opponent.Position < 1) {
+                    if (Position < 1) {
                         return "";
                     }
-                    return _opponent.Position.ToString();
+                    return Position.ToString();
                 }
             }
 
@@ -349,7 +360,7 @@ namespace APR.DashSupport {
             }
 
             public override string ToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " %S1:" + LapDistPctSpectatedCar1.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:" + LapDistSpectatedCar1.ToString("0.00");
+                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " %S1:" + LapDistPctSpectatedCar1.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:" + LapDistSpectatedCar1.ToString("0.00");
             }
 
             public string StandingsToString() {

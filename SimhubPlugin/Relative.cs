@@ -254,7 +254,7 @@ namespace APR.DashSupport {
         public List<ExtendedOpponent> OpponentsAhead {
             get {
                 // if the distance is negative they are ahead
-                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar < 0).OrderBy(a => a.LapDistSpectatedCar).ToList();
+                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar < 0).OrderByDescending(a => a.LapDistSpectatedCar).ToList();
             }
             set {
                 if (Settings.RelativeShowCarsInPits) {
@@ -269,7 +269,7 @@ namespace APR.DashSupport {
         public List<ExtendedOpponent> OpponentsBehind {
             get {
                 // if the distance is positive they are ahead
-                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar > 0).OrderByDescending(a => a.LapDistSpectatedCar).ToList();
+                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar > 0).OrderBy(a => a.LapDistSpectatedCar).ToList();
             }
             set {
                 if (Settings.RelativeShowCarsInPits) {
@@ -280,7 +280,6 @@ namespace APR.DashSupport {
                 }
             }
         }
-
 
         private double GetReferenceClassLaptime() {
             return GetReferenceClassLaptime(this.SpectatedCar.CarClassID);
@@ -341,6 +340,7 @@ namespace APR.DashSupport {
                 SessionData._DriverInfo._Drivers[] competitors = irData.SessionData.DriverInfo.CompetingDrivers;
                 this.opponents = data.NewData.Opponents;
                 this.OpponentsExtended = new List<ExtendedOpponent>();
+                
 
                 // Get the Spectated car info
                 int spectatedCarIdx = irData.Telemetry.CamCarIdx;
@@ -387,6 +387,9 @@ namespace APR.DashSupport {
                     foreach (var item in OpponentsExtended) {
                         item.iRatingChange = CalculateMultiClassIREstimation(item);
                     }
+
+                    // Update live positions
+                    UpdateLivePositions();
                 }
 
               //  RelativePositions relpos = new RelativePositions();
