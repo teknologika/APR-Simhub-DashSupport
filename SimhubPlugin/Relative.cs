@@ -348,6 +348,7 @@ namespace APR.DashSupport {
                 float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCarIdx];
                 int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCarIdx];
 
+
                 for (int i = 0; i < competitors.Length; ++i) {
                     for (int j = 0; j < opponents.Count; ++j) {
                         // Add the aligned Opponents and Competitor data to our ExtendedOpponent list
@@ -360,11 +361,14 @@ namespace APR.DashSupport {
                                 _competitor = competitors[i],
                                 _carEstTime = irData.Telemetry.CarIdxEstTime[competitors[i].CarIdx],
                                 _trackSurface = (int)irData.Telemetry.CarIdxTrackSurface[competitors[i].CarIdx],
-                               
                                 _trackLength = trackLength,
                                 _spectatedCarIdx = spectatedCarIdx,
                                 _spectatedCarCurrentLap = spectatedCarCurrentLap,
                                 _specatedCarLapDistPct = spectatedCarLapDistPct,
+                                _IsunderSafetyCar = IsUnderSafetyCar,
+                                _safetyCarIdx = SafetyCarIdx,
+                                
+                                _safetyCarLapDistPct = SafetyCarLapDistPct,
                                 LicenseColor = LicenseColor(opponents[j].LicenceString)
                             });
 
@@ -492,6 +496,8 @@ namespace APR.DashSupport {
 
                 if (SpectatedCar.PositionString != null) {
 
+                    SetProp("Relative.Spectated.DistanceToSC", SpectatedCar.LapDistSafetyCarString);
+
                     SetProp("Relative.Spectated.Position", SpectatedCar.PositionString);
                     SetProp("Relative.Spectated.Name", SpectatedCar.DriverName);
                     SetProp("Relative.Spectated.Lap", SpectatedCar.Lap);
@@ -556,7 +562,7 @@ namespace APR.DashSupport {
                     AddProp("Relative.Behind." + i + ".IRChange", "");
                     AddProp("Relative.Behind." + i + ".PitInfo", "");
                 }
-
+                AddProp("Relative.Spectated.DistanceToSC", "");
                 AddProp("Relative.Spectated.Position", "");
                 AddProp("Relative.Spectated.Name", "");
                 AddProp("Relative.Spectated.CarNumber", "");

@@ -150,9 +150,11 @@ namespace APR.DashSupport {
 
             SetProp("Common.Bias.Setup", Settings.SetupBrakeBiasPercentage);
 			SetProp("Common.Bias.Preferred", Settings.PreferredBrakeBiasPercentage);
-            SetProp("Common.Bias.Delta", (bias - Settings.SetupBrakeBiasPercentage).ToString("-0.0"));
 
-			if (bias < Settings.SetupBrakeBiasPercentage) {
+			var biasChange = bias - Settings.SetupBrakeBiasPercentage;
+            SetProp("Common.Bias.Delta", (biasChange < 0 ? "" : "+") + biasChange.ToString("0.0"));
+            
+            if (bias < Settings.SetupBrakeBiasPercentage) {
                 SetProp("Common.Bias.Color", Settings.Color_Green);
                 SetProp("BrakeBiasColour", Settings.Color_Green);
 			}

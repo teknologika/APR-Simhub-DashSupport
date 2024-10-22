@@ -65,7 +65,13 @@ namespace APR.DashSupport {
             public long _spectatedCarIdx;
             public float _specatedCarLapDistPct;
             public int _spectatedCarCurrentLap;
-  
+
+            // This is used for the SC
+            public int _safetyCarIdx;
+            public double _safetyCarLapDistPct;
+            public bool _IsunderSafetyCar;
+
+
             public bool IsOnTrack { get { return (_trackSurface == 3); } }
             public bool IsOffTrack { get { return (_trackSurface == 0); } }
             public bool IsInWorld { get { return (_trackSurface > -1); } }
@@ -179,18 +185,6 @@ namespace APR.DashSupport {
             public string SimpleRelativeGapTimeString;
             public double SortingRelativeGapToSpectator;
 
-            public int AheadBehindd {
-                get {
-                    if (SortingRelativeGapToSpectator < 0) {
-                        return 1;
-                    }
-                    else if (SortingRelativeGapToSpectator > 0) {
-                        return -1;
-                    }
-                    return 0;
-                }
-            }
-
             public int AheadBehind {
                 get {
                     if (SortingRelativeGapToSpectator < 0) {
@@ -233,6 +227,47 @@ namespace APR.DashSupport {
                     }
 
                     return pctGap;
+                }
+            }
+            public double LapDistPctSafetyCar {
+                get {
+                    // calculate the difference between the two cars
+                    if (_safetyCarLapDistPct == 0) {
+                        return 0;
+                    }
+
+                    var pctGap = _safetyCarLapDistPct - _opponent.TrackPositionPercent.Value;
+                    if (pctGap > 50.0) {
+                        pctGap -= 50.0;
+                    }
+                    else if (pctGap < -50.0) {
+                        pctGap += 50;
+                    }
+
+                    return pctGap;
+                }
+            }
+            public double LapDistSafetyCar {
+                get {
+                    // calculate the difference between the two cars
+                    var distance = (_safetyCarLapDistPct * _trackLength) - (_opponent.TrackPositionPercent.Value * _trackLength);
+                    if (distance > _trackLength / 2) {
+                        distance -= _trackLength;
+                    }
+                    else if (distance < -_trackLength / 2) {
+                        distance += _trackLength;
+                    }
+
+                    return distance;
+                }
+            }
+
+            public string LapDistSafetyCarString {
+                get {
+                    if (LapDistSafetyCar > 0) {
+                        return "      " + LapDistSafetyCar.ToString("0") + "m AHEAD      ";
+                    }
+                    return "      " + LapDistSafetyCar.ToString("0") + "m BEHIND      ";
                 }
             }
 

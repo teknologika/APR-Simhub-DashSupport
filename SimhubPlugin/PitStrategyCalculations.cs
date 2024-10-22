@@ -82,7 +82,6 @@ namespace APR.DashSupport {
                 AddProp("Strategy.Vets.IsVetsRaceSession", false);
                 AddProp("Strategy.Vets.IsUnderSafetyCar", false);
 
-
             }
         }
 

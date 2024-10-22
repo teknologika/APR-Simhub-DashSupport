@@ -101,6 +101,10 @@ namespace APR.DashSupport
         public string DriverBehindId = string.Empty;
         public string DriverBehindName = string.Empty;
 
+        public int SafetyCarIdx;
+        public double SafetyCarLapDistPct;
+
+
         public class relative {
             public int position;
             public double trackPositionPercent;
@@ -201,6 +205,8 @@ namespace APR.DashSupport
                         if (!item.IsCarInPit && SessionType == "Race") {
                             IsUnderSafetyCar = true;
                             SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
+                            SafetyCarIdx = item.CarIdx;
+                            SafetyCarLapDistPct = item.TrackPositionPercent;
                             return;
                         }
                     }
