@@ -55,6 +55,7 @@ namespace APR.DashSupport
 
 
         private bool IsRaceSession;
+        private bool IsSpectating;
 
 
         DataSampleEx irData;
@@ -124,7 +125,6 @@ namespace APR.DashSupport
             
         }
 
-
         private void UpdateSessionData(GameData data) {
             SessionType = data.NewData.SessionTypeName;
             int sessionCount = this.irData.SessionData.SessionInfo.Sessions.Count();
@@ -140,9 +140,12 @@ namespace APR.DashSupport
 
             CheckIfV8VetsLeagueSession();
             CheckIfLeagueSession();
-            SetProp("General.IsLeagueSession", IsLeagueSession);
+
             SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
             SetProp("Strategy.Vets.IsVetsRaceSession", IsV8VetsRaceSession);
+
+            UpdateCommonProperties(data);
+            
 
             trackLength = GetTrackLength();
 
@@ -167,13 +170,6 @@ namespace APR.DashSupport
             }         
         }
 
-        private void CheckIfLeagueSession () {
-            var leagueID = irData.SessionData.WeekendInfo.LeagueID;
-            if (leagueID < 0) {
-                IsLeagueSession = true;
-            }
-        }
-
 
         private void CheckIfV8VetsLeagueSession() {
             var leagueID = irData.SessionData.WeekendInfo.LeagueID;
@@ -195,7 +191,6 @@ namespace APR.DashSupport
             }
 
         }
-
 
         private void CheckIfUnderSafetyCar() {
             
@@ -266,8 +261,9 @@ namespace APR.DashSupport
             pluginManager.AddProperty<double>("Version", this.GetType(), 1.1);
             pluginManager.AddProperty<string>("MainMenuSelected", this.GetType(), "none");
 
-            SetProp("General.IsLeagueSession", false);
+            CreateCommonProperties();
 
+            SetProp("General.IsLeagueSession", false);
 
             // Dashboard specific properties > move to a dashboard Styles Class
             AddProp("Dash.Styles.BoxWithBorder.Border.Color", "#FF808080"); // Gray
@@ -408,6 +404,9 @@ namespace APR.DashSupport
                     }
                     this.PreviousSessionState = num;
                     this.IsRaceSession = data.NewData.SessionTypeName == "Race";
+#pragma warning disable CS0612 // Type or member is obsolete
+                    this.IsSpectating = data.Spectating;
+#pragma warning restore CS0612 // Type or member is obsolete
                 }
 
                 bool sessionStartSetupCompleted = false;
@@ -543,6 +542,7 @@ namespace APR.DashSupport
                 if (frameCounter == 40) {
                     if (runEvery1Sec) {
                         UpdateRelatives(data);
+                        UpdateCommonProperties(data);
                     }
                 }
 

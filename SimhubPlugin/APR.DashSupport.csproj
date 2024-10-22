@@ -125,6 +125,7 @@
   <ItemGroup>
     <Compile Include="APRDashPlugin.cs" />
     <Compile Include="CarSettings.cs" />
+    <Compile Include="CommonUsefulProperties.cs" />
     <Compile Include="DashPluginSettings.cs" />
     <Compile Include="ExtendedOpponent.cs" />
     <Compile Include="iRacingRelative.cs" />

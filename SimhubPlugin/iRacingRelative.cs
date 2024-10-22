@@ -21,14 +21,7 @@ namespace APR.DashSupport {
         public bool SetDriverFairShareStatusVisibility = false;
         public string DriverFairShareStatusColor = "";
 
-        // Current Lap information
-        public bool LapDisplayVisibility = false;
-        public int CurrentLap;
-        public string CurrentLapText = "";
 
-        // Last Lap information
-        public string LastLapTimeText = "";
-        public bool LastLapDisplayVisibility = false;
 
         public RelativeTable RelativePositionsTable = new RelativeTable();
 
@@ -104,10 +97,8 @@ namespace APR.DashSupport {
             UpdateRelativePositionTable();
 
             // Update current lap information
-            UpdateCurrentLap();
+            UpdateLapOrTimeString(data);
 
-            // Update last lap time
-            UpdateLastLapTime();
 
         }
 
@@ -139,31 +130,8 @@ namespace APR.DashSupport {
 
         }
 
-        private void UpdateCurrentLap() {
-            if (SessionType != "Offline Testing" && SessionType != "Lone Practice") {
-                LapDisplayVisibility = true;
 
-                // TODO: Get this for the spectated car
-                CurrentLap = irData.Telemetry.Lap;
-                CurrentLapText = SessionType != "Practice" ? $"{CurrentLap} / {SessionLapsString}" : $"{CurrentLap}";
-            }
-            else {
-                LapDisplayVisibility = false;
-            }
-        }
 
-        private void UpdateLastLapTime() {
-            if (SessionType != "Offline Testing" && SessionType != "Lone Practice") {
-               LastLapDisplayVisibility = true;
-                
-               // TODO: Get this for the spectated car
-               double lastLapTime = irData.Telemetry.LapLastLapTime;
-               LastLapTimeText = lastLapTime > 0.0 ? lastLapTime.ToString($"F3") : "---";
 
-            }
-            else {
-                LastLapDisplayVisibility = false;
-            }
-        }
     }
 }

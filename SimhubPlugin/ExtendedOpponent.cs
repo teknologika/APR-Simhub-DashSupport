@@ -117,6 +117,8 @@ namespace APR.DashSupport {
                 }
             }
             public int LivePosition;
+            public int PositionRaw { get { return _opponent.Position; } }
+
             public int Position {
                 get {
                     if (
@@ -391,6 +393,11 @@ namespace APR.DashSupport {
 
         private ExtendedOpponent SpectatedCar {
             get { return this.OpponentsExtended.Find(a => a.CarIdx == irData.Telemetry.CamCarIdx); }
+        }
+
+        private ExtendedOpponent LeadingCar {
+            get {
+                return this.OpponentsExtended.Find(a => a.Position == 1 ); }
         }
 
         private List<ExtendedOpponent> OpponentsInClasss {

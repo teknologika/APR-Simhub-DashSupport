@@ -171,8 +171,6 @@ namespace APR.DashSupport
             }
         }
 
-
-
         public int ColumnStartDriverName {
             get {
                 if (ColumnShowPosition) {

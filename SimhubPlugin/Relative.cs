@@ -2,6 +2,7 @@
 using iRacingSDK;
 using SimHub.Plugins;
 using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
+using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText.Imp;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
 using System;
 using System.Collections.Generic;
@@ -254,7 +255,7 @@ namespace APR.DashSupport {
         public List<ExtendedOpponent> OpponentsAhead {
             get {
                 // if the distance is negative they are ahead
-                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar < 0).OrderByDescending(a => a.LapDistSpectatedCar).ToList();
+                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar < 0 && a.IsConnected).OrderByDescending(a => a.LapDistSpectatedCar).ToList();
             }
             set {
                 if (Settings.RelativeShowCarsInPits) {
@@ -269,7 +270,7 @@ namespace APR.DashSupport {
         public List<ExtendedOpponent> OpponentsBehind {
             get {
                 // if the distance is positive they are ahead
-                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar > 0).OrderBy(a => a.LapDistSpectatedCar).ToList();
+                return OpponentsExtended.FindAll(a => a.LapDistSpectatedCar > 0 && a.IsConnected).OrderBy(a => a.LapDistSpectatedCar).ToList();
             }
             set {
                 if (Settings.RelativeShowCarsInPits) {
@@ -431,6 +432,10 @@ namespace APR.DashSupport {
 
                 SetProp("Debug", RelativeDebug());
 
+                // Header and properties
+ 
+
+
 
                 int count = 1;
                 foreach (var opponent in OpponentsAhead) {
@@ -485,23 +490,27 @@ namespace APR.DashSupport {
                     }
                 }
 
-                SetProp("Relative.Spectated.Position", SpectatedCar.PositionString);
-                SetProp("Relative.Spectated.Name", SpectatedCar.DriverName);
-                SetProp("Relative.Behind.Spectated.Show", SpectatedCar.DriverName != "");
-                SetProp("Relative.Spectated.CarNumber", SpectatedCar.CarNumber);
-                SetProp("Relative.Spectated.PitInfo", SpectatedCar.PitInfo);
-                SetProp("Relative.Spectated.Gap", 0.0);
-                SetProp("Relative.Spectated.AheadBehind", "0");
+                if (SpectatedCar.PositionString != null) {
 
-                SetProp("Relative.Spectated.SR", SpectatedCar.SafetyRating);
-                SetProp("Relative.Spectated.SRSimple", SpectatedCar.SafetyRatingSimple);
-                SetProp("Relative.Spectated.IR", SpectatedCar.iRatingString);
-                SetProp("Relative.Spectated.IRChange", SpectatedCar.iRatingChange);
+                    SetProp("Relative.Spectated.Position", SpectatedCar.PositionString);
+                    SetProp("Relative.Spectated.Name", SpectatedCar.DriverName);
+                    SetProp("Relative.Spectated.Lap", SpectatedCar.Lap);
+                    SetProp("Relative.Spectated.Show", SpectatedCar.DriverName != "");
+                    SetProp("Relative.Spectated.CarNumber", SpectatedCar.CarNumber);
+                    SetProp("Relative.Spectated.PitInfo", SpectatedCar.PitInfo);
+                    SetProp("Relative.Spectated.Gap", 0.0);
+                    SetProp("Relative.Spectated.AheadBehind", "0");
 
-                SetProp("Relative.Spectated.DriverNameColor", SpectatedCar.DriverNameColour);
-                SetProp("Relative.Spectated.CarClassColor", SpectatedCar.CarClassColor);
-                SetProp("Relative.Spectated.CarClassTextColor", SpectatedCar.CarClassTextColor);
-                SetProp("Relative.Spectated.LicenseColor", SpectatedCar.LicenseColor);
+                    SetProp("Relative.Spectated.SR", SpectatedCar.SafetyRating);
+                    SetProp("Relative.Spectated.SRSimple", SpectatedCar.SafetyRatingSimple);
+                    SetProp("Relative.Spectated.IR", SpectatedCar.iRatingString);
+                    SetProp("Relative.Spectated.IRChange", SpectatedCar.iRatingChange);
+
+                    SetProp("Relative.Spectated.DriverNameColor", SpectatedCar.DriverNameColour);
+                    SetProp("Relative.Spectated.CarClassColor", SpectatedCar.CarClassColor);
+                    SetProp("Relative.Spectated.CarClassTextColor", SpectatedCar.CarClassTextColor);
+                    SetProp("Relative.Spectated.LicenseColor", SpectatedCar.LicenseColor);
+                }
             }
         }
 

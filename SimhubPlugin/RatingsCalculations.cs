@@ -32,13 +32,18 @@ namespace APR.DashSupport {
             }
 
             double tmpexpScore = 0;
-            for (int i = 0; i < classOpponentsCount; i++) {
-                tmpexpScore +=
-                    (1 - Math.Exp(-driverIRating / weight)) *
-                    Math.Exp(-iRatings[i] / weight) /
-                    ((1 - Math.Exp(-iRatings[i] / weight)) * Math.Exp(-driverIRating / weight) +
-                     (1 - Math.Exp(-driverIRating / weight)) * Math.Exp(-iRatings[i] / weight));
+    
+            try {
+                for (int i = 0; i < classOpponentsCount; i++) {
+                    tmpexpScore +=
+                        (1 - Math.Exp(-driverIRating / weight)) *
+                        Math.Exp(-iRatings[i] / weight) /
+                        ((1 - Math.Exp(-iRatings[i] / weight)) * Math.Exp(-driverIRating / weight) +
+                         (1 - Math.Exp(-driverIRating / weight)) * Math.Exp(-iRatings[i] / weight));
+                }
             }
+            catch (Exception ex) { }
+
 
             double expScore = tmpexpScore - 0.5;
             int irChange = (int)Math.Round((classOpponentsCount - classPosition - expScore - fudge) * 200 / classOpponentsCount);

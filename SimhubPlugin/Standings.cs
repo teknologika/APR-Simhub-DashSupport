@@ -134,10 +134,13 @@ namespace APR.DashSupport {
 
         public void UpdateStandingsRelatedProperties(ref GameData data) {
 
-            // Is this a Vets session
+            // Is this a Vets session?
             CheckIfLeagueSession();
+            SetProp("General.IsLeagueSession", IsLeagueSession);
             CheckIfV8VetsLeagueSession();
-            
+            SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
+            SetProp("Strategy.Vets.IsVetsRaceSession", IsV8VetsRaceSession);
+
             // Get the iRacing Session state
             irData.Telemetry.TryGetValue("SessionState", out object rawSessionState);
             int sessionState = Convert.ToInt32(rawSessionState);
