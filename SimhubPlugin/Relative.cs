@@ -342,12 +342,10 @@ namespace APR.DashSupport {
                 this.opponents = data.NewData.Opponents;
                 this.OpponentsExtended = new List<ExtendedOpponent>();
                 
-
                 // Get the Spectated car info
                 int spectatedCarIdx = irData.Telemetry.CamCarIdx;
                 float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCarIdx];
                 int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCarIdx];
-
 
                 for (int i = 0; i < competitors.Length; ++i) {
                     for (int j = 0; j < opponents.Count; ++j) {
@@ -367,7 +365,6 @@ namespace APR.DashSupport {
                                 _specatedCarLapDistPct = spectatedCarLapDistPct,
                                 _IsunderSafetyCar = IsUnderSafetyCar,
                                 _safetyCarIdx = SafetyCarIdx,
-                                
                                 _safetyCarLapDistPct = SafetyCarLapDistPct,
                                 LicenseColor = LicenseColor(opponents[j].LicenceString)
                             });
@@ -395,6 +392,17 @@ namespace APR.DashSupport {
 
                     // Update live positions
                     UpdateLivePositions();
+
+                    // Find the overall Leader           
+                    ExtendedOpponent overallLeader = OpponentsExtended.Find(a => a.Position == 1);
+
+                    // Find the overall leader for each class
+                    foreach (var item in carClasses)
+                    {
+                        ExtendedOpponent classLeader =  OpponentsExtended.Find(a => a.CarClassID == item.carClassID && a.CarClassLivePosition == 1);
+                        item.LeaderCarIdx = classLeader.CarIdx;
+                    }
+
                 }
 
               //  RelativePositions relpos = new RelativePositions();

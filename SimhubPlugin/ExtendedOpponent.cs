@@ -2,6 +2,7 @@
 using iRacingSDK;
 using SimHub.Plugins;
 using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
+using SimHub.Plugins.OutputPlugins.GraphicalDash.BitmapDisplay.TurnTDU;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
 using System;
 using System.Collections.Generic;
@@ -37,13 +38,19 @@ namespace APR.DashSupport {
             foreach (var item in OpponentsExtended) {
                 item.LivePosition = opponentsSortedLivePosition.Find(x => x.CarIdx == item.CarIdx).LivePosition;
             }
-        
+
+            foreach (var carClass in carClasses)
+            {
+                List<ExtendedOpponent> carsInClass = opponentsSortedLivePosition.FindAll(x => x.CarClassID == carClass.carClassID);
+                int classPosition = 1;
+                foreach (var item in carsInClass)
+                {
+                    item.CarClassLivePosition = classPosition;
+                    classPosition++;
+                }
+            }
+
         }
-
-
-        
-
-
 
     public class ExtendedOpponent {
             public GameReaderCommon.Opponent _opponent;
@@ -71,6 +78,10 @@ namespace APR.DashSupport {
             public double _safetyCarLapDistPct;
             public bool _IsunderSafetyCar;
 
+            public int _classleaderCarIdx;
+            public double _classleaderLapDistPct;
+
+            // to do add multi-classes and overall leader
 
             public bool IsOnTrack { get { return (_trackSurface == 3); } }
             public bool IsOffTrack { get { return (_trackSurface == 0); } }
@@ -123,6 +134,7 @@ namespace APR.DashSupport {
                 }
             }
             public int LivePosition;
+            public int CarClassLivePosition;
             public int PositionRaw { get { return _opponent.Position; } }
 
             public int Position {
@@ -201,20 +213,7 @@ namespace APR.DashSupport {
             public string TrackPositionPercentString { get { return TrackPositionPercent.ToString("0.000"); } }
             public double LapDist { get { return TrackPositionPercent * _trackLength; } }
             
-            public double LapDistPctSpectatedCar1 {
-                get {
-                    // Do we need to add or subtract a lap
-                    var lapDifference = Convert.ToInt32(_spectatedCarCurrentLap - CurrentLap);
-                    var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
-
-                    if (_specatedCarLapDistPct < 0 && _specatedCarLapDistPct > -50) {
-                        return 1d - _specatedCarLapDistPct;
-                    }
-
-                    return _opponent.TrackPositionPercent.Value - _specatedCarLapDistPct;
-                }
-            }
-
+            
             public double LapDistPctSpectatedCar {
                 get {
                     // calculate the difference between the two cars
@@ -261,7 +260,6 @@ namespace APR.DashSupport {
                     return distance;
                 }
             }
-
             public string LapDistSafetyCarString {
                 get {
                     if (LapDistSafetyCar > 0) {
@@ -270,7 +268,6 @@ namespace APR.DashSupport {
                     return "      " + LapDistSafetyCar.ToString("0") + "m BEHIND      ";
                 }
             }
-
             public double LapDistSpectatedCar {
                 get {
                      // calculate the difference between the two cars
@@ -286,29 +283,57 @@ namespace APR.DashSupport {
                 }
             }
 
-            public double LapDistSpectatedCar1 {
+            public double LapDistPctClassLeader {
                 get {
-                    // Do we need to add or subtract a lap
-                    var lapDifference = Convert.ToInt32(_spectatedCarCurrentLap - CurrentLap);
-                    var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
-                    double distanceAdjustment = 0;
-
-                    if (cappedLapDifference == 1) {
-                        //distanceAdjustment = +_trackLength;
+                    // calculate the difference between the two cars
+                    var pctGap = _classleaderLapDistPct - _opponent.TrackPositionPercent.Value;
+                    if (pctGap > 50.0) {
+                        pctGap -= 50.0;
                     }
-                    else if (cappedLapDifference == -1) {
-                        //distanceAdjustment = -_trackLength;
+                    else if (pctGap < -50.0) {
+                        pctGap += 50;
                     }
 
-                    if (_specatedCarLapDistPct < 0 && _specatedCarLapDistPct > -50) {
-                        return 1d - _specatedCarLapDistPct;
-                    }
-
-                    return ((_specatedCarLapDistPct * _trackLength) - LapDist) + distanceAdjustment;
+                    return pctGap;
                 }
             }
 
+            public double LapDistClassLeader {
+                get {
+                    // calculate the difference between the two cars
+                    var distance = (_classleaderLapDistPct * _trackLength) - (_opponent.TrackPositionPercent.Value * _trackLength);
+                    if (distance > _trackLength / 2) {
+                        distance -= _trackLength;
+                    }
+                    else if (distance < -_trackLength / 2) {
+                        distance += _trackLength;
+                    }
+
+                    return distance;
+                }
+            }
+
+            public double GapToClassLeader {
+                get {
+                   return CarClassReferenceLapTime / _trackLength * LapDistClassLeader;
+                }
+            }
+
+            
+            private double _gapToPositionInClassAhead;
+            public double GapToPositionInClassAhead {
+                get { return _gapToPositionInClassAhead; }
+                set { _gapToPositionInClassAhead = value; }
+            }
+
             public double GapSpectatedCar {
+                get {
+                    return CarClassReferenceLapTime / _trackLength * LapDistSpectatedCar;
+                }
+            }
+
+
+            public double GapClassLeaderCar {
                 get {
                     return CarClassReferenceLapTime / _trackLength * LapDistSpectatedCar;
                 }
@@ -397,15 +422,15 @@ namespace APR.DashSupport {
             }
 
             public override string ToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " %S1:" + LapDistPctSpectatedCar1.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:" + LapDistSpectatedCar1.ToString("0.00");
+                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") +  " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
             }
 
             public string StandingsToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " %S1:" + LapDistPctSpectatedCar1.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:" + LapDistSpectatedCar1.ToString("0.00");
+                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " %S1:" +  " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
             }
 
             public string RelativeToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " %S1:" + LapDistPctSpectatedCar1.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:" + LapDistSpectatedCar1.ToString("0.00");
+                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " %S1:" + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
             }
         }
 
@@ -415,13 +440,13 @@ namespace APR.DashSupport {
         public class carClass {
             public int carClassID;
             public string carClassShortName;
+            public int LeaderCarIdx;
         }
 
         public void CheckAndAddCarClass(int CarClassID, string CarClassShortName) {
             bool has = this.carClasses.Any(a => a.carClassID == CarClassID);
 
             if (has == false) {
-
                 this.carClasses.Add(new carClass() { carClassID = CarClassID, carClassShortName = CarClassShortName });
             }
         }
@@ -446,8 +471,16 @@ namespace APR.DashSupport {
         }
 
         private List<ExtendedOpponent> OpponentsInClass(int CarClassID) {
-            return this.OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
+            return OpponentsAhead.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
         }
+
+        private List<ExtendedOpponent> OpponentsInClassSortedByLivePosition(int CarClassID) {
+            List <ExtendedOpponent> tmp = OpponentsInClass(CarClassID);
+            return tmp.OrderBy(a => a.CarClassLivePosition).ToList();
+        }
+
+ 
+
 
     }
 }
