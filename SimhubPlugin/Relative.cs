@@ -403,12 +403,39 @@ namespace APR.DashSupport {
                         item.LeaderCarIdx = classLeader.CarIdx;
                     }
 
+                    // Add the car class leader to the OpponentsExtended
+                    foreach (var item in OpponentsExtended) {
+                        item._classleaderCarIdx = carClasses.Find(x => x.carClassID == item.CarClassID).carClassID;
+                    }
+
+                    // Update the gap to the class leader
+                    // Find the overall leader for each class
+                    foreach (var item in carClasses) {
+                        ExtendedOpponent classLeader = OpponentsExtended.Find(a => a.CarClassID == item.carClassID && a.CarClassLivePosition == 1);
+                        item.LeaderCarIdx = classLeader.CarIdx;
+                    }
+
+                    foreach (var item in carClasses) {
+                        List<ExtendedOpponent> carsInClass = OpponentsInClassSortedByLivePosition(item.carClassID);
+                        double previousCarGapToClassLeader = 0;
+                        foreach (var car in carsInClass)
+                        {
+                            if (car.CarClassLivePosition <= 1) {
+                                car.GapToPositionInClassAhead = 0;
+                            }
+                            else {
+                                car.GapToPositionInClassAhead = car.GapToClassLeader - previousCarGapToClassLeader;
+                                previousCarGapToClassLeader = car.GapToPositionInClassAhead;
+                                OpponentsExtended.Find(x=> x.CarIdx == car.CarIdx).GapToPositionInClassAhead = car.GapToPositionInClassAhead;
+                            }
+                        }
+                    }
                 }
 
-              //  RelativePositions relpos = new RelativePositions();
-              //  relpos.Update(OpponentsExtended, spectator);
-              //  this.OpponentsAhead = relpos.Ahead;
-              //  this.OpponentsBehind = relpos.Behind;
+                //  RelativePositions relpos = new RelativePositions();
+                //  relpos.Update(OpponentsExtended, spectator);
+                //  this.OpponentsAhead = relpos.Ahead;
+                //  this.OpponentsBehind = relpos.Behind;
 
 
 #if DEBUG

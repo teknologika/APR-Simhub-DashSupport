@@ -282,7 +282,6 @@ namespace APR.DashSupport {
                     return distance; 
                 }
             }
-
             public double LapDistPctClassLeader {
                 get {
                     // calculate the difference between the two cars
@@ -319,21 +318,22 @@ namespace APR.DashSupport {
                 }
             }
 
-            
-            private double _gapToPositionInClassAhead;
-            public double GapToPositionInClassAhead {
-                get { return _gapToPositionInClassAhead; }
-                set { _gapToPositionInClassAhead = value; }
-            }
-
-            public double GapSpectatedCar {
+            public string GapToClassLeaderString {
                 get {
-                    return CarClassReferenceLapTime / _trackLength * LapDistSpectatedCar;
+                    return GapToClassLeader.ToString("0.0");
                 }
             }
 
+            // this gets pushed in
+            public double GapToPositionInClassAhead;
 
-            public double GapClassLeaderCar {
+            public string GapToPositionInClassAheadString {
+                get {
+                    return GapToPositionInClassAhead.ToString("0.0");
+                }
+            }
+
+            public double GapSpectatedCar {
                 get {
                     return CarClassReferenceLapTime / _trackLength * LapDistSpectatedCar;
                 }
@@ -471,7 +471,7 @@ namespace APR.DashSupport {
         }
 
         private List<ExtendedOpponent> OpponentsInClass(int CarClassID) {
-            return OpponentsAhead.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
+            return OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
         }
 
         private List<ExtendedOpponent> OpponentsInClassSortedByLivePosition(int CarClassID) {
