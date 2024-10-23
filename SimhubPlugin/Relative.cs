@@ -334,7 +334,7 @@ namespace APR.DashSupport {
 
         private void UpdateRelatives(GameData data) {
 
-            if (Settings.EnableRelatives) {
+            if (Settings.EnableRelatives || Settings.EnableStandings) {
 
                 this.opponents = data.NewData.Opponents;
 

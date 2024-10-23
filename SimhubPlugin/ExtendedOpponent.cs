@@ -1,5 +1,6 @@
 ﻿using GameReaderCommon;
 using iRacingSDK;
+using MahApps.Metro.Controls;
 using SimHub.Plugins;
 using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.BitmapDisplay.TurnTDU;
@@ -471,12 +472,23 @@ namespace APR.DashSupport {
         }
 
         private List<ExtendedOpponent> OpponentsInClass(int CarClassID) {
-            return OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
+            try {
+                return OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
+            }
+            catch (Exception) {
+                return new List<ExtendedOpponent>();
+            }
         }
 
         private List<ExtendedOpponent> OpponentsInClassSortedByLivePosition(int CarClassID) {
-            List <ExtendedOpponent> tmp = OpponentsInClass(CarClassID);
-            return tmp.OrderBy(a => a.CarClassLivePosition).ToList();
+            try {
+                List<ExtendedOpponent> tmp = OpponentsInClass(CarClassID);
+                return tmp.OrderBy(a => a.PositionInClass).ToList();
+            }
+            catch (Exception) {
+                return new List<ExtendedOpponent>();
+            }
+
         }
 
  

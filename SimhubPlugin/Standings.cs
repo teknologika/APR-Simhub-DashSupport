@@ -196,6 +196,48 @@ namespace APR.DashSupport {
                 SetProp("Standings.Columns.LastLap.Left", Settings.ColumnStartLastLap);
                 SetProp("Standings.Columns.LastLap.Width", Settings.ColumnWidthLastLap);
                 SetProp("Standings.Columns.LastLap.Visible", Settings.ColumnShowLastLap);
+
+
+
+                // get the spected car
+                ExtendedOpponent spectator = OpponentsExtended.Find(x => x.CarIdx == irData.Telemetry.CamCarIdx);
+
+                // only do the spectated driver's class
+                List<ExtendedOpponent> classOpponents = OpponentsInClass(spectator.CarClassID);
+
+                classOpponents = classOpponents.OrderBy(x => x.Position).ToList();
+                int counter = 1;
+                for (int i = 0; i < classOpponents.Count; i++)
+                {
+                    ExtendedOpponent item = classOpponents[i];
+                    
+
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".LivePosition", item.Position);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Live", item.LivePosition);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Class.ClassId", item.CarClassID);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Class.Name", item.CarClass);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Class.Color", item.CarClassColor);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Class.TextColor", item.CarClassColor);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Class.Position", item.Position);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Class.LivePosition", item.LivePosition);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Class.GapToLeader", item.GapToClassLeaderString);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Class.GapToCarAhead", item.GapToPositionInClassAheadString);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".Number", item.CarNumber);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".DriverName", item.DriverName);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".GapToLeader", item.GapToClassLeaderString);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".GapToCarAhead", item.GapToPositionInClassAheadString);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".IsInPit", item.IsCarInPit);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".BestLap", item.BestLapTime);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".LastLap", item.LastLapTime);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".IsPlayer", item.IsSpectator);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".LapsBehindLeader", item.LapsToLeader);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".LastLapIsPersonalBestLap", false);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".LastLapIsOverallBestLap", false);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".BestLapIsOverallBest", false);
+                    SetProp("Standings.Spectated.Class.Position" + counter.ToString() + ".RowIsVisible", item.DriverName != "");
+                    SetProp("Standings.Overall" + counter.ToString() + ".BestLap", 0);
+                    counter++;
+                }
             }
         }
 
@@ -236,222 +278,40 @@ namespace APR.DashSupport {
                 AddProp("Standings.Columns.LastLap.Visible", Settings.ColumnShowLastLap);
 
 
-                /*
-
-                AddProp("Standings.NumberOfCarsInSession", 0);
-                
-                for (int i = 1; i < iRacingMaxCars + 1; i++) {
-                    string iString = string.Format("{0:00}", i);
-                    AddProp("Standings.Overall.Position" + iString + ".Position", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".Class.ClassId", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".Class.Name", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".Class.Color", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".Class.Position", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".Class.GapToLeader", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".Class.GapToCarAhead", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".Number", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".DriverName", string.Empty);
-                    AddProp("Standings.Overall.Position" + iString + ".GapToLeader", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".GapToCarAhead", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".IsInPit", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".BestLap", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".LastLap", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".IsPlayer", false);
-                    SetProp("Standings.Overall.Position" + iString + ".LapsBehindLeader", 0);
-                    AddProp("Standings.Overall.Position" + iString + ".LastLapIsPersonalBestLap", false);
-                    AddProp("Standings.Overall.Position" + iString + ".LastLapIsOverallBestLap", false);
-                    AddProp("Standings.Overall.Position" + iString + ".BestLapIsOverallBest", false);
-                    AddProp("Standings.Overall.Position" + iString + ".RowIsVisible", false);
+                for (int i = 1; i < Settings.MaxCars + 1; i++) {
+                    //string iString = string.Format("{0:00}", i);
+                    string iString = i.ToString();
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Position", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".LivePosition", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Class.ClassId", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Class.Name", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Class.Color", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Class.TextColor", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Class.Position", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Class.LivePosition", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Class.GapToLeader", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Class.GapToCarAhead", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".Number", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".DriverName", string.Empty);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".GapToLeader", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".GapToCarAhead", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".IsInPit", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".BestLap", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".LastLap", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".IsPlayer", false);
+                    SetProp("Standings.Spectated.Class.Position" + iString + ".LapsBehindLeader", 0);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".LastLapIsPersonalBestLap", false);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".LastLapIsOverallBestLap", false);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".BestLapIsOverallBest", false);
+                    AddProp("Standings.Spectated.Class.Position" + iString + ".RowIsVisible", false);
                     AddProp("Standings.Overall" + iString + ".BestLap", 0);
                 }
-                */
+                
             }
         }
-
-        /*
-        public List<RaceCar> CompetingCarsForClassSortedByPosition(List<RaceCar> cars, double classID) {
-            List < RaceCar > tmp = cars.FindAll(x => x.ClassId == classID);
-            return tmp.OrderBy(o => o.ClassPosition).ToList();
-        }
-
-        public bool LapIsEqual(double first,  double second) {
-            TimeSpan firstTime = TimeSpan.FromSeconds(first);
-            TimeSpan secondTime = TimeSpan.FromSeconds(second);
-            return firstTime == secondTime;
-        }
-
-        public bool LapIsfaster(double first, double second) {
-            TimeSpan firstTime = TimeSpan.FromSeconds(first);
-            TimeSpan secondTime = TimeSpan.FromSeconds(second);
-            return firstTime < secondTime;
-        }
-        
-        */
 
         public class Standings {
 
-            /*
-            public int CurrentlyObservedDriver { get; set; } = 0;
-            public string BattleBoxDisplayString { get; set; } = string.Empty;
-            public double BattleBoxGap { get; set; }
-            public int BattleBoxDriver1Position { get; set; } = 0;
-            public int BattleBoxDriver2Position { get; set; } = 0;
-            public string BattleBoxDriver1Name { get; set; } = string.Empty;
-            public string BattleBoxDriver2Name { get; set; } = string.Empty;
-            public int EstimatedOvertakeLaps { get; set; } = 0;
-            public double EstimatedOvertakePercentage { get; set; } = 0.0;
-            */
         }
-
-        /*
-        public class RaceCar {
-
-            public override string ToString() {
-                return string.Format("P{0} {1} {2}", Position, CarNumber, Driver.DriverDisplayName);
-            }
-
-            public TrackSections track;
-
-            public RaceCar() {
-                this.Driver = new Driver();
-                this.track = new TrackSections();
-            }
-
-            public int CarIDx { get; set; } = int.MinValue;
-            public string CarNumber { get; set; } = "";
-
-            public Driver Driver { get; set; } = null;
-            public int CurrentTrackSection { get; set; } = 0;
-
-            // Lap timing info
-            public double BestLap { get; set; } = 0;
-            public double LastLap { get; set; } = 0;
-            public int Lap { get; set; } = 0;
-            public float CarIdxF2Time { get; set; } = 0;
-
-            public double EstimatedLapTime { get; set; } = 0;
-            public double EstTime { get; set; } = 0;
-
-            public double IntervalGap { get; set; } = 0;
-            public double IntervalGapDelayed { get; set; } = 0;
-            public double LapDistancePercent { get; set; } = 0;
-            public double RaceDistancePercent { get; set; } = 0;
-            public int LapsBehindLeader { get; set; } = 0;
-            public double GapBehindLeader { get; set; } = 0;
-            public int LapsBehindNext { get; set; } = 0;
-            public int Position { get; set; } = 0;
-            public int GapBasedPosition { get; set; } = 0;
-
-
-            //Pit info
-            public int PitInPitLane { get; set; } = 0;
-            public bool IsPlayer { get; set; } = false;
-
-            // Class info
-            public long ClassId { get; set; } = long.MinValue;
-            public string ClassName { get; set; } = string.Empty;
-            public string ClassColor { get; set; } = string.Empty;
-            public int ClassPosition { get; set; } = 0;
-            public int ClassGapToClassLeader { get; set; } = 0;
-        }
-
-        // Holds driver information
-        public class Driver {
-            public long DriverCustomerID { get; set; } = 0;
-            public string DriverFullName { get; set; } = string.Empty;
-            public string DriverFirstName { get; set; } = string.Empty;
-            public string DriverFirstNameInitial { get; set; } = string.Empty;
-            public string DriverFirstNameShort { get; set; } = string.Empty;
-            public string DriverLastName { get; set; } = string.Empty;
-            public string DriverLastNameInitial { get; set; } = string.Empty;
-            public string DriverLastNameShort { get; set; } = string.Empty;
-            public long DriverIRating { get; set; } = 0;
-            public string DriverSafetyRating { get; set; } = string.Empty;
-            public long DriverLicenseLevel { get; set; } = 0;
-            public string Nationality { get; set; } = string.Empty;
-
-            public string DriverDisplayName { get; set; } = string.Empty;
-
-        }
-
-        public class TrackSections {
-            static int NumberOfSections = 60;
-            public TrackSector[] Sections;
-
-            public TrackSections() {
-
-                // 60 sections numbered from from 0 to 59
-                Sections = new TrackSector[NumberOfSections];
-                for (int i = 0; i < Sections.Length; i++) {
-                    Sections[i] = new TrackSector(i);
-                }
-            }
-
-            public void UpdateTimeForSectionAtPercentage(double trackDistancePercentage, double CurrentElapsedLapTime) {
-                // we might need to reset here, but for now, let's just keep rolling and overwriting
-                int currentSection = GetATrackSectionForAGivenPercentageAroundTrack(trackDistancePercentage);
-                if (currentSection == 0) {
-                    Sections[currentSection].TrackSectionTime = CurrentElapsedLapTime;
-                }
-                else {
-                    double timeCurrentlySaved = 0;
-                    for (int i = 0; i < currentSection - 1; i++) {
-                        timeCurrentlySaved = timeCurrentlySaved + Sections[i].TrackSectionTime;
-                    }
-                    Sections[currentSection].TrackSectionTime = CurrentElapsedLapTime - timeCurrentlySaved;
-                }
-            }
-
-            public double GetTimeInSection(int section) {
-                return Sections[section].TrackSectionTime;
-            }
-
-            public void Reset() {
-                for (int i = 0; i < Sections.Length; i++) {
-                    Sections[i].Reset();
-                }
-            }
-
-            // Return the tracksector for a given percentage around the track
-            public static int GetATrackSectionForAGivenPercentageAroundTrack(double PercentAroundTrack) {
-
-                // reurn the sector where we will be for a given percentate
-                // this calc works because we use a staic number of track sections
-                double div = (100.0000 / Convert.ToDouble(NumberOfSections));
-                int pct = Convert.ToInt32(Math.Floor(((PercentAroundTrack * 100) / div)));
-                return pct;
-            }
-
-            public int Tracksector(int TrackSection) {
-                if (TrackSection < (NumberOfSections / 3)) {
-                    return 1;
-                }
-                else if (TrackSection < ((NumberOfSections / 3) * 2)) {
-                    return 2;
-                }
-                else {
-                    return 3;
-                }
-            }
-        }
-
-        public class TrackSector {
-            // We are hardcoded to NumberOfSections
-           // static int NumberOfSections = 60;
-            public TrackSector(int trackSectionID) {
-
-            }
-
-
-            public int TrackSectionID { get; set; }
-            public double TrackDistancePercent { get; set; }
-            public double TrackSectionTime { get; set; }
-
-            public void Reset() {
-                TrackSectionTime = 0;
-            }
-        }
-
-        */
     }
 }
