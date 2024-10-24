@@ -209,7 +209,7 @@ namespace APR.DashSupport {
                     for (int i = 0; i < classOpponents.Count; i++) {
                         ExtendedOpponent item = classOpponents[i];
 
-                        SetProp("Standings.Position" + counter.ToString() + ".Live", item.Position);
+                        SetProp("Standings.Position" + counter.ToString() + ".Position", item.PositionString);
                         SetProp("Standings.Position" + counter.ToString() + ".LivePosition", item.LivePosition);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.ClassId", item.CarClassID);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.Name", item.CarClass);
