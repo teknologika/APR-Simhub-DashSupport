@@ -16,7 +16,7 @@ namespace APR.DashSupport
     /// <summary>
     /// Settings class, make sure it can be correctly serialized using JSON.net
     /// </summary>
-    public class DashPluginSettings :INotifyPropertyChanged
+    public class DashPluginSettings : INotifyPropertyChanged
     {
         public int MaxCars = 64;
 
@@ -75,6 +75,13 @@ namespace APR.DashSupport
 
         // Enable Standings Properties and calculations
         public bool EnableStandings { get; set; } = true;
+
+        
+
+        public bool Standinds_Options_ShowTeamName { get; set; } = true;
+        public int Standings_Layout_FontSize { get; set; } = 14;
+     
+        
 
         // Enable Multi-class in standings
         public bool Multiclass { get; set; } = false;
@@ -151,6 +158,7 @@ namespace APR.DashSupport
         public bool ShowFastestLap { get; set; } = true;
         public bool ShowLastlap { get; set; } = true;
         
+        
         public bool SlideOutLastLapTimes { get; set; } = true;
         public bool SlideOutPitStatus { get; set; } = true;
 
@@ -162,44 +170,53 @@ namespace APR.DashSupport
         public bool ColumnShowDriverName { get; set; } = true;
         public bool ColumnShowGapToLeader { get; set; } = true;
         public bool ColumnShowGapToCarInFront { get; set; } = true;
-        public bool HideGapToCarInFront { get; set; } = false;
         public bool ColumnShowFastestLap { get; set; } = true;
         public bool ColumnShowLastLap { get; set; } = true;
 
-        
+       
         public int ColumnWidthPosition { get; set; } = 30;
         public int ColumnWidthCarNumber { get; set; } = 30;
-        public int ColumnWidthDriverName { get; set; } = 180;
+        public int ColumnWidthDriverName { get; set; } = 200;
         public int ColumnWidthGapToLeader { get; set; } = 60;
         public int ColumnWidthGapToCarInFront { get; set; } = 60;
         public int ColumnWidthFastestLap { get; set; } = 80;
         public int ColumnWidthLastLap { get; set; } = 80;
 
    
-
         public int ColumnStartPosition {
             get {
                 return 0;
             }
         }
 
-        public int ColumnStartDriverName {
+        public int ColumnStartCarNumber {
             get {
                 if (ColumnShowPosition) {
                     return ColumnStartPosition + ColumnWidthPosition;
+
                 }
                 else {
                     return ColumnStartPosition;
                 }
             }
+        }
+
+        public int ColumnStartDriverName {
+            get {
+                if (ColumnShowCarNumber) {
+                    return ColumnStartCarNumber + ColumnWidthCarNumber;
+                }
+                else {
+                    return ColumnStartCarNumber;
+                }
+            }
 
         }
 
-        public int ColumnStartCarNumber {
+        public int ColumnStartGapToLeader {
             get {
                 if (ColumnShowDriverName) {
-                    return ColumnStartDriverName + ColumnWidthCarNumber;
-                    
+                    return ColumnStartDriverName + ColumnWidthDriverName;
                 }
                 else {
                     return ColumnStartDriverName;
@@ -207,21 +224,10 @@ namespace APR.DashSupport
             }
         }
 
-        public int ColumnStartGapToLeader {
-            get {
-                if (ColumnShowCarNumber) {
-                    return ColumnStartCarNumber + ColumnWidthDriverName;
-                }
-                else {
-                    return ColumnStartCarNumber;
-                }
-            }
-        }
-
         public int ColumnStartGapToCarInFront {
             get {
                 if (ColumnShowGapToLeader) {
-                    if (HideGapToCarInFront) {
+                    if (ShowGapToCarInFront) {
                         return ColumnStartGapToLeader;
                     }
                     else {
@@ -234,7 +240,7 @@ namespace APR.DashSupport
             }
         }
 
-        public int ColumnStartFastestLap {
+        public int ColumnStartLastLap {
             get {
                 if (ColumnShowGapToCarInFront) {
                     return ColumnStartGapToCarInFront + ColumnWidthGapToCarInFront;
@@ -245,13 +251,13 @@ namespace APR.DashSupport
             }
         }
 
-        public int ColumnStartLastLap {
+        public int ColumnStartFastestLap {
             get {
-                if (ColumnShowFastestLap) {
-                    return ColumnStartFastestLap + ColumnWidthFastestLap;
+                if (ColumnShowLastLap) {
+                    return ColumnStartLastLap + ColumnWidthLastLap;
                 }
                 else {
-                    return ColumnStartFastestLap;
+                    return ColumnStartLastLap;
                 }
             }
         }
@@ -259,15 +265,13 @@ namespace APR.DashSupport
         public int ColumnStartFastestLapSlider {
             get {
                 if (ColumnShowLastLap) {
-                    return ColumnStartFastestLap + ColumnWidthFastestLap;
+                    return ColumnStartLastLap + ColumnWidthLastLap;
                 }
                 else {
-                    return ColumnStartFastestLap;
+                    return ColumnStartLastLap;
                 }
             }
         }
-
-
 
         public int ColumnSlideOutDuration { get; set; } = 10;
         public int ColumnCycleDuration { get; set; } = 30;

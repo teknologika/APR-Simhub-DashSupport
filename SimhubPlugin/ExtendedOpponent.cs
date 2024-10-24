@@ -23,7 +23,6 @@ namespace APR.DashSupport {
         private List<GameReaderCommon.Opponent> opponents;
         private List<ExtendedOpponent> OpponentsExtended = new List<ExtendedOpponent>();
         
-
         private List<carClass> carClasses = new List<carClass>();
         private float trackLength;
 
@@ -55,10 +54,12 @@ namespace APR.DashSupport {
 
     public class ExtendedOpponent {
             public GameReaderCommon.Opponent _opponent;
-            
             public SessionData._DriverInfo._Drivers _competitor;
-            
-            
+          
+
+            // FIXME
+            public bool _showTeamNames = false;
+
             // these need to be injected on creation for calcs to work
             public float _trackLength;
             public int _trackSurface;
@@ -81,6 +82,7 @@ namespace APR.DashSupport {
 
             public int _classleaderCarIdx;
             public double _classleaderLapDistPct;
+            public int _gridPosition;
 
             // to do add multi-classes and overall leader
 
@@ -114,6 +116,16 @@ namespace APR.DashSupport {
             }
 
             public int CarIdx { get { return Convert.ToInt32(_competitor.CarIdx); } }
+            public string Name {
+                get { 
+                    // Need to know if this is a teams event and we should show team names
+                    if (_showTeamNames) {
+                        return TeamName;
+                    }
+                    return DriverName;
+                    
+                }
+            }
             public string DriverName { get { return _opponent.Name; } }
             public string TeamName { get { return _opponent.TeamName; } }
             public string CarClass { get { return _opponent.CarClass; } }
@@ -140,14 +152,17 @@ namespace APR.DashSupport {
 
             public int Position {
                 get {
-                    if (
-                        _opponent.Position == 0) {
-
+                    if ( _opponent.Position == 0) {
+                        // If we have not completed a lap
                         if (Lap < 1) {
-                            // If we have not completed a lap
-                            return LivePosition;
-                        }
-                        // Todo return live position 
+                            // If we have start position, use that otherwise use live position
+                            if (_opponent.StartPosition.GetValueOrDefault() < 1) {
+                                return LivePosition;
+                            }
+                            else {
+                                return _opponent.StartPosition.GetValueOrDefault();
+                            }
+                        } 
                     }
                     return _opponent.Position;
                 }
@@ -436,8 +451,6 @@ namespace APR.DashSupport {
         }
 
 
-
-
         public class carClass {
             public int carClassID;
             public string carClassShortName;
@@ -480,7 +493,7 @@ namespace APR.DashSupport {
             }
         }
 
-        private List<ExtendedOpponent> OpponentsInClassSortedByLivePosition(int CarClassID) {
+        private List<ExtendedOpponent> OpponentsInClassSortedByPositionInClass(int CarClassID) {
             try {
                 List<ExtendedOpponent> tmp = OpponentsInClass(CarClassID);
                 return tmp.OrderBy(a => a.PositionInClass).ToList();

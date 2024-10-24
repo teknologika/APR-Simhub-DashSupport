@@ -332,7 +332,7 @@ namespace APR.DashSupport {
             return this.GetGapAsTimeForClass(this.SpectatedCar.CarClassID, this.OpponentsExtended[CarIdx].LapDistSpectatedCar);
         }
 
-        private void UpdateRelatives(GameData data) {
+        private void UpdateRelativesAndStandings(GameData data) {
 
             if (Settings.EnableRelatives || Settings.EnableStandings) {
 
@@ -416,7 +416,7 @@ namespace APR.DashSupport {
                     }
 
                     foreach (var item in carClasses) {
-                        List<ExtendedOpponent> carsInClass = OpponentsInClassSortedByLivePosition(item.carClassID);
+                        List<ExtendedOpponent> carsInClass = OpponentsInClassSortedByPositionInClass(item.carClassID);
                         double previousCarGapToClassLeader = 0;
                         foreach (var car in carsInClass)
                         {
@@ -447,6 +447,7 @@ namespace APR.DashSupport {
                 var behind = this.OpponentsBehind;
 #endif
                 UpdateRelativeProperties();
+                UpdateStandingsRelatedProperties(ref data);
 
             }
         }

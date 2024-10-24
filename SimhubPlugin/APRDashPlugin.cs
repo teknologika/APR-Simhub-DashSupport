@@ -148,7 +148,7 @@ namespace APR.DashSupport
             SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
             SetProp("Strategy.Vets.IsVetsRaceSession", IsV8VetsRaceSession);
 
-            UpdateCommonProperties(data);
+            //UpdateCommonProperties(data);
             
 
             trackLength = GetTrackLength();
@@ -425,7 +425,7 @@ namespace APR.DashSupport
                         this.endTime5Sec = now.Ticks;
                     }
 
-                    UpdateStandingsRelatedProperties(ref data);
+                    
 
                     UpdateBrakeBar();
                     trackPosition = irData.Telemetry.LapDistPct;
@@ -541,12 +541,16 @@ namespace APR.DashSupport
 
                 if (frameCounter == 40) {
                     if (runEvery1Sec) {
-                        UpdateRelatives(data);
-                        UpdateCommonProperties(data);
+                        if (data != null ) {
+                            try {
+                                UpdateRelativesAndStandings(data);
+                                UpdateCommonProperties(data);
+                            }
+                            catch (Exception) {
+                            }
+                        }
                     }
                 }
-
-
 
                 if (LogTelemetery) {
                     if ((frameCounter % 3) == 0) {
