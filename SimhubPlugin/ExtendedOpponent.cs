@@ -9,8 +9,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows.Markup;
 using System.Windows.Media.Animation;
 
@@ -147,6 +149,8 @@ namespace APR.DashSupport {
                     }
                 }
             }
+
+         
             public int LivePosition;
             public int CarClassLivePosition;
             public int PositionRaw { get { return _opponent.Position; } }
@@ -352,15 +356,27 @@ namespace APR.DashSupport {
                 }
             }
 
+            public bool IsLastLapPersonalBest;
+            public bool IsBestLapOverallBest;
+            public bool IsBestLapClassBestLap;
+
+
             // these gets pushed in 
             public double GapToPositionInClassAhead;
             public double GapToClassLeader;
             public double GapToOverallLeader;
-            public double GapToOverallPositionAhead;
+            public double GapToOverallPositionAhead; 
+            public double GapToOverallPositionBehind;
 
             public string GapToPositionInClassAheadString {
                 get {
                     return GapToPositionInClassAhead.ToString("0.0");
+                }
+            }
+
+            public string GapToPositionInClassBehindString {
+                get {
+                    return GapToOverallPositionBehind.ToString("0.0");
                 }
             }
 
@@ -433,11 +449,90 @@ namespace APR.DashSupport {
             public string iRatingChange { get; set; }
 
 
-            
             public TimeSpan LastLapTime { get { return TimeSpan.FromSeconds(_carLastLapTime); } }
-            public double LastLapTimeSeconds { get { return _carLastLapTime; } }
+           
+            public double LastLapTimeSeconds {
+                get {
+                    if (_carLastLapTime > 0) {
+                        return _carLastLapTime;
+                    }
+                    else {
+                        return 0;
+                    }
+                }
+            }
+
+            public string LastLapTimeString {
+                get {
+                    if (_carLastLapTime > 0) {
+                        return NiceTime(LastLapTime);
+                    }
+                    else {
+                        return "";
+                    }
+                }
+            }
+
             public TimeSpan BestLapTime { get { return TimeSpan.FromSeconds(_carBestLapTime); } }
-            public double BestLapTimeSeconds { get { return _carBestLapTime; } }
+            
+            public double BestLapTimeSeconds {
+                get {
+                    if (_carBestLapTime > 0) {
+                        return _carBestLapTime;
+                    }
+                    else {
+                        return 0;
+                    }
+                }
+            }
+
+            public string LastLapDynamicColor {
+                get {
+
+                    if (IsBestLapClassBestLap || IsBestLapOverallBest ) {
+                        return Color_Purple;
+                    }
+                    else if (IsLastLapPersonalBest) {
+                        return Color_Green;
+                    }
+                    else return Color_White;
+                }
+            }
+
+            public string BestLapDynamicColor {
+                get {
+
+                    if (IsLastLapPersonalBest) {
+                        return Color_Green;
+                    }
+                    else return Color_White;
+                }
+            }
+
+            public string BestLapTimeString {
+                get {
+                    if (_carBestLapTime > 0) {
+                        return NiceTime(BestLapTime);
+                    }
+                    else {
+                        return "";
+                    }
+                }
+            }
+
+
+            public string NiceTime(TimeSpan timeToFormat) {
+
+                if (timeToFormat == TimeSpan.Zero) {
+                    return "-.---";
+                }
+                if (timeToFormat.Minutes == 0) {
+                    return timeToFormat.ToString("s'.'fff");
+                }
+                else {
+                    return timeToFormat.ToString("m':'ss'.'fff");
+                }
+            }
 
             public TimeSpan? CurrentLapTime { get { return _opponent.CurrentLapTime; } }
             public double CurrentLapTimeSeonds { get { return CurrentLapTime.GetValueOrDefault().TotalSeconds; } }
@@ -471,6 +566,18 @@ namespace APR.DashSupport {
             public string RelativeToString() {
                 return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
             }
+
+            public string Color_DarkGrey = "#FF898989";
+            public string Color_LightGrey = "#FF808080";
+            public string Color_Purple = "#Ff990099";
+            public string Color_Green = "#FF009933";
+            public string Color_White = "#FFFFFFFF";
+            public string Color_Black = "#FF000000";
+            public string Color_Yellow = "#FFFFFF00";
+            public string Color_Red = "#FFFF0000";
+            public string Color_Transparent = "#00000000";
+            public string Color_DarkBackground = "#FF2D2D2D";
+            public string Color_LightBlue = "DeepSkyBlue";
         }
 
 
@@ -480,6 +587,7 @@ namespace APR.DashSupport {
             public int LeaderCarIdx;
             public double LeaderTotalTime;
             public double ReferenceLapTime;
+            public TimeSpan BestLapTime;
         }
 
         public void CheckAndAddCarClass(int CarClassID, string CarClassShortName) {
@@ -537,72 +645,5 @@ namespace APR.DashSupport {
 
         }
 
-        /*
-        private void UpdateLapTimesForDisplay(ExtendedOpponent opponent) {
-            //  return '--:--.---';
-            // return isnull(driverbestlap($prop('DataCorePlugin.GameData.BestLapOpponentSameClassPosition') + 1), '0:00.000')
-            if (IsSpectating) {
-                LastLapTime = SpectatedCar.LastLapTime;
-                PersonalBestLapTime = SpectatedCar.BestLapTime;
-                EstimatedLapTime = SpectatedCar.LastLapTime;
-            }
-            else {
-                LastLapTime = data.NewData.LastLapTime;
-                PersonalBestLapTime = data.NewData.BestLapTime;
-
-                if (GetProp("PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub") != null) {
-                    EstimatedLapTime = GetProp("PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub");
-                }
-                else if (GetProp("PersistantTrackerPlugin.EstimatedLapTime_AllTimeBestBased") != null) {
-                    EstimatedLapTime = GetProp("PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub");
-                }
-                else {
-                    try {
-                        EstimatedLapTime = data.NewData.CurrentLapTime;
-                    }
-                    catch {
-                        EstimatedLapTime = TimeSpan.Zero;
-                    }
-                }
-            }
-
-            try {
-                double ClassBestLapTime = OpponentsExtended.Any() ? OpponentsExtended.Min(car => car.BestLapTime.TotalSeconds) : 0; OpponentsExtended.Find
-
-                ClassBestLapTime = data.NewData.BestLapSameClassOpponent.BestLapTime;
-                OverallBestLapTime = data.NewData.BestLapOpponent.BestLapTime;
-            }
-            catch {
-                ClassBestLapTime = TimeSpan.Zero;
-                OverallBestLapTime = TimeSpan.Zero;
-            }
-
-            BestLapDynamicColor = "#FFFFFFFF";
-            LastLapDynamicColor = "#FFFFFFFF";
-
-            if (PersonalBestLapTime == LastLapTime) {
-                LastLapDynamicColor = "#FF009933"; // If PB - Green
-            }
-
-            try {
-                if (ClassBestLapTime == LastLapTime) {
-                    LastLapDynamicColor = "#Ff990099"; // Purple
-                }
-                else {
-                    LastLapDynamicColor = "#FFFFFFFF"; // white
-                }
-
-                if (PersonalBestLapTime == ClassBestLapTime) {
-                    BestLapDynamicColor = "#Ff990099"; // Purple
-                }
-
-            }
-            catch (Exception) { }
-
-            if (LastLapTime == TimeSpan.Zero) {
-                LastLapDynamicColor = "#FFFFFFFF";
-            }
-        }
-        */
     }
 }

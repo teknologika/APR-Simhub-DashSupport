@@ -753,5 +753,19 @@ namespace APR.DashSupport
         // Function for easy debuggung
         public static void DebugMessage(string s) => SimHub.Logging.Current.Info((object)s);
 
+
+        public string NiceTime(TimeSpan timeToFormat) {
+
+            if (timeToFormat == TimeSpan.Zero) {
+                return "-.---";
+            }
+            if (timeToFormat.Minutes == 0) {
+                return timeToFormat.ToString("s'.'fff");
+            }
+            else {
+                return timeToFormat.ToString("m':'ss'.'fff");
+            }
+        }
+
     }
 }

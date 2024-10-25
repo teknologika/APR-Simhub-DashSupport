@@ -21,6 +21,11 @@ namespace APR.DashSupport {
 
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
+
+        // General colours and layout settings
+       
+
+
         // Current Lap information
         public bool LapDisplayVisibility = false;
         public int CurrentLap;
@@ -60,6 +65,30 @@ namespace APR.DashSupport {
             }
         }
 
+        private void UpdateLapTimesForDisplay(GameData data) {
+            //  return '--:--.---';
+            // return isnull(driverbestlap($prop('DataCorePlugin.GameData.BestLapOpponentSameClassPosition') + 1), '0:00.000')
+            if (IsSpectating) {
+                LastLapTime = SpectatedCar.LastLapTime;
+                PersonalBestLapTime = SpectatedCar.BestLapTime;
+                EstimatedLapTime = SpectatedCar.LastLapTime;
+            }
+            else {
+                LastLapTime = data.NewData.LastLapTime;
+                PersonalBestLapTime = data.NewData.BestLapTime;
+
+                if (GetProp("PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub") != null) {
+                    EstimatedLapTime = GetProp("PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub");
+                }
+                else if (GetProp("PersistantTrackerPlugin.EstimatedLapTime_AllTimeBestBased") != null) {
+                    EstimatedLapTime = GetProp("PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub");
+                }
+                else {
+                    EstimatedLapTime = data.NewData.CurrentLapTime;
+                }
+            }
+        }
+
         private void CheckIfLeagueSession() {
             var leagueID = irData.SessionData.WeekendInfo.LeagueID;
             if (leagueID > 0) {
@@ -72,11 +101,11 @@ namespace APR.DashSupport {
         private void CreateCommonProperties() {
             AddProp("Common.LapOrTimeString", "");
             AddProp("Common.SessionTypeString", "");
-            AddProp("Common.Laps.LastLapTime", "");
-            AddProp("Common.Laps.ClassBestLapTime", "");
-            AddProp("Common.Laps.OverallBestLapTime", "");
-            AddProp("Common.Laps.PersonalBestLapTime", "");
-            AddProp("Common.Laps.EstimatedLapTime", "");
+            AddProp("Common.LastLapTime", "");
+            AddProp("Common.ClassBestLapTime", "");
+            AddProp("Common.OverallBestLapTime", "");
+            AddProp("Common.PersonalBestLapTime", "");
+            AddProp("Common.EstimatedLapTime", "");
 
 
             AddProp("Dash.Styles.Colors.Lap.SingleDynamic", ""); // Purple
@@ -90,15 +119,17 @@ namespace APR.DashSupport {
 
         }
 
+
+
         private void UpdateCommonProperties(GameData data ) {
 
             SetProp("Common.LapOrTimeString", CurrentLapText);
             SetProp("Common.SessionTypeString", SessionType);
-            SetProp("Common.Laps.LastLapTime", LastLapTime);
-            SetProp("Common.Laps.ClassBestLapTime", ClassBestLapTime);
-            SetProp("Common.Laps.OverallBestLapTime", OverallBestLapTime);
-            SetProp("Common.Laps.PersonalBestLapTime", PersonalBestLapTime);
-            SetProp("Common.Laps.EstimatedLapTime", EstimatedLapTime);
+            SetProp("Common.LastLapTime", NiceTime(LastLapTime));
+            SetProp("Common.ClassBestLapTime", NiceTime(ClassBestLapTime));
+            SetProp("Common.OverallBestLapTime", NiceTime(OverallBestLapTime));
+            SetProp("Common.PersonalBestLapTime", NiceTime(PersonalBestLapTime));
+            SetProp("Common.EstimatedLapTime", NiceTime(EstimatedLapTime));
 
             SetProp("Dash.Styles.Colors.Lap.SingleDynamic", LastLapDynamicColor);
             SetProp("Dash.Styles.Colors.Lap.SessionBest", "#Ff990099"); // Purple

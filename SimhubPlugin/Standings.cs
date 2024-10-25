@@ -140,8 +140,6 @@ namespace APR.DashSupport {
             //SetProp("Standings.NumberOfCarsInSession" , NumberOfCarsInSession);
             if (Settings.EnableStandings && data != null && data.GameRunning) {
 
-
-
                 SetProp("Standings.Colours.Background", Settings.StandingsBackgroundRowColourWithTransparency);
                 SetProp("Standings.Colours.BackgroundAlternate", Settings.StandingsBackgroundRowAlternateColourWithTransparency);
                 SetProp("Standings.Colours.BackgroundDriverHighlight", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
@@ -237,16 +235,17 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".TeamName", item.TeamName);
                         SetProp("Standings.Position" + counter.ToString() + ".GapToLeader", item.GapToClassLeaderString);
                         SetProp("Standings.Position" + counter.ToString() + ".GapToCarAhead", item.GapToPositionInClassAheadString);
+                        SetProp("Standings.Position" + counter.ToString() + ".GapToCarBehind", item.GapToPositionInClassBehindString);
                         SetProp("Standings.Position" + counter.ToString() + ".IsInPit", item.IsCarInPit);
                         SetProp("Standings.Position" + counter.ToString() + ".IsPlayer", item.IsSpectator);
-                        SetProp("Standings.Position" + counter.ToString() + ".Lap.LastLap", item.LastLapTime);
-                        SetProp("Standings.Position" + counter.ToString() + ".Lap.BestLap", item.BestLapTime);
-                        SetProp("Standings.Position" + counter.ToString() + ".Lap.Colors.LastLap", LastLapDynamicColor);
-                        SetProp("Standings.Position" + counter.ToString() + ".Lap.Colors.BestLap", BestLapDynamicColor);
+                        SetProp("Standings.Position" + counter.ToString() + ".Lap.LastLap", item.LastLapTimeString);
+                        SetProp("Standings.Position" + counter.ToString() + ".Lap.BestLap", item.BestLapTimeString);
+                        SetProp("Standings.Position" + counter.ToString() + ".Lap.Colors.LastLap", item.LastLapDynamicColor);
+                        SetProp("Standings.Position" + counter.ToString() + ".Lap.Colors.BestLap", item.BestLapDynamicColor);
                         SetProp("Standings.Position" + counter.ToString() + ".LapsBehindLeader", item.LapsToLeader);
-                        SetProp("Standings.Position" + counter.ToString() + ".LastLapIsPersonalBestLap", false);
-                        SetProp("Standings.Position" + counter.ToString() + ".LastLapIsOverallBestLap", false);
-                        SetProp("Standings.Position" + counter.ToString() + ".BestLapIsOverallBest", false);
+                        SetProp("Standings.Position" + counter.ToString() + ".LastLapIsPersonalBestLap", item.IsLastLapPersonalBest);
+                        SetProp("Standings.Position" + counter.ToString() + ".BestLapIsClassBestLap", item.IsBestLapClassBestLap);
+                        SetProp("Standings.Position" + counter.ToString() + ".BestLapIsOverallBest", item.IsBestLapOverallBest);
                         SetProp("Standings.Position" + counter.ToString() + ".RowIsVisible", item.DriverName != "");
 
 
@@ -333,10 +332,11 @@ namespace APR.DashSupport {
                     AddProp("Standings.Position" + iString + ".Lap.Colors.LastLap", Settings.Color_LightGrey);
                     AddProp("Standings.Position" + iString + ".Lap.Colors.BestLap", Settings.Color_LightGrey);
 
-                    AddProp("Standings.Position" + iString + ".LapsBehindLeader", 0);
+                    AddProp("Standings.Position" + iString + ".LapsBehindLeader", "");
                     AddProp("Standings.Position" + iString + ".LastLapIsPersonalBestLap", false);
-                    AddProp("Standings.Position" + iString + ".LastLapIsOverallBestLap", false);
+                    AddProp("Standings.Position" + iString + ".BestLapIsClassBestLap", false);
                     AddProp("Standings.Position" + iString + ".BestLapIsOverallBest", false);
+
                     AddProp("Standings.Position" + iString + ".RowIsVisible", false);
                 }
                 
