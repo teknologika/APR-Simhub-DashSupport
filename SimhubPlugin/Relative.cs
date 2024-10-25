@@ -2,6 +2,7 @@
 using iRacingSDK;
 using SimHub.Plugins;
 using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
+using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText.Imp;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
 using System;
@@ -399,47 +400,66 @@ namespace APR.DashSupport {
                     // Find the overall leader for each class
                     foreach (var item in carClasses)
                     {
-                        ExtendedOpponent classLeader =  OpponentsExtended.Find(a => a.CarClassID == item.carClassID && a.CarClassLivePosition == 1);
-                        item.LeaderCarIdx = classLeader.CarIdx;
+                        double referenceLapTime = GetReferenceClassLaptime(item.carClassID);
+                        item.ReferenceLapTime = referenceLapTime;
+                        List<ExtendedOpponent> classbyPosition = OpponentsExtended.FindAll(a => a.CarClassID == item.carClassID).OrderBy(a => a.Position).ToList();
+                       
+                        ExtendedOpponent classLeader = classbyPosition[0];
+                        item.LeaderTotalTime = (classLeader.Lap * referenceLapTime) + (referenceLapTime * classLeader.TrackPositionPercent);
                     }
 
                     // Add the car class leader to the OpponentsExtended
-                    foreach (var item in OpponentsExtended) {
-                        item._classleaderCarIdx = carClasses.Find(x => x.carClassID == item.CarClassID).carClassID;
-                    }
+                    var sortedOpponents = OpponentsExtended.OrderBy(a => a.Position).ToList();
+                    if (sortedOpponents.Count > 0) {
+                        int overallLeaderIdx = sortedOpponents[0].CarIdx;
+                        double overallLeaderReferenceTime = carClasses.Find(x => x.carClassID == sortedOpponents[0].CarClassID).ReferenceLapTime;
+                        double overallLeaderTotalTime =  (sortedOpponents[0].Lap * overallLeaderReferenceTime) + (overallLeaderReferenceTime * sortedOpponents[0].TrackPositionPercent);
 
-                    // Update the gap to the class leader
-                    // Find the overall leader for each class
-                    foreach (var item in carClasses) {
-                        ExtendedOpponent classLeader = OpponentsExtended.Find(a => a.CarClassID == item.carClassID && a.CarClassLivePosition == 1);
-                        item.LeaderCarIdx = classLeader.CarIdx;
-                    }
 
-                    foreach (var item in carClasses) {
-                        List<ExtendedOpponent> carsInClass = OpponentsInClassSortedByPositionInClass(item.carClassID);
-                        double previousCarGapToClassLeader = 0;
-                        foreach (var car in carsInClass)
-                        {
-                            if (car.CarClassLivePosition <= 1) {
-                                car.GapToPositionInClassAhead = 0;
+                        for (int i = 0; i < sortedOpponents.Count; i++) {
+                            var item = sortedOpponents[i];
+
+                            // find the class leader  
+                            CarClass cc = carClasses.Find(x => x.carClassID == item.CarClassID);
+                            item._classleaderCarIdx = ClassLeadingCar(item.CarClassID).CarIdx;
+
+
+                            double carTotalTime = (item.Lap * cc.ReferenceLapTime) + (cc.ReferenceLapTime * item.TrackPositionPercent);
+                            item.GapToOverallLeader = overallLeaderTotalTime - carTotalTime;
+                            item.GapToClassLeader = cc.LeaderTotalTime - carTotalTime;
+
+                            if (item.PositionInClass <= 1) {
+                                item.GapToPositionInClassAhead = 0;
                             }
                             else {
-                                car.GapToPositionInClassAhead = car.GapToClassLeader - previousCarGapToClassLeader;
-                                previousCarGapToClassLeader = car.GapToPositionInClassAhead;
-                                OpponentsExtended.Find(x=> x.CarIdx == car.CarIdx).GapToPositionInClassAhead = car.GapToPositionInClassAhead;
+                                var carAhead = sortedOpponents.Find(x => x.PositionInClass == i);
+                                if (carAhead != null) {
+                                    item.GapToPositionInClassAhead = item.GapToClassLeader - carAhead.GapToClassLeader;
+                                }
+                                else {
+                                    item.GapToPositionInClassAhead = 0;
+                                }
+                            }
+
+                            if (item.Position <= 1) {
+                                item.GapToOverallPositionAhead = 0;
+                            }
+                            else {
+                                var carAhead = sortedOpponents[i-1];
+                                if (carAhead != null) {
+                                    item.GapToOverallPositionAhead =  item.GapToOverallLeader - carAhead.GapToOverallLeader;
+                                }
+                                else {
+                                    item.GapToOverallPositionAhead = 0;
+                                }
                             }
                         }
                     }
-                }
 
-                //  RelativePositions relpos = new RelativePositions();
-                //  relpos.Update(OpponentsExtended, spectator);
-                //  this.OpponentsAhead = relpos.Ahead;
-                //  this.OpponentsBehind = relpos.Behind;
+                }
 
 
 #if DEBUG
-
 
                 // this is for debugging only
 
@@ -474,9 +494,6 @@ namespace APR.DashSupport {
 
                 // Header and properties
  
-
-
-
                 int count = 1;
                 foreach (var opponent in OpponentsAhead) {
 
@@ -648,7 +665,6 @@ namespace APR.DashSupport {
             }
         }
         public void ClearRelativeProperties() {
-
             if (Settings.EnableRelatives) {
                 for (int i = 1; i < Settings.RelativeNumberOfCarsAheadToShow + 1; i++) {
                     SetProp("Relative.Ahead." + i + ".Position", "");
@@ -712,5 +728,11 @@ namespace APR.DashSupport {
                 SetProp("Relative.Layout.NumbersOfCarsBehind", Settings.RelativeNumberOfCarsBehindToShow);
             }
         }
+
+        public void ResetRelativeAndStandingsData() {
+            OpponentsExtended = new List<ExtendedOpponent>();
+            carClasses = new List<CarClass> { };
+        }
+
     }
 }

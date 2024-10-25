@@ -699,10 +699,7 @@ namespace APR.DashSupport
 
             ClearStandings();
             ClearRelativeProperties();
-
-
-     
-
+            ResetRelativeAndStandingsData();
         }
 
         private void PluginManager_NewLap(int completedLapNumber, bool testLap, PluginManager manager, ref GameData data) {

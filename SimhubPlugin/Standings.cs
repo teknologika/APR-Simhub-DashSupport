@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Windows.Documents;
 using System.Windows.Markup;
 using Opponent = GameReaderCommon.Opponent;
@@ -17,76 +19,64 @@ namespace APR.DashSupport {
 
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
-    /*    
-
+        public string FormatName(string DriverFullName) {
             // chop up the drivers name(s)
             // TODO: Don't store everything, just chop once and store what we need ... maybe
-            string[] names = car.Driver.DriverFullName.Split(' ');
+            string[] names = DriverFullName.Split(' ');
             int numberOfNames = names.Length;
             if (numberOfNames > 0) {
 
-                car.Driver.DriverFirstName = car.Driver.DriverFullName.Split(' ')[0];
-                car.Driver.DriverLastName = car.Driver.DriverFullName.Split(' ')[numberOfNames - 1];
+                string DriverFirstName = DriverFullName.Split(' ')[0];
+                string DriverLastName = DriverFullName.Split(' ')[numberOfNames - 1];
+                string DriverFirstNameShort, DriverLastNameShort;
 
-                if (car.Driver.DriverFirstName.Length > 3) {
-                    car.Driver.DriverFirstNameShort = car.Driver.DriverFirstName.Substring(0, 3).ToUpper();
+                if (DriverFirstName.Length > 3) {
+                    DriverFirstNameShort = DriverFirstName.Substring(0, 3).ToUpper();
                 }
                 else {
-                    car.Driver.DriverFirstNameShort = car.Driver.DriverFirstName;
+                    DriverFirstNameShort = DriverFirstName;
                 }
 
-                if (car.Driver.DriverLastName.Length > 3) {
-                    car.Driver.DriverLastNameShort = car.Driver.DriverLastName.Substring(0, 3).ToUpper();
+                if (DriverLastName.Length > 3) {
+                    DriverLastNameShort = DriverLastName.Substring(0, 3).ToUpper();
                 }
                 else {
-                    car.Driver.DriverLastNameShort = car.Driver.DriverLastName;
+                    DriverLastNameShort = DriverLastName;
                 }
 
-
-                car.Driver.DriverFirstNameInitial = car.Driver.DriverFirstName.Substring(0, 1).ToUpper();
-                car.Driver.DriverLastNameInitial = car.Driver.DriverLastName.Substring(0, 1).ToUpper();
-    
-                UpdateStandingsNameSetting();
+                string DriverFirstNameInitial = DriverFirstName.Substring(0, 1).ToUpper();
+                string DriverLastNameInitial = DriverLastName.Substring(0, 1).ToUpper();
 
                 // Update the driver's display name
                 switch (Settings.DriverNameStyle) {
-
                     case 0: // Firstname Middle Lastname
-                        car.Driver.DriverDisplayName = car.Driver.DriverFullName;
-                        break;
+                        return DriverFullName;
 
                     case 1: // Firstname Lastname
-                        car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastName;
-                        break;
-
+                        return DriverFirstName + " " + DriverLastName;
+                       
                     case 2: // Lastname, Firstname
-                        car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstName;
-                        break;
-
+                        return DriverLastName + ", " + DriverFirstName;
+                       
                     case 3: // F. Lastname
-                        car.Driver.DriverDisplayName = car.Driver.DriverFirstNameInitial + ". " + car.Driver.DriverLastName;
-                        break;
-
+                        return DriverFirstNameInitial + ". " + DriverLastName;
+                  
                     case 4: // Firstname L.
-                        car.Driver.DriverDisplayName = car.Driver.DriverFirstName + " " + car.Driver.DriverLastNameInitial + ". ";
-                        break;
+                        return DriverFirstName + " " + DriverLastNameInitial + ". ";
 
                     case 5: // Lastname, F.
-                        car.Driver.DriverDisplayName = car.Driver.DriverLastName + ", " + car.Driver.DriverFirstNameInitial + ". ";
-                        break;
+                        return DriverLastName + ", " + DriverFirstNameInitial + ". ";
 
                     case 6: // LAS
-                        car.Driver.DriverDisplayName = car.Driver.DriverLastNameShort;
-                        break;
+                        return DriverLastNameShort;
 
                     default: //   Firstname Middle Lastname
-
-                        car.Driver.DriverDisplayName = car.Driver.DriverFullName;
-                        break;
+                        return DriverFullName;
                 }
+                
             }
-
-        */
+            return DriverFullName;
+        }
 
         public void UpdateStandingsNameSetting() {
             if (Settings.SettingsUpdated) {
@@ -150,6 +140,8 @@ namespace APR.DashSupport {
             //SetProp("Standings.NumberOfCarsInSession" , NumberOfCarsInSession);
             if (Settings.EnableStandings && data != null && data.GameRunning) {
 
+
+
                 SetProp("Standings.Colours.Background", Settings.StandingsBackgroundRowColourWithTransparency);
                 SetProp("Standings.Colours.BackgroundAlternate", Settings.StandingsBackgroundRowAlternateColourWithTransparency);
                 SetProp("Standings.Colours.BackgroundDriverHighlight", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
@@ -171,21 +163,15 @@ namespace APR.DashSupport {
                 SetProp("Standings.Columns.GapToLeader.Visible", Settings.ColumnShowGapToLeader);
 
                 // in practice the leader has the fastest time in the race it is P1
-                if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
-                    Settings.ColumnShowGapToCarInFront = true;
-                }
-                else {
-                    Settings.ColumnShowGapToCarInFront = false;
-                }
+               // if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
+                    //Settings.ColumnShowGapToCarInFront = true;
+               // }
+              //  else {
+                    //Settings.ColumnShowGapToCarInFront = false;
+              //  }
 
                 SetProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
-                if (Settings.ColumnShowGapToCarInFront) {
-                    SetProp("Standings.Columns.GapToCarInFront.Visible", false);
-                }
-                else {
-                    SetProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
-                }
-
+                SetProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
                 SetProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
 
                 SetProp("Standings.Columns.LastLap.Left", Settings.ColumnStartLastLap);
@@ -198,42 +184,83 @@ namespace APR.DashSupport {
                 SetProp("Standings.Columns.FastestLap.Slider.Left", Settings.ColumnStartFastestLapSlider);
 
                 if (OpponentsExtended.Count > 0) {
+
+                    // Update the gap to the class leader
+                    // Find the overall leader for each class
+                    foreach (var item in carClasses) {
+                        ExtendedOpponent classLeader = OpponentsExtended.Find(a => a.CarClassID == item.carClassID && a.CarClassLivePosition == 1);
+                        if(classLeader == null) {
+                            break;
+                        }
+                        item.LeaderCarIdx = classLeader.CarIdx;
+                    }
+
                     // get the spected car
                     ExtendedOpponent spectator = OpponentsExtended.Find(x => x.CarIdx == irData.Telemetry.CamCarIdx);
 
                     // only do the spectated driver's class
                     List<ExtendedOpponent> classOpponents = OpponentsInClass(spectator.CarClassID);
 
-                    classOpponents = classOpponents.OrderBy(x => x.Position).ToList();
+                    // Updte Lap time colors
+                    // UpdateLapOrTimeString(data);
+                    foreach (var item in carClasses) {
+
+
+                        ExtendedOpponent classLeader = OpponentsExtended.Find(a => a.CarClassID == item.carClassID && a.CarClassLivePosition == 1);
+                        if (classLeader == null) {
+                            break;
+                        }
+                        item.LeaderCarIdx = classLeader.CarIdx;
+                    }
+
+
+                    classOpponents = classOpponents.FindAll(x => x.IsConnected).OrderBy(x => x.Position).ToList();
                     int counter = 1;
                     for (int i = 0; i < classOpponents.Count; i++) {
                         ExtendedOpponent item = classOpponents[i];
 
                         SetProp("Standings.Position" + counter.ToString() + ".Position", item.PositionString);
+                        SetProp("Standings.Position" + counter.ToString() + ".PositionsGained", item._opponent.RacePositionGain);
                         SetProp("Standings.Position" + counter.ToString() + ".LivePosition", item.LivePosition);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.ClassId", item.CarClassID);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.Name", item.CarClass);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.Color", item.CarClassColor);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", item.CarClassTextColor);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.Position", item.Position);
+                        SetProp("Standings.Position" + counter.ToString() + ".Class.PositionsGained", item._opponent.RacePositionClassGain);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.LivePosition", item.LivePosition);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.GapToLeader", item.GapToClassLeaderString);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.GapToCarAhead", item.GapToPositionInClassAheadString);
                         SetProp("Standings.Position" + counter.ToString() + ".Number", item.CarNumber);
-                        SetProp("Standings.Position" + counter.ToString() + ".Name", item.Name);
+                        SetProp("Standings.Position" + counter.ToString() + ".Name", FormatName(item.Name));
                         SetProp("Standings.Position" + counter.ToString() + ".DriverName", item.DriverName);
                         SetProp("Standings.Position" + counter.ToString() + ".TeamName", item.TeamName);
                         SetProp("Standings.Position" + counter.ToString() + ".GapToLeader", item.GapToClassLeaderString);
                         SetProp("Standings.Position" + counter.ToString() + ".GapToCarAhead", item.GapToPositionInClassAheadString);
                         SetProp("Standings.Position" + counter.ToString() + ".IsInPit", item.IsCarInPit);
-                        SetProp("Standings.Position" + counter.ToString() + ".BestLap", item.BestLapTime);
-                        SetProp("Standings.Position" + counter.ToString() + ".LastLap", item.LastLapTime);
                         SetProp("Standings.Position" + counter.ToString() + ".IsPlayer", item.IsSpectator);
+                        SetProp("Standings.Position" + counter.ToString() + ".Lap.LastLap", item.LastLapTime);
+                        SetProp("Standings.Position" + counter.ToString() + ".Lap.BestLap", item.BestLapTime);
+                        SetProp("Standings.Position" + counter.ToString() + ".Lap.Colors.LastLap", LastLapDynamicColor);
+                        SetProp("Standings.Position" + counter.ToString() + ".Lap.Colors.BestLap", BestLapDynamicColor);
                         SetProp("Standings.Position" + counter.ToString() + ".LapsBehindLeader", item.LapsToLeader);
                         SetProp("Standings.Position" + counter.ToString() + ".LastLapIsPersonalBestLap", false);
                         SetProp("Standings.Position" + counter.ToString() + ".LastLapIsOverallBestLap", false);
                         SetProp("Standings.Position" + counter.ToString() + ".BestLapIsOverallBest", false);
                         SetProp("Standings.Position" + counter.ToString() + ".RowIsVisible", item.DriverName != "");
+
+
+                        if (item.IsPlayer || item.IsSpectator) {
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.Color", Settings.Color_Black);
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", Settings.Color_White);
+                            SetProp("Standings.Position" + counter.ToString() + ".Row.Background", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
+                        }
+                        else {
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.Color", Settings.Color_Black);
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", Settings.Color_White);        
+                            SetProp("Standings.Position" + counter.ToString() + ".Row.Background", Settings.StandingsBackgroundRowColourWithTransparency);
+                        }
+
                         counter++;
                     }
                 }
@@ -280,12 +307,14 @@ namespace APR.DashSupport {
                     //string iString = string.Format("{0:00}", i);
                     string iString = i.ToString();
                     AddProp("Standings.Position" + iString + ".Position", 0);
+                    AddProp("Standings.Position" + iString + ".PositionsGained", 0);
                     AddProp("Standings.Position" + iString + ".LivePosition", 0);
                     AddProp("Standings.Position" + iString + ".Class.ClassId", 0);
                     AddProp("Standings.Position" + iString + ".Class.Name", 0);
                     AddProp("Standings.Position" + iString + ".Class.Color", 0);
                     AddProp("Standings.Position" + iString + ".Class.TextColor", 0);
                     AddProp("Standings.Position" + iString + ".Class.Position", 0);
+                    AddProp("Standings.Position" + iString + ".Class.PositionsGained", 0);
                     AddProp("Standings.Position" + iString + ".Class.LivePosition", 0);
                     AddProp("Standings.Position" + iString + ".Class.GapToLeader", 0);
                     AddProp("Standings.Position" + iString + ".Class.GapToCarAhead", 0);
@@ -299,7 +328,12 @@ namespace APR.DashSupport {
                     AddProp("Standings.Position" + iString + ".BestLap", 0);
                     AddProp("Standings.Position" + iString + ".LastLap", 0);
                     AddProp("Standings.Position" + iString + ".IsPlayer", false);
-                    SetProp("Standings.Position" + iString + ".LapsBehindLeader", 0);
+                    AddProp("Standings.Position" + iString + ".Lap.LastLap", "-:--:---");
+                    AddProp("Standings.Position" + iString + ".Lap.BestLap", "-:--:---");
+                    AddProp("Standings.Position" + iString + ".Lap.Colors.LastLap", Settings.Color_LightGrey);
+                    AddProp("Standings.Position" + iString + ".Lap.Colors.BestLap", Settings.Color_LightGrey);
+
+                    AddProp("Standings.Position" + iString + ".LapsBehindLeader", 0);
                     AddProp("Standings.Position" + iString + ".LastLapIsPersonalBestLap", false);
                     AddProp("Standings.Position" + iString + ".LastLapIsOverallBestLap", false);
                     AddProp("Standings.Position" + iString + ".BestLapIsOverallBest", false);

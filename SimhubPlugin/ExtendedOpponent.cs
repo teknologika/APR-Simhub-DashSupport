@@ -23,33 +23,30 @@ namespace APR.DashSupport {
         private List<GameReaderCommon.Opponent> opponents;
         private List<ExtendedOpponent> OpponentsExtended = new List<ExtendedOpponent>();
         
-        private List<carClass> carClasses = new List<carClass>();
+        private List<CarClass> carClasses = new List<CarClass>();
         private float trackLength;
 
 
         public void UpdateLivePositions() {
             List<ExtendedOpponent> opponentsSortedLivePosition = OpponentsExtended.OrderBy(x => x.Lap).ThenByDescending(x => x.LapDist).ToList();
+            List<ExtendedOpponent> opponentsSortedLivePositionInClass = OpponentsExtended.OrderBy(x => x.CarClass).ThenByDescending(x => x.Lap).ThenByDescending(x => x.LapDist).ToList();
+
             int livePosition = 1;
             foreach (var item in opponentsSortedLivePosition) {
                 item.LivePosition = livePosition;
                 livePosition++;
             }
 
-            foreach (var item in OpponentsExtended) {
-                item.LivePosition = opponentsSortedLivePosition.Find(x => x.CarIdx == item.CarIdx).LivePosition;
-            }
-
-            foreach (var carClass in carClasses)
+            foreach (var item in carClasses)
             {
-                List<ExtendedOpponent> carsInClass = opponentsSortedLivePosition.FindAll(x => x.CarClassID == carClass.carClassID);
-                int classPosition = 1;
-                foreach (var item in carsInClass)
-                {
-                    item.CarClassLivePosition = classPosition;
-                    classPosition++;
+                int CarClasslivePosition = 1;
+                foreach (var car in opponentsSortedLivePosition) {
+                    if (car.CarClassID == item.carClassID) {
+                        car.CarClassLivePosition = CarClasslivePosition;
+                        CarClasslivePosition++;
+                    }
                 }
             }
-
         }
 
     public class ExtendedOpponent {
@@ -90,6 +87,7 @@ namespace APR.DashSupport {
             public bool IsOffTrack { get { return (_trackSurface == 0); } }
             public bool IsInWorld { get { return (_trackSurface > -1); } }
             public bool IsSlow { get { return (IsOnTrack && (Speed > 30.0)); } }
+            public bool IsSpectator { get { return this.CarIdx == _spectatedCarIdx; } }
 
             public double Speed { get { return _opponent.Speed.GetValueOrDefault(); } }
 
@@ -123,7 +121,6 @@ namespace APR.DashSupport {
                         return TeamName;
                     }
                     return DriverName;
-                    
                 }
             }
             public string DriverName { get { return _opponent.Name; } }
@@ -152,18 +149,16 @@ namespace APR.DashSupport {
 
             public int Position {
                 get {
-                    if ( _opponent.Position == 0) {
-                        // If we have not completed a lap
-                        if (Lap < 1) {
-                            // If we have start position, use that otherwise use live position
-                            if (_opponent.StartPosition.GetValueOrDefault() < 1) {
-                                return LivePosition;
-                            }
-                            else {
-                                return _opponent.StartPosition.GetValueOrDefault();
-                            }
-                        } 
-                    }
+                    // If we have not completed a lap
+                    if (Lap < 1) {
+                        // If we have start position, use that otherwise use live position
+                        if (_opponent.StartPosition.GetValueOrDefault() < 1) {
+                            return LivePosition;
+                        }
+                        else {
+                            return _opponent.StartPosition.GetValueOrDefault();
+                        }
+                    } 
                     return _opponent.Position;
                 }
             }
@@ -177,17 +172,21 @@ namespace APR.DashSupport {
                 }
             }
 
-            public bool IsConnected { get { return _opponent.IsConnected; } }
-            public bool IsCarInPit { get { return _opponent.IsCarInPit; } }
-            public bool IsCarInPitLane { get { return _opponent.IsCarInPitLane; } }
-            public bool IsCarInGarage { get { return _opponent.IsCarInGarage.GetValueOrDefault(); } }
-            public bool IsOutlap { get { return _opponent.IsOutLap; } }
-            public bool IsPlayer { get { return _opponent.IsPlayer; } }
-            public bool IsSpectator { get { return _spectatedCarIdx == _competitor.CarIdx; } }
 
-            public string CarNumber { get { return _opponent.CarNumber; } }
 
-            public int PositionInClass { get { return _opponent.PositionInClass; } }
+            public int PositionInClass {
+                get {
+                   
+                    // If we have not completed a lap
+                    if (Lap < 1) {
+                        // This is buggy as on lap 1 use live position
+                            return CarClassLivePosition;
+                    }
+                    return _opponent.PositionInClass;
+                }
+            }
+
+
             public string PositionInClassString {
                 get {
                     if (_opponent.PositionInClass < 1) {
@@ -196,6 +195,17 @@ namespace APR.DashSupport {
                     return _opponent.PositionInClass.ToString();
                 }
             }
+
+            public bool IsConnected { get { return _opponent.IsConnected; } }
+            public bool IsCarInPit { get { return _opponent.IsCarInPit; } }
+            public bool IsCarInPitLane { get { return _opponent.IsCarInPitLane; } }
+            public bool IsCarInGarage { get { return _opponent.IsCarInGarage.GetValueOrDefault(); } }
+            public bool IsOutlap { get { return _opponent.IsOutLap; } }
+            public bool IsPlayer { get { return _opponent.IsPlayer; } }
+
+            public string CarNumber { get { return _opponent.CarNumber; } }
+
+
             public int CurrentLap { get { return _opponent.CurrentLap ?? -1; } }
             public int Lap { get { return CurrentLap; } }
             public int LapsToLeader { get { return _opponent.LapsToLeader ?? -1; } }
@@ -298,6 +308,7 @@ namespace APR.DashSupport {
                     return distance; 
                 }
             }
+            
             public double LapDistPctClassLeader {
                 get {
                     // calculate the difference between the two cars
@@ -315,7 +326,7 @@ namespace APR.DashSupport {
 
             public double LapDistClassLeader {
                 get {
-                    // calculate the difference between the two cars
+                    // calculate the absolute difference between the two cars
                     var distance = (_classleaderLapDistPct * _trackLength) - (_opponent.TrackPositionPercent.Value * _trackLength);
                     if (distance > _trackLength / 2) {
                         distance -= _trackLength;
@@ -327,25 +338,31 @@ namespace APR.DashSupport {
                     return distance;
                 }
             }
-
-            public double GapToClassLeader {
-                get {
-                   return CarClassReferenceLapTime / _trackLength * LapDistClassLeader;
-                }
-            }
-
+           
             public string GapToClassLeaderString {
                 get {
+                    if (LapsToLeader > 0) {
+                        return LapsToLeader.ToString() + "L";
+                    }
                     return GapToClassLeader.ToString("0.0");
                 }
             }
 
-            // this gets pushed in
+            // these gets pushed in 
             public double GapToPositionInClassAhead;
+            public double GapToClassLeader;
+            public double GapToOverallLeader;
+            public double GapToOverallPositionAhead;
 
             public string GapToPositionInClassAheadString {
                 get {
                     return GapToPositionInClassAhead.ToString("0.0");
+                }
+            }
+
+            public string GapToOverallPositionAheadString {
+                get {
+                    return GapToOverallPositionAhead.ToString("0.0");
                 }
             }
 
@@ -438,30 +455,32 @@ namespace APR.DashSupport {
             }
 
             public override string ToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") +  " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
+                return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " L:" + Lap + " Gap:" + GapToPositionInClassAheadString + " Ldr:" + GapToClassLeaderString + " lst:" + LastLapTime;
             }
 
             public string StandingsToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " %S1:" +  " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
+                return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " Gap" + GapToPositionInClassAheadString + " Ldr" +  GapToClassLeaderString + "lst" + LastLapTime;
             }
 
             public string RelativeToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " %S1:" + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
+                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
             }
         }
 
 
-        public class carClass {
+        public class CarClass {
             public int carClassID;
             public string carClassShortName;
             public int LeaderCarIdx;
+            public double LeaderTotalTime;
+            public double ReferenceLapTime;
         }
 
         public void CheckAndAddCarClass(int CarClassID, string CarClassShortName) {
             bool has = this.carClasses.Any(a => a.carClassID == CarClassID);
 
             if (has == false) {
-                this.carClasses.Add(new carClass() { carClassID = CarClassID, carClassShortName = CarClassShortName });
+                this.carClasses.Add(new CarClass() { carClassID = CarClassID, carClassShortName = CarClassShortName });
             }
         }
 
@@ -472,6 +491,14 @@ namespace APR.DashSupport {
         private ExtendedOpponent LeadingCar {
             get {
                 return this.OpponentsExtended.Find(a => a.Position == 1 ); }
+        }
+
+        private ExtendedOpponent ClassLeadingCar(int CarClassID) {
+            var classOnly = OpponentsExtended.FindAll(a => a.CarClassID == CarClassID).OrderBy(a => a.Position).ToList();
+            if (classOnly != null) {
+                return classOnly[0];
+            }
+            return new ExtendedOpponent();
         }
 
         private List<ExtendedOpponent> OpponentsInClasss {
@@ -493,10 +520,10 @@ namespace APR.DashSupport {
             }
         }
 
-        private List<ExtendedOpponent> OpponentsInClassSortedByPositionInClass(int CarClassID) {
+        private List<ExtendedOpponent> OpponentsInClassSortedByPosition(int CarClassID) {
             try {
-                List<ExtendedOpponent> tmp = OpponentsInClass(CarClassID);
-                return tmp.OrderBy(a => a.PositionInClass).ToList();
+                List<ExtendedOpponent> tmp = OpponentsInClass(CarClassID).OrderBy(a => a.Position).ToList();
+                return tmp;
             }
             catch (Exception) {
                 return new List<ExtendedOpponent>();
@@ -504,8 +531,72 @@ namespace APR.DashSupport {
 
         }
 
- 
+        /*
+        private void UpdateLapTimesForDisplay(ExtendedOpponent opponent) {
+            //  return '--:--.---';
+            // return isnull(driverbestlap($prop('DataCorePlugin.GameData.BestLapOpponentSameClassPosition') + 1), '0:00.000')
+            if (IsSpectating) {
+                LastLapTime = SpectatedCar.LastLapTime;
+                PersonalBestLapTime = SpectatedCar.BestLapTime;
+                EstimatedLapTime = SpectatedCar.LastLapTime;
+            }
+            else {
+                LastLapTime = data.NewData.LastLapTime;
+                PersonalBestLapTime = data.NewData.BestLapTime;
 
+                if (GetProp("PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub") != null) {
+                    EstimatedLapTime = GetProp("PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub");
+                }
+                else if (GetProp("PersistantTrackerPlugin.EstimatedLapTime_AllTimeBestBased") != null) {
+                    EstimatedLapTime = GetProp("PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub");
+                }
+                else {
+                    try {
+                        EstimatedLapTime = data.NewData.CurrentLapTime;
+                    }
+                    catch {
+                        EstimatedLapTime = TimeSpan.Zero;
+                    }
+                }
+            }
 
+            try {
+                double ClassBestLapTime = OpponentsExtended.Any() ? OpponentsExtended.Min(car => car.BestLapTime.TotalSeconds) : 0; OpponentsExtended.Find
+
+                ClassBestLapTime = data.NewData.BestLapSameClassOpponent.BestLapTime;
+                OverallBestLapTime = data.NewData.BestLapOpponent.BestLapTime;
+            }
+            catch {
+                ClassBestLapTime = TimeSpan.Zero;
+                OverallBestLapTime = TimeSpan.Zero;
+            }
+
+            BestLapDynamicColor = "#FFFFFFFF";
+            LastLapDynamicColor = "#FFFFFFFF";
+
+            if (PersonalBestLapTime == LastLapTime) {
+                LastLapDynamicColor = "#FF009933"; // If PB - Green
+            }
+
+            try {
+                if (ClassBestLapTime == LastLapTime) {
+                    LastLapDynamicColor = "#Ff990099"; // Purple
+                }
+                else {
+                    LastLapDynamicColor = "#FFFFFFFF"; // white
+                }
+
+                if (PersonalBestLapTime == ClassBestLapTime) {
+                    BestLapDynamicColor = "#Ff990099"; // Purple
+                }
+
+            }
+            catch (Exception) { }
+
+            if (LastLapTime == TimeSpan.Zero) {
+                LastLapDynamicColor = "#FFFFFFFF";
+            }
+        }
+        */
     }
 }

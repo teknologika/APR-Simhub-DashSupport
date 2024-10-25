@@ -28,6 +28,7 @@ namespace APR.DashSupport
         public string Color_Purple = "#Ff990099";
         public string Color_Green = "#FF009933";
         public string Color_White = "#FFFFFFFF";
+        public string Color_Black = "#FF000000";
         public string Color_Yellow = "#FFFFFF00";
         public string Color_Red = "#FFFF0000";
         public string Color_Transparent = "#00000000";
@@ -227,12 +228,7 @@ namespace APR.DashSupport
         public int ColumnStartGapToCarInFront {
             get {
                 if (ColumnShowGapToLeader) {
-                    if (ShowGapToCarInFront) {
-                        return ColumnStartGapToLeader;
-                    }
-                    else {
-                        return ColumnStartGapToLeader + ColumnWidthGapToLeader;
-                    }
+                    return ColumnStartGapToLeader + ColumnWidthGapToLeader;
                 }
                 else {
                     return ColumnStartGapToLeader;
