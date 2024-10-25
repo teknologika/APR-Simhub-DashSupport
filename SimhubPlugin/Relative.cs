@@ -11,6 +11,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media.Animation;
 using static System.Net.Mime.MediaTypeNames;
@@ -348,10 +349,21 @@ namespace APR.DashSupport {
                 float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCarIdx];
                 int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCarIdx];
 
+
+                // NewRawData().Telemetry["CarIdxBestLapTime"]
+                //
+                //NewRawData().Telemetry["CarIdxLastLapTime"]
                 for (int i = 0; i < competitors.Length; ++i) {
                     for (int j = 0; j < opponents.Count; ++j) {
                         // Add the aligned Opponents and Competitor data to our ExtendedOpponent list
                         if (string.Equals(competitors[i].CarNumber, opponents[j].CarNumber)) {
+
+                            //var a = irData.Telemetry.LapBestLapTime
+                            // NewRawData().Telemetry["CarIdxBestLapTime"]
+                            // NewRawData().Telemetry["CarIdxLastLapTime"]
+                            float[] bestLapTimes = (float[])irData.Telemetry.FirstOrDefault(x => x.Key == "CarIdxBestLapTime").Value;
+
+                            float[] lastLapTimes = (float[])irData.Telemetry.FirstOrDefault(x => x.Key == "CarIdxLastLapTime").Value;
 
                             // Add to the Extended Opponents class
                             OpponentsExtended.Add(new ExtendedOpponent() {
@@ -359,6 +371,8 @@ namespace APR.DashSupport {
                                 _opponent = opponents[j],
                                 _competitor = competitors[i],
                                 _carEstTime = irData.Telemetry.CarIdxEstTime[competitors[i].CarIdx],
+                                _carBestLapTime = bestLapTimes[competitors[i].CarIdx],
+                                _carLastLapTime = lastLapTimes[competitors[i].CarIdx],
                                 _trackSurface = (int)irData.Telemetry.CarIdxTrackSurface[competitors[i].CarIdx],
                                 _trackLength = trackLength,
                                 _spectatedCarIdx = spectatedCarIdx,

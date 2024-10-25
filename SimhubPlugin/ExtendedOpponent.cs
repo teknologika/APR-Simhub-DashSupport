@@ -26,7 +26,6 @@ namespace APR.DashSupport {
         private List<CarClass> carClasses = new List<CarClass>();
         private float trackLength;
 
-
         public void UpdateLivePositions() {
             List<ExtendedOpponent> opponentsSortedLivePosition = OpponentsExtended.OrderBy(x => x.Lap).ThenByDescending(x => x.LapDist).ToList();
             List<ExtendedOpponent> opponentsSortedLivePositionInClass = OpponentsExtended.OrderBy(x => x.CarClass).ThenByDescending(x => x.Lap).ThenByDescending(x => x.LapDist).ToList();
@@ -34,8 +33,10 @@ namespace APR.DashSupport {
             int livePosition = 1;
             foreach (var item in opponentsSortedLivePosition) {
                 item.LivePosition = livePosition;
+
                 livePosition++;
             }
+
 
             foreach (var item in carClasses)
             {
@@ -63,6 +64,9 @@ namespace APR.DashSupport {
             public string _sessionType;
 
             public double _carEstTime;
+            public double _carBestLapTime;
+            public double _carLastLapTime;
+    
             public double CarEstTime { get { return _carEstTime; } }
             public double _CarIdxF2Time;
             public double CarF2Time { get { return _CarIdxF2Time; } }
@@ -428,10 +432,12 @@ namespace APR.DashSupport {
             }
             public string iRatingChange { get; set; }
 
-            public TimeSpan LastLapTime { get { return _opponent.LastLapTime; } }
-            public double LastLapTimeSeconds { get { return LastLapTime.TotalSeconds; } }
-            public TimeSpan BestLapTime { get { return _opponent.BestLapTime; } }
-            public double BestLapTimeSeconds { get { return BestLapTime.TotalSeconds; } }
+
+            
+            public TimeSpan LastLapTime { get { return TimeSpan.FromSeconds(_carLastLapTime); } }
+            public double LastLapTimeSeconds { get { return _carLastLapTime; } }
+            public TimeSpan BestLapTime { get { return TimeSpan.FromSeconds(_carBestLapTime); } }
+            public double BestLapTimeSeconds { get { return _carBestLapTime; } }
 
             public TimeSpan? CurrentLapTime { get { return _opponent.CurrentLapTime; } }
             public double CurrentLapTimeSeonds { get { return CurrentLapTime.GetValueOrDefault().TotalSeconds; } }
