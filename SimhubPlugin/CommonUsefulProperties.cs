@@ -107,13 +107,34 @@ namespace APR.DashSupport {
             AddProp("Common.PersonalBestLapTime", "");
             AddProp("Common.EstimatedLapTime", "");
 
+            AddProp("Dash.Styles.Colors.Lap.SingleDynamic", Settings.Color_LightGrey); 
+            AddProp("Dash.Styles.Colors.Lap.SessionBest", Settings.Color_Purple); 
+            AddProp("Dash.Styles.Colors.Lap.PersonalBest", Settings.Color_Green); 
+            AddProp("Dash.Styles.Colors.Lap.Latest", Settings.Color_White);
+            AddProp("Dash.Styles.Colors.Lap.Estimated", Settings.Color_White); 
+            AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow); 
+            AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow);
 
-            AddProp("Dash.Styles.Colors.Lap.SingleDynamic", ""); // Purple
-            AddProp("Dash.Styles.Colors.Lap.SessionBest", "#Ff990099"); // Purple
-            AddProp("Dash.Styles.Colors.Lap.PersonalBest", "#FF009933"); // Green
-            AddProp("Dash.Styles.Colors.Lap.Latest", "#FFFFFFFF"); // white
-            AddProp("Dash.Styles.Colors.Lap.Estimated", "#FFFFFFFF"); // white
-            AddProp("Dash.Styles.Colors.Lap.Default", "#FFFFFF00"); // yellow
+            AddProp("Dash.Styles.Colors.DarkGrey", Settings.Color_DarkGrey);
+            AddProp("Dash.Styles.Colors.LightGrey", Settings.Color_LightGrey);
+            AddProp("Dash.Styles.Colors.Purple", Settings.Color_Purple);
+            AddProp("Dash.Styles.Colors.Green", Settings.Color_Green);
+            AddProp("Dash.Styles.Colors.White", Settings.Color_White);
+            AddProp("Dash.Styles.Colors.Black", Settings.Color_Black);
+            AddProp("Dash.Styles.Colors.Yellow", Settings.Color_Yellow);
+            AddProp("Dash.Styles.Colors.Red", Settings.Color_Red);
+            AddProp("Dash.Styles.Colors.RedLineFlash", Settings.Color_RedLineFlash);
+            AddProp("Dash.Styles.Colors.Transparent", Settings.Color_Transparent);
+            AddProp("Dash.Styles.Colors.DarkBackground", Settings.Color_DarkBackground);
+            AddProp("Dash.Styles.Colors.LightBlue", Settings.Color_LightBlue);
+            AddProp("Dash.Styles.Colors.LimiterOn", Settings.Color_LightBlue);
+            AddProp("Dash.Styles.Colors.LimiterWarning", Settings.Color_Red);
+            AddProp("Dash.Styles.Colors.IgnitionOff", Settings.Color_Yellow);
+            AddProp("Dash.Styles.Colors.EngineOff", Settings.Color_RedLineFlash);
+
+
+
+
 
             AddProp("Common.IsLeagueSession", false);
 

@@ -441,10 +441,16 @@ namespace APR.DashSupport {
                         item.LeaderTotalTime = (classLeader.Lap * referenceLapTime) + (referenceLapTime * classLeader.TrackPositionPercent);
                     }
 
+                    // update car reference lap time
+                    foreach (var item in OpponentsExtended) {
+                        item.CarClassReferenceLapTime = GetReferenceClassLaptime(item.CarClassID);
+                    }
+
+  
                     // Find the best lap time for each class
                     foreach (var item in carClasses) {
-                        TimeSpan referenceLapTime = GetBestClassLaptime(item.carClassID);
-                        item.ReferenceLapTime = referenceLapTime.TotalSeconds;
+                        TimeSpan bestLapTime = GetBestClassLaptime(item.carClassID);
+                        item.BestLapTime = bestLapTime;
                     }
 
                     // set the lap time flags
@@ -493,21 +499,33 @@ namespace APR.DashSupport {
                             CarClass cc = carClasses.Find(x => x.carClassID == item.CarClassID);
                             item._classleaderCarIdx = ClassLeadingCar(item.CarClassID).CarIdx;
 
-
                             double carTotalTime = (item.Lap * cc.ReferenceLapTime) + (cc.ReferenceLapTime * item.TrackPositionPercent);
                             item.GapToOverallLeader = overallLeaderTotalTime - carTotalTime;
                             item.GapToClassLeader = cc.LeaderTotalTime - carTotalTime;
 
+                            // Get class position ahead
                             if (item.PositionInClass <= 1) {
                                 item.GapToPositionInClassAhead = 0;
                             }
                             else {
-                                var carAhead = sortedOpponents.Find(x => x.PositionInClass == i);
+                                var carAhead = sortedOpponents.Find(x => x.PositionInClass == i-1);
+                                var carBehind = sortedOpponents.Find(x => x.PositionInClass == i+1 && i+1 < sortedOpponents.Count);
+                                
                                 if (carAhead != null) {
                                     item.GapToPositionInClassAhead = item.GapToClassLeader - carAhead.GapToClassLeader;
+                                    OpponentsExtended.Find(x => x.CarIdx == item.CarIdx)._carInClassAhead = carAhead;
                                 }
                                 else {
                                     item.GapToPositionInClassAhead = 0;
+                                }
+
+                                if (carBehind != null) {
+                                    item.GapToPositionInClassBehind = carBehind.GapToClassLeader - item.GapToClassLeader;
+                                    OpponentsExtended.Find(x => x.CarIdx == item.CarIdx)._carInClassBehind = carBehind;
+
+                                }
+                                else {
+                                    item.GapToPositionInClassBehind = 0;
                                 }
                             }
 
@@ -515,12 +533,24 @@ namespace APR.DashSupport {
                                 item.GapToOverallPositionAhead = 0;
                             }
                             else {
-                                var carAhead = sortedOpponents[i-1];
+                                ExtendedOpponent carAhead = sortedOpponents[i - 1];
+                                ExtendedOpponent carBehind = null;
+                                if (sortedOpponents.Count > i+1) {
+                                    carBehind =  sortedOpponents[i + 1];
+                                }
+                                
                                 if (carAhead != null) {
                                     item.GapToOverallPositionAhead =  item.GapToOverallLeader - carAhead.GapToOverallLeader;
                                 }
                                 else {
                                     item.GapToOverallPositionAhead = 0;
+                                }
+
+                                if (carBehind != null) {
+                                    item.GapToOverallPositionBehind = - item.GapToOverallLeader - carBehind.GapToOverallLeader;
+                                }
+                                else {
+                                    item.GapToOverallPositionBehind = 0;
                                 }
                             }
                         }
@@ -539,6 +569,8 @@ namespace APR.DashSupport {
                 UpdateRelativeProperties();
                 UpdateStandingsRelatedProperties(ref data);
 
+                // Update current lap information
+                UpdateLapOrTimeString(data);
             }
         }
 
@@ -575,7 +607,7 @@ namespace APR.DashSupport {
                         SetProp("Relative.Ahead." + count + ".TrackPct", Math.Abs(opponent.LapDistPctSpectatedCar).ToString("0.0"));
                         SetProp("Relative.Ahead." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                         SetProp("Relative.Ahead." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
-                        SetProp("Relative.Ahead." + count + ".AheadBehind", opponent.AheadBehind.ToString());
+                        SetProp("Relative.Ahead." + count + ".LapAheadBehind", opponent.LapAheadBehind.ToString());
                         SetProp("Relative.Ahead." + count + ".DriverNameColor", opponent.DriverNameColour);
                         SetProp("Relative.Ahead." + count + ".CarClassColor", opponent.CarClassColor);
                         SetProp("Relative.Ahead." + count + ".CarClassTextColor", opponent.CarClassTextColor);
@@ -601,7 +633,7 @@ namespace APR.DashSupport {
 
                         SetProp("Relative.Behind." + count + ".Distance", Math.Abs(opponent.LapDistSpectatedCar).ToString("0.0"));
                         SetProp("Relative.Behind." + count + ".Gap", Math.Abs(opponent.GapSpectatedCar).ToString("0.0"));
-                        SetProp("Relative.Behind." + count + ".AheadBehind", opponent.AheadBehind.ToString());
+                        SetProp("Relative.Behind." + count + ".LapAheadBehind", opponent.LapAheadBehind.ToString());
 
                         SetProp("Relative.Behind." + count + ".DriverNameColor", opponent.DriverNameColour);
                         SetProp("Relative.Behind." + count + ".CarClassColor", opponent.CarClassColor);
@@ -638,12 +670,24 @@ namespace APR.DashSupport {
                     SetProp("Spectated.CarClassColor", SpectatedCar.CarClassColor);
                     SetProp("Spectated.CarClassTextColor", SpectatedCar.CarClassTextColor);
                     SetProp("Spectated.LicenseColor", SpectatedCar.LicenseColor);
+                    SetProp("Specteted.IsPlayer", SpectatedCar.IsPlayer);
 
                     SetProp("Spectated.LastLap", SpectatedCar.LastLapTimeString);
                     SetProp("Spectated.BestLap", SpectatedCar.BestLapTimeString);
 
-                    SetProp("Spectated.GapToCarAhead", SpectatedCar.GapToPositionInClassAheadString);
-                    SetProp("Spectated.GapToCarBehind", SpectatedCar.GapToPositionInClassBehindString);
+
+                    SetProp("Spectated.CarAhead.LastLapDelta", SpectatedCar.CarAheadInClassLastLapDelta);
+                    SetProp("Spectated.CarBehind.LastLapDelta", SpectatedCar.CarBehindInClassLastLapDelta);
+                    SetProp("Spectated.CarAhead.BestLapDelta", SpectatedCar.CarAheadInClassBestLapDelta);
+                    SetProp("Spectated.CarBehind.BestLapDelta", SpectatedCar.CarBehindInClassBestLapDelta);
+
+                    SetProp("Spectated.CarAhead.Pos", SpectatedCar.CarAheadPositionInClass);
+                    SetProp("Spectated.CarBehind.Pos", SpectatedCar.CarBehindPositionInClass);
+                    SetProp("Spectated.CarAhead.Name", SpectatedCar.CarAheadInClassDriverName);
+                    SetProp("Spectated.CarBehind.Name", SpectatedCar.CarBehindInClassDriverName);
+
+                    SetProp("Spectated.CarAhead.Gap", SpectatedCar.GapToPositionInClassAheadString);
+                    SetProp("Spectated.CarBehind.Gap", SpectatedCar.GapToPositionInClassBehindString);
 
                     SetProp("Spectated.Lap.Colors.LastLap", SpectatedCar.LastLapDynamicColor);
                     SetProp("Spectated.Lap.Colors.BestLap", SpectatedCar.BestLapDynamicColor);
@@ -718,6 +762,10 @@ namespace APR.DashSupport {
                 AddProp("Spectated.DriverNameColor", "#FFFFFF");
                 AddProp("Spectated.CarClassColor", "#000000");
                 AddProp("Spectated.LicenseColor", "#FFFFFF");
+                AddProp("Specteted.IsPlayer", true);  
+
+                AddProp("Spectated.LastLap", "-.---");
+                AddProp("Spectated.BestLap", "-.---");
 
                 AddProp("Spectated.Position", "");
                 AddProp("Spectated.Show", "False");
@@ -727,14 +775,24 @@ namespace APR.DashSupport {
                 AddProp("Spectated.IRChange", "");
                 AddProp("Spectated.PitInfo", "");
 
-                SetProp("Spectated.GapToCarAhead","");
-                SetProp("Spectated.GapToCarBehind","");
+                AddProp("Spectated.CarAhead.LastLapDelta", "");
+                AddProp("Spectated.CarBehind.LastLapDelta", "");
 
-                SetProp("Spectated.Lap.Colors.LastLap",Settings.Color_LightGrey);
-                SetProp("Spectated.Lap.Colors.BestLap", Settings.Color_LightGrey);
-                SetProp("Spectated.LastLapIsPersonalBestLap","");
-                SetProp("Spectated.BestLapIsClassBestLap", "");
-                SetProp("Spectated.BestLapIsOverallBestLap", "");
+                AddProp("Spectated.CarAhead.Pos", "");
+                AddProp("Spectated.CarBehind.Pos", "");
+
+                AddProp("Spectated.CarAhead.Name", "");
+                AddProp("Spectated.CarBehind.Name", "");
+
+                AddProp("Spectated.CarAhead.Gap","");
+                AddProp("Spectated.CarBehind.Gap","");
+
+                AddProp("Spectated.Lap.Colors.LastLap",Settings.Color_LightGrey);
+                AddProp("Spectated.Lap.Colors.BestLap", Settings.Color_LightGrey);
+                AddProp("Spectated.LastLapIsPersonalBestLap","");
+                AddProp("Spectated.BestLapIsClassBestLap", "");
+                AddProp("Spectated.BestLapIsOverallBestLap", "");
+
 
                 int totalRowHeight = (Settings.RelativeRowHeight + Settings.RelativeRowOffset);
                 int headerHeight = 50;

@@ -243,6 +243,18 @@ namespace APR.DashSupport {
                 }
             }
 
+            public int LapAheadBehind {
+                get {
+                    if (_spectatedCarCurrentLap > Lap ) {
+                        return 1;
+                    }
+                    else if (_spectatedCarCurrentLap == Lap) {
+                        return 0;
+                    }
+                    return -1;
+                }
+            }
+
             public double TrackPositionPercent { get { return _opponent.TrackPositionPercent ?? 0.0; } }
             public string TrackPositionPercentString { get { return TrackPositionPercent.ToString("0.000"); } }
             public double LapDist { get { return TrackPositionPercent * _trackLength; } }
@@ -363,10 +375,87 @@ namespace APR.DashSupport {
 
             // these gets pushed in 
             public double GapToPositionInClassAhead;
+            public double GapToPositionInClassBehind;
             public double GapToClassLeader;
             public double GapToOverallLeader;
             public double GapToOverallPositionAhead; 
             public double GapToOverallPositionBehind;
+            public ExtendedOpponent _carInClassAhead;
+            public ExtendedOpponent _carInClassBehind;
+
+
+            public double CarAheadInClassBestLapDelta {
+                get {
+                    if (_carInClassAhead != null) {
+                        return _carInClassAhead.BestLapTimeSeconds - BestLapTimeSeconds;
+                    }
+                    else return 0;
+                }
+            }
+
+            public double CarBehindInClassBestLapDelta {
+                get {
+                    if (_carInClassBehind != null) {
+                        return _carInClassBehind.BestLapTimeSeconds - BestLapTimeSeconds;
+                    }
+                    else return 0;
+                }
+            }
+
+
+            public double CarAheadInClassLastLapDelta {
+                get {
+                    if (_carInClassAhead != null) {
+                        return _carInClassAhead.LastLapTimeSeconds - LastLapTimeSeconds;
+                    }
+                    else return 0;
+                }
+            }
+
+            public double CarBehindInClassLastLapDelta {
+                get {
+                    if (_carInClassBehind != null) {
+                        return _carInClassBehind.LastLapTimeSeconds - LastLapTimeSeconds;
+                    }
+                    else return 0;
+                }
+            }
+
+            public string CarAheadPositionInClass {
+                get {
+                    if (_carInClassAhead != null) {
+                        return _carInClassAhead.PositionInClassString;
+                    }
+                    else return "";
+                }
+            }
+
+            public string CarBehindPositionInClass {
+                get {
+                    if (_carInClassBehind != null) {
+                        return _carInClassBehind.PositionInClassString;
+                    }
+                    else return "";
+                }
+            }
+
+            public string CarAheadInClassDriverName {
+                get {
+                    if (_carInClassAhead != null) {
+                        return _carInClassAhead.Name;
+                    }
+                    else return "";
+                }
+            }
+
+            public string CarBehindInClassDriverName {
+                get {
+                    if (_carInClassBehind != null) {
+                        return _carInClassBehind.Name;
+                    }
+                    else return "";
+                }
+            }
 
             public string GapToPositionInClassAheadString {
                 get {
@@ -376,13 +465,19 @@ namespace APR.DashSupport {
 
             public string GapToPositionInClassBehindString {
                 get {
-                    return GapToOverallPositionBehind.ToString("0.0");
+                    return Math.Abs(GapToPositionInClassBehind).ToString("0.0");
                 }
             }
 
             public string GapToOverallPositionAheadString {
                 get {
                     return GapToOverallPositionAhead.ToString("0.0");
+                }
+            }
+
+            public string GapToOverallPositionBehindString {
+                get {
+                    return Math.Abs(GapToOverallPositionBehind).ToString("0.0");
                 }
             }
 
@@ -468,7 +563,7 @@ namespace APR.DashSupport {
                         return NiceTime(LastLapTime);
                     }
                     else {
-                        return "";
+                        return "-.---";
                     }
                 }
             }
@@ -502,8 +597,8 @@ namespace APR.DashSupport {
             public string BestLapDynamicColor {
                 get {
 
-                    if (IsLastLapPersonalBest) {
-                        return Color_Green;
+                    if (IsBestLapClassBestLap || IsBestLapOverallBest) {
+                        return Color_Purple;
                     }
                     else return Color_White;
                 }
@@ -515,7 +610,7 @@ namespace APR.DashSupport {
                         return NiceTime(BestLapTime);
                     }
                     else {
-                        return "";
+                        return "-.---"; ;
                     }
                 }
             }
@@ -556,7 +651,7 @@ namespace APR.DashSupport {
             }
 
             public override string ToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " L:" + Lap + " Gap:" + GapToPositionInClassAheadString + " Ldr:" + GapToClassLeaderString + " lst:" + LastLapTime;
+                return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " L:" + Lap + " A:" + LapAheadBehind +" Gap:" + GapToPositionInClassAheadString + " Ldr:" + GapToClassLeaderString + " lst:" + LastLapTime;
             }
 
             public string StandingsToString() {
@@ -564,7 +659,7 @@ namespace APR.DashSupport {
             }
 
             public string RelativeToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " A:" + AheadBehind + " %:" + " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
+                return "Idx: " + CarIdx + " " + DriverName + " A:" + LapAheadBehind +  " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
             }
 
             public string Color_DarkGrey = "#FF898989";
