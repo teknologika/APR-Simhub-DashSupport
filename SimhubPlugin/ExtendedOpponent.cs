@@ -373,21 +373,22 @@ namespace APR.DashSupport {
             public bool IsBestLapClassBestLap;
 
 
-            // these gets pushed in 
-            public double GapToPositionInClassAhead;
-            public double GapToPositionInClassBehind;
+            // these gets pushed in
+            // CarAheadInClassBestLapDelta
+            public double CarAheadInClassGap;
+            public double CarBehindInClassGap;
             public double GapToClassLeader;
             public double GapToOverallLeader;
             public double GapToOverallPositionAhead; 
             public double GapToOverallPositionBehind;
-            public ExtendedOpponent _carInClassAhead;
-            public ExtendedOpponent _carInClassBehind;
+            public ExtendedOpponent CarInClassAhead;
+            public ExtendedOpponent CarInClassBehind;
 
 
             public double CarAheadInClassBestLapDelta {
                 get {
-                    if (_carInClassAhead != null) {
-                        return _carInClassAhead.BestLapTimeSeconds - BestLapTimeSeconds;
+                    if (CarInClassAhead != null) {
+                        return CarInClassAhead.BestLapTimeSeconds - BestLapTimeSeconds;
                     }
                     else return 0;
                 }
@@ -395,8 +396,8 @@ namespace APR.DashSupport {
 
             public double CarBehindInClassBestLapDelta {
                 get {
-                    if (_carInClassBehind != null) {
-                        return _carInClassBehind.BestLapTimeSeconds - BestLapTimeSeconds;
+                    if (CarInClassBehind != null) {
+                        return CarInClassBehind.BestLapTimeSeconds - BestLapTimeSeconds;
                     }
                     else return 0;
                 }
@@ -405,26 +406,48 @@ namespace APR.DashSupport {
 
             public double CarAheadInClassLastLapDelta {
                 get {
-                    if (_carInClassAhead != null) {
-                        return _carInClassAhead.LastLapTimeSeconds - LastLapTimeSeconds;
+                    if (CarInClassAhead != null) {
+                        return CarInClassAhead.LastLapTimeSeconds - LastLapTimeSeconds;
                     }
                     else return 0;
+                }
+            }
+
+            public String CarAheadInClassLastLapDeltaString {
+                get {
+                    if(CarAheadInClassBestLapDelta < 0) {
+                        return "-" + Math.Abs(CarAheadInClassBestLapDelta);
+                    }
+                    else {
+                        return "+" + Math.Abs(CarAheadInClassBestLapDelta);
+                    }
                 }
             }
 
             public double CarBehindInClassLastLapDelta {
                 get {
-                    if (_carInClassBehind != null) {
-                        return _carInClassBehind.LastLapTimeSeconds - LastLapTimeSeconds;
+                    if (CarInClassBehind != null) {
+                        return CarInClassBehind.LastLapTimeSeconds - LastLapTimeSeconds;
                     }
                     else return 0;
                 }
             }
 
+            public String CarBehindInClassLastLapDeltaString {
+                get {
+                    if (CarBehindInClassBestLapDelta < 0) {
+                        return "+" + Math.Abs(CarAheadInClassBestLapDelta);
+                    }
+                    else {
+                        return "-" + Math.Abs(CarAheadInClassBestLapDelta);
+                    }
+                }
+            }
+
             public string CarAheadPositionInClass {
                 get {
-                    if (_carInClassAhead != null) {
-                        return _carInClassAhead.PositionInClassString;
+                    if (CarInClassAhead != null) {
+                        return CarInClassAhead.PositionInClassString;
                     }
                     else return "";
                 }
@@ -432,8 +455,8 @@ namespace APR.DashSupport {
 
             public string CarBehindPositionInClass {
                 get {
-                    if (_carInClassBehind != null) {
-                        return _carInClassBehind.PositionInClassString;
+                    if (CarInClassBehind != null) {
+                        return CarInClassBehind.PositionInClassString;
                     }
                     else return "";
                 }
@@ -441,8 +464,8 @@ namespace APR.DashSupport {
 
             public string CarAheadInClassDriverName {
                 get {
-                    if (_carInClassAhead != null) {
-                        return _carInClassAhead.Name;
+                    if (CarInClassAhead != null) {
+                        return CarInClassAhead.Name;
                     }
                     else return "";
                 }
@@ -450,22 +473,22 @@ namespace APR.DashSupport {
 
             public string CarBehindInClassDriverName {
                 get {
-                    if (_carInClassBehind != null) {
-                        return _carInClassBehind.Name;
+                    if (CarInClassBehind != null) {
+                        return CarInClassBehind.Name;
                     }
                     else return "";
                 }
             }
 
-            public string GapToPositionInClassAheadString {
+            public string ClassAheadInClassGapString {
                 get {
-                    return GapToPositionInClassAhead.ToString("0.0");
+                    return Math.Abs(CarAheadInClassGap).ToString("0.0");
                 }
             }
 
-            public string GapToPositionInClassBehindString {
+            public string CarBehindInClassGapString {
                 get {
-                    return Math.Abs(GapToPositionInClassBehind).ToString("0.0");
+                    return "-" + Math.Abs(CarBehindInClassGap).ToString("0.0");
                 }
             }
 
@@ -583,7 +606,9 @@ namespace APR.DashSupport {
 
             public string LastLapDynamicColor {
                 get {
-
+                    if (Lap < 1) {
+                        return Color_White;
+                    }
                     if (IsBestLapClassBestLap || IsBestLapOverallBest ) {
                         return Color_Purple;
                     }
@@ -596,7 +621,9 @@ namespace APR.DashSupport {
 
             public string BestLapDynamicColor {
                 get {
-
+                    if (Lap < 1 ) {
+                        return Color_White;
+                    }
                     if (IsBestLapClassBestLap || IsBestLapOverallBest) {
                         return Color_Purple;
                     }
@@ -615,6 +642,8 @@ namespace APR.DashSupport {
                 }
             }
 
+            public bool CPS1Served;
+            public bool CPS2Served;
 
             public string NiceTime(TimeSpan timeToFormat) {
 
@@ -651,11 +680,11 @@ namespace APR.DashSupport {
             }
 
             public override string ToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " L:" + Lap + " A:" + LapAheadBehind +" Gap:" + GapToPositionInClassAheadString + " Ldr:" + GapToClassLeaderString + " lst:" + LastLapTime;
+                return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " L:" + Lap + " A:" + LapAheadBehind +" Gap:" + ClassAheadInClassGapString + " Ldr:" + GapToClassLeaderString + " lst:" + LastLapTime;
             }
 
             public string StandingsToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " Gap" + GapToPositionInClassAheadString + " Ldr" +  GapToClassLeaderString + "lst" + LastLapTime;
+                return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " Gap" + ClassAheadInClassGapString + " Ldr" +  GapToClassLeaderString + "lst" + LastLapTime;
             }
 
             public string RelativeToString() {
@@ -668,7 +697,7 @@ namespace APR.DashSupport {
             public string Color_Green = "#FF009933";
             public string Color_White = "#FFFFFFFF";
             public string Color_Black = "#FF000000";
-            public string Color_Yellow = "#FFFFFF00";
+            public string Color_Yellow = "#FFFFFF70";
             public string Color_Red = "#FFFF0000";
             public string Color_Transparent = "#00000000";
             public string Color_DarkBackground = "#FF2D2D2D";

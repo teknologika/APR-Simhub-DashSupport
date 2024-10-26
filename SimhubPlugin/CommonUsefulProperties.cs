@@ -115,6 +115,8 @@ namespace APR.DashSupport {
             AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow); 
             AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow);
 
+
+            AddProp("Dash.Styles.Colors.VeryDarkGrey", Settings.Color_VeryDarkGrey);
             AddProp("Dash.Styles.Colors.DarkGrey", Settings.Color_DarkGrey);
             AddProp("Dash.Styles.Colors.LightGrey", Settings.Color_LightGrey);
             AddProp("Dash.Styles.Colors.Purple", Settings.Color_Purple);
@@ -132,14 +134,9 @@ namespace APR.DashSupport {
             AddProp("Dash.Styles.Colors.IgnitionOff", Settings.Color_Yellow);
             AddProp("Dash.Styles.Colors.EngineOff", Settings.Color_RedLineFlash);
 
-
-
-
-
             AddProp("Common.IsLeagueSession", false);
 
         }
-
 
 
         private void UpdateCommonProperties(GameData data ) {
@@ -153,11 +150,11 @@ namespace APR.DashSupport {
             SetProp("Common.EstimatedLapTime", NiceTime(EstimatedLapTime));
 
             SetProp("Dash.Styles.Colors.Lap.SingleDynamic", LastLapDynamicColor);
-            SetProp("Dash.Styles.Colors.Lap.SessionBest", "#Ff990099"); // Purple
-            SetProp("Dash.Styles.Colors.Lap.PersonalBest", "#FF009933"); // Green
+            SetProp("Dash.Styles.Colors.Lap.SessionBest", Settings.Color_Purple); // Purple
+            SetProp("Dash.Styles.Colors.Lap.PersonalBest", Settings.Color_Green); // Green
             SetProp("Dash.Styles.Colors.Lap.Latest", "#FFFFFFFF"); // white
             SetProp("Dash.Styles.Colors.Lap.Estimated", "#FFFFFFFF"); // white
-            SetProp("Dash.Styles.Colors.Lap.Default", "#FFFFFF00"); // yellow
+            SetProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow); // yellow
 
             SetProp("Common.IsLeagueSession", IsLeagueSession);
         }

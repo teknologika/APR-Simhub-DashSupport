@@ -21,6 +21,7 @@ namespace APR.DashSupport
         public int MaxCars = 64;
 
         // General colours and layout settings
+        public string Color_VeryDarkGrey = "#FF292929";
         public string Color_DarkGrey = "#FF898989";
         public string Color_LightGrey = "#FF808080";
         public string Color_Purple = "#Ff990099";

@@ -231,6 +231,7 @@ namespace APR.DashSupport {
                     Settings.Strategy_CPS_Completed--;
                 }
                 SetCPSIndicators();
+                SetCPSIndicatorsLegacy();
             }));
 
             pluginManager.AddAction("Strategy.btnCPS2Pressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
@@ -241,11 +242,12 @@ namespace APR.DashSupport {
                     Settings.Strategy_CPS_Completed--;
                 }
                 SetCPSIndicators();
+                SetCPSIndicatorsLegacy();
             }));
 
         }
 
-        private void SetCPSIndicators() {
+        private void SetCPSIndicatorsLegacy() {
             switch (Settings.Strategy_CPS_Completed) {
                 case 1:
                     SetProp("Strategy.Indicator.CPS1Served", true);
@@ -261,7 +263,24 @@ namespace APR.DashSupport {
                     break;
             }
         }
-            
+
+        private void SetCPSIndicators() {
+            switch (Settings.Strategy_CPS_Completed) {
+                case 1:
+                    SetProp("Spectated.CPS1Served", true);
+                    SetProp("Spectated.CPS2Served", false);
+                    break;
+                case 2:
+                    SetProp("Spectated.CPS1Served", true);
+                    SetProp("Spectated.CPS2Served", true);
+                    break;
+                default:
+                    SetProp("Spectated.CPS1Served", false);
+                    SetProp("Spectated.CPS2Served", false);
+                    break;
+            }
+        }
+
         public void InitOtherButtons(PluginManager pluginManager) {
 
             this.AttachDelegate("Button_FlashPressed", () => this.flashButtonPressed);

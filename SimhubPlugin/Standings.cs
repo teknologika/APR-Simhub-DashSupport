@@ -228,14 +228,14 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".Class.PositionsGained", item._opponent.RacePositionClassGain);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.LivePosition", item.LivePosition);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.GapToLeader", item.GapToClassLeaderString);
-                        SetProp("Standings.Position" + counter.ToString() + ".Class.GapToCarAhead", item.GapToPositionInClassAheadString);
+                        SetProp("Standings.Position" + counter.ToString() + ".Class.GapToCarAhead", item.ClassAheadInClassGapString);
                         SetProp("Standings.Position" + counter.ToString() + ".Number", item.CarNumber);
                         SetProp("Standings.Position" + counter.ToString() + ".Name", FormatName(item.Name));
                         SetProp("Standings.Position" + counter.ToString() + ".DriverName", item.DriverName);
                         SetProp("Standings.Position" + counter.ToString() + ".TeamName", item.TeamName);
                         SetProp("Standings.Position" + counter.ToString() + ".GapToLeader", item.GapToClassLeaderString);
-                        SetProp("Standings.Position" + counter.ToString() + ".GapToCarAhead", item.GapToPositionInClassAheadString);
-                        SetProp("Standings.Position" + counter.ToString() + ".GapToCarBehind", item.GapToPositionInClassBehindString);
+                        SetProp("Standings.Position" + counter.ToString() + ".GapToCarAhead", item.ClassAheadInClassGapString);
+                        SetProp("Standings.Position" + counter.ToString() + ".GapToCarBehind", item.CarBehindInClassGapString);
                         SetProp("Standings.Position" + counter.ToString() + ".IsInPit", item.IsCarInPit);
                         SetProp("Standings.Position" + counter.ToString() + ".IsPlayer", item.IsSpectator);
                         SetProp("Standings.Position" + counter.ToString() + ".Lap.LastLap", item.LastLapTimeString);
@@ -247,6 +247,8 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".BestLapIsClassBestLap", item.IsBestLapClassBestLap);
                         SetProp("Standings.Position" + counter.ToString() + ".BestLapIsOverallBest", item.IsBestLapOverallBest);
                         SetProp("Standings.Position" + counter.ToString() + ".RowIsVisible", item.DriverName != "");
+                        SetProp("Standings.Position" + counter.ToString() + ".CPS1Served", item.CPS1Served);
+                        SetProp("Standings.Position" + counter.ToString() + ".CPS2Served", item.CPS2Served);
 
 
                         if (item.IsPlayer || item.IsSpectator) {
@@ -338,6 +340,9 @@ namespace APR.DashSupport {
                     AddProp("Standings.Position" + iString + ".BestLapIsOverallBest", false);
 
                     AddProp("Standings.Position" + iString + ".RowIsVisible", false);
+                    AddProp("Standings.Position" + iString + ".CPS1Served", false);
+                    AddProp("Standings.Position" + iString + ".CPS2Served", false);
+
                 }
                 
             }
