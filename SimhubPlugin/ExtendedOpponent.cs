@@ -136,21 +136,20 @@ namespace APR.DashSupport {
             public double CarClassReferenceLapTime { get; set; }
             public string CarClassColor {
                 get {
-                    return _competitor.CarClassColor.ToLower().Replace("0x", "#ff"); ;
+                    return _competitor.CarClassColor.ToLower().Replace("0x", "#FF"); ;
                 }
             }
             public string CarClassTextColor {
                 get {
-                    if (CarClassColor == "#ff000000") {
-                        return "#ffffffff";
+                    if (CarClassColor == "#FF000000") {
+                        return "#FFFFFFFF";
                     }
                     else {
-                        return "#ff000000";
+                        return "#FF000000";
                     }
                 }
             }
 
-         
             public int LivePosition;
             public int CarClassLivePosition;
             public int PositionRaw { get { return _opponent.Position; } }
@@ -379,8 +378,8 @@ namespace APR.DashSupport {
             public double CarBehindInClassGap;
             public double GapToClassLeader;
             public double GapToOverallLeader;
-            public double GapToOverallPositionAhead; 
-            public double GapToOverallPositionBehind;
+            public double CarAheadOverallGap; 
+            public double CarBehindOverallGap;
             public ExtendedOpponent CarInClassAhead;
             public ExtendedOpponent CarInClassBehind;
 
@@ -494,13 +493,13 @@ namespace APR.DashSupport {
 
             public string GapToOverallPositionAheadString {
                 get {
-                    return GapToOverallPositionAhead.ToString("0.0");
+                    return CarAheadOverallGap.ToString("0.0");
                 }
             }
 
             public string GapToOverallPositionBehindString {
                 get {
-                    return Math.Abs(GapToOverallPositionBehind).ToString("0.0");
+                    return Math.Abs(CarBehindOverallGap).ToString("0.0");
                 }
             }
 

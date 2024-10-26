@@ -257,9 +257,9 @@ namespace APR.DashSupport {
                             SetProp("Standings.Position" + counter.ToString() + ".Row.Background", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
                         }
                         else {
-                            SetProp("Standings.Position" + counter.ToString() + ".Class.Color", Settings.Color_Black);
-                            SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", Settings.Color_White);        
-                            SetProp("Standings.Position" + counter.ToString() + ".Row.Background", Settings.StandingsBackgroundRowColourWithTransparency);
+                            //SetProp("Standings.Position" + counter.ToString() + ".Class.Color", Settings.Color_Black);
+                           // SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", Settings.Color_White);        
+                           SetProp("Standings.Position" + counter.ToString() + ".Row.Background", Settings.StandingsBackgroundRowColourWithTransparency);
                         }
 
                         counter++;

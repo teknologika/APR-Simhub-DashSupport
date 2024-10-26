@@ -98,6 +98,19 @@ namespace APR.DashSupport {
             SetProp("Common.IsLeagueSession", IsLeagueSession);
         }
 
+        /*
+         * if([DataCorePlugin.GameData.NewData.IsInPitLane]>0,'-',
+
+isnull([PersistantTrackerPlugin.SessionBestLiveDeltaSeconds],'-') >=0?'+':'')+format(isnull([PersistantTrackerPlugin.SessionBestLiveDeltaSeconds],'-') ,'0.00')
+
+        */
+
+        private void CalculateDelta() {
+            if (GetProp("PersistantTrackerPlugin.SessionBestLiveDeltaSeconds") != null) {
+                double SessionBestLiveDeltaSeconds = (double)GetProp("PersistantTrackerPlugin.SessionBestLiveDeltaSeconds");
+            }
+        }
+
         private void CreateCommonProperties() {
             AddProp("Common.LapOrTimeString", "");
             AddProp("Common.SessionTypeString", "");
@@ -108,8 +121,8 @@ namespace APR.DashSupport {
             AddProp("Common.EstimatedLapTime", "");
 
             AddProp("Dash.Styles.Colors.Lap.SingleDynamic", Settings.Color_LightGrey); 
-            AddProp("Dash.Styles.Colors.Lap.SessionBest", Settings.Color_Purple); 
-            AddProp("Dash.Styles.Colors.Lap.PersonalBest", Settings.Color_Green); 
+            AddProp("Dash.Styles.Colors.Lap.SessionBest", Settings.Color_LightGrey); 
+            AddProp("Dash.Styles.Colors.Lap.PersonalBest", Settings.Color_LightGrey); 
             AddProp("Dash.Styles.Colors.Lap.Latest", Settings.Color_White);
             AddProp("Dash.Styles.Colors.Lap.Estimated", Settings.Color_White); 
             AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow); 
