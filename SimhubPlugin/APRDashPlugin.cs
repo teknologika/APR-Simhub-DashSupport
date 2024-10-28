@@ -164,7 +164,7 @@ namespace APR.DashSupport
 
    
 
-        SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
+            SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
             SetProp("Strategy.Vets.IsVetsRaceSession", IsV8VetsRaceSession);
 
             //UpdateCommonProperties(data);
@@ -391,14 +391,17 @@ namespace APR.DashSupport
         /// <param name="data">Current game data, including current and previous data frame.</param>
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
-            //use a frame counter to not update everything every frame
-            // as this is iRacing, this loop runs 60x per second
+            // Use a frame counter to not update everything every frame
+            // Simhub  runs this loop runs 60x per second
             frameCounter++;
 
             // reset the counter every 60hz
+            // not sure what happens if you are on the free version ???
             if (frameCounter > 59) {
                 frameCounter = 0;
             }
+
+           
 
             if (data.GameName != "IRacing") {
                 return;
@@ -501,10 +504,23 @@ namespace APR.DashSupport
                     UpdateMAPValues();
                 }
 
+                if (frameCounter == 9) {
+                    CheckIfUnderSafetyCar();
+                    if (runEvery1Sec) {
+                        if (data != null) {
+                            try {
+                                UpdateRelativesAndStandings(data);
+                                UpdateCommonProperties(data);
+                            }
+                            catch (Exception) {
+                            }
+                        }
+                    }
+                }
 
                 if (frameCounter == 10) {
                     UpdateBrakeBar();
-                    CheckIfUnderSafetyCar();
+                    
                 }
 
                 if (frameCounter == 20) {
@@ -513,34 +529,17 @@ namespace APR.DashSupport
                 }
 
                 if (frameCounter == 25) {
-                    UpdateStrategy();
-                    SetProp("Strategy.Indicator.RCMode", Settings.Strategy_RCMode);
-                }
-                /*
-                if (frameCounter == 25) {
-
-                    for (int i = 1; i < Settings.MaxCars ; i++) {
-
+                    if (runEvery5Sec) {
+                        if (data != null) {
+                            try {
+                                UpdateStrategy();
+                                SetProp("Strategy.Indicator.RCMode", Settings.Strategy_RCMode);
+                            }
+                            catch (Exception) {
+                            }
+                        }
                     }
-
-                    // Write the lap time to the json file
-                    /*
-                    Lap lastLap = new Lap {
-                        SessionID = 1,
-                        TrackID = data.NewData.TrackId,
-                        CarID = data.NewData.CarId,
-                        LapID = data.NewData.CurrentLap - 1,
-                        DriverID = data.NewData.PlayerName,
-                        LapTime = data.NewData.LastLapTime,
-                        TrackState = (string)pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.SessionData.SessionInfo.Sessions01.SessionTrackRubberState"),
-                        TrackTemp = data.NewData.RoadTemperature
-                    };
-                    LapData.AddLapAsync(lastLap);
-                    
-                }           
-
-                */
-
+                }
 
                 if (frameCounter == 30) {
                     UpdateBrakeBar();
@@ -582,16 +581,7 @@ namespace APR.DashSupport
                 }
 
                 if (frameCounter == 40) {
-                    if (runEvery1Sec) {
-                        if (data != null ) {
-                            try {
-                                UpdateRelativesAndStandings(data);
-                                UpdateCommonProperties(data);
-                            }
-                            catch (Exception) {
-                            }
-                        }
-                    }
+                   
                 }
 
                 if (LogTelemetery) {

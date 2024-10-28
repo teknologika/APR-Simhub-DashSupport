@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media.Animation;
+using static SimHub.Plugins.UI.SupportedGamePicker;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace APR.DashSupport {
@@ -600,21 +601,16 @@ namespace APR.DashSupport {
                                 }
                             }
                         }
-
-
-                       
                     }
-
                 }
 
-
-#if DEBUG
-
-                // this is for debugging only
-
-                var ahead = this.OpponentsAhead;
-                var behind = this.OpponentsBehind;
-#endif
+                // Grab the slow poke
+                var _slowOpponent = OpponentsAhead.Find(x => x.IsOffTrack || (x.IsOnTrack && x.Speed > 6.0)) ?? null;
+                if (_slowOpponent != null) {
+                    spectator._slowOpponentIdx = _slowOpponent.CarIdx;
+                    spectator._slowOpponentLapDistPct = _slowOpponent.TrackPositionPercent;
+                }
+      
                 UpdateRelativeProperties();
                 UpdateStandingsRelatedProperties(ref data);
 
@@ -667,7 +663,10 @@ namespace APR.DashSupport {
                         SetProp("Relative.Ahead." + count + ".SRSimple", opponent.SafetyRatingSimple);
                         SetProp("Relative.Ahead." + count + ".IRChange", opponent.iRatingChange);
                         SetProp("Relative.Ahead." + count + ".PitInfo", opponent.PitStatusString);
+                        SetProp("Relative.Ahead." + count + ".IsSlow", opponent.IsSlow);
+
                         count++;
+
                     }
                 }
 
@@ -694,6 +693,8 @@ namespace APR.DashSupport {
                         SetProp("Relative.Behind." + count + ".IR", opponent.iRatingString);
                         SetProp("Relative.Behind." + count + ".IRChange", opponent.iRatingChange);
                         SetProp("Relative.Behind." + count + ".PitInfo", opponent.PitStatusString);
+
+
                         count++;
                     }
                 }
@@ -705,9 +706,9 @@ namespace APR.DashSupport {
                     SetProp("Spectated.Name", SpectatedCar.DriverName);
                     SetProp("Spectated.Lap", SpectatedCar.Lap);
                     SetProp("Spectated.Speed", SpectatedCar._opponent.Speed);
+                    SetProp("Spectated.IsSlowCarAhead", SpectatedCar.IsSlowCarAhead);
+                    SetProp("Spectated.SlowCarAheadString", SpectatedCar.LapDistanceSlowCarheadString);
 
-
-                 
                     double SessionBestLiveDeltaSeconds = 0;
                     if (GetProp("PersistantTrackerPlugin.SessionBestLiveDeltaSeconds") != null) {
                         SessionBestLiveDeltaSeconds = (double)GetProp("PersistantTrackerPlugin.SessionBestLiveDeltaSeconds");
@@ -811,8 +812,8 @@ namespace APR.DashSupport {
                     SetProp("Spectated.BestLapIsClassBestLap", SpectatedCar.IsBestLapClassBestLap);
                     SetProp("Spectated.BestLapIsOverallBestLap", SpectatedCar.IsBestLapOverallBest);
 
-                   // SetProp("Spectated.CPS1Served", SpectatedCar.CPS1Served);
-                   // SetProp("Spectated.CPS2Served", SpectatedCar.CPS2Served);
+                    // SetProp("Spectated.CPS1Served", SpectatedCar.CPS1Served);
+                    // SetProp("Spectated.CPS2Served", SpectatedCar.CPS2Served);
                 }
             }
         }
@@ -839,6 +840,7 @@ namespace APR.DashSupport {
                     AddProp("Relative.Ahead." + i + ".IR", "");
                     AddProp("Relative.Ahead." + i + ".IRChange", "");
                     AddProp("Relative.Ahead." + i + ".PitInfo", "");
+                    SetProp("Relative.Ahead." + i + ".IsSlow", "");
                 }
 
                 for (int i = 1; i < Settings.RelativeNumberOfCarsBehindToShow + 1; i++) {
@@ -877,6 +879,8 @@ namespace APR.DashSupport {
                 AddProp("Spectated.LiveDelta.PersonalBest", "");
                 AddProp("Spectated.LiveDelta.SessionBest", "");
                 AddProp("Spectated.LiveDelta.Leader", "");
+                AddProp("Spectated.IsSlowCarAhead", "");
+                AddProp("Spectated.SlowCarAheadString", "");
 
                 AddProp("Spectated.Name", "");
                 AddProp("Spectated.CarNumber", "");

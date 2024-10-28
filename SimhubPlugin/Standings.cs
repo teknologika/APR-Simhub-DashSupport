@@ -249,7 +249,8 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".RowIsVisible", item.DriverName != "");
                         SetProp("Standings.Position" + counter.ToString() + ".CPS1Served", item.CPS1Served);
                         SetProp("Standings.Position" + counter.ToString() + ".CPS2Served", item.CPS2Served);
-
+                        SetProp("Standings.Position" + counter.ToString() + ".IsSlow", item.IsSlow);
+                    
 
                         if (item.IsPlayer || item.IsSpectator) {
                             SetProp("Standings.Position" + counter.ToString() + ".Class.Color", Settings.Color_Black);
@@ -342,7 +343,7 @@ namespace APR.DashSupport {
                     AddProp("Standings.Position" + iString + ".RowIsVisible", false);
                     AddProp("Standings.Position" + iString + ".CPS1Served", false);
                     AddProp("Standings.Position" + iString + ".CPS2Served", false);
-
+                    AddProp("Standings.Position" + iString + ".IsSlow", false);
                 }
                 
             }

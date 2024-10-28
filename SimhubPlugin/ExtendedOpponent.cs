@@ -28,6 +28,7 @@ namespace APR.DashSupport {
 
         private List<GameReaderCommon.Opponent> opponents;
         private List<ExtendedOpponent> OpponentsExtended = new List<ExtendedOpponent>();
+
         
         private List<CarClass> carClasses = new List<CarClass>();
         private float trackLength;
@@ -63,8 +64,8 @@ namespace APR.DashSupport {
         }
 
         public void UpdateLivePositions() {
-            List<ExtendedOpponent> opponentsSortedLivePosition = OpponentsExtended.OrderBy(x => x.Lap).ThenByDescending(x => x.LapDist).ToList();
-            List<ExtendedOpponent> opponentsSortedLivePositionInClass = OpponentsExtended.OrderBy(x => x.CarClass).ThenByDescending(x => x.Lap).ThenByDescending(x => x.LapDist).ToList();
+            List<ExtendedOpponent> opponentsSortedLivePosition = OpponentsExtended.OrderBy(x => x.Lap).ThenByDescending(x => x.LapDisanceInMeters).ToList();
+            List<ExtendedOpponent> opponentsSortedLivePositionInClass = OpponentsExtended.OrderBy(x => x.CarClass).ThenByDescending(x => x.Lap).ThenByDescending(x => x.LapDisanceInMeters).ToList();
 
             int livePosition = 1;
             foreach (var item in opponentsSortedLivePosition) {
@@ -85,7 +86,7 @@ namespace APR.DashSupport {
             }
         }
 
-    public class ExtendedOpponent {
+        public class ExtendedOpponent {
             public GameReaderCommon.Opponent _opponent;
             public SessionData._DriverInfo._Drivers _competitor;
             public GameData data;
@@ -96,11 +97,11 @@ namespace APR.DashSupport {
             public StrategyBundle StrategyOberver;
 
             private const float PIT_MINSPEED = 0.01f;
-           
-            public void FuelDataUpdate () {
+
+            public void FuelDataUpdate() {
                 // FIXME with strat update
-                
-         
+
+
             }
 
             public void CalculatePitInfo(double time, bool underSC) {
@@ -131,7 +132,7 @@ namespace APR.DashSupport {
                         LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
 
                         PitStore.Instance.AddOrUpdateStop(LatestPitInfo);
-                          
+
                     }
                 }
                 else {
@@ -185,7 +186,7 @@ namespace APR.DashSupport {
                             LatestPitInfo.PitStallEntryTime = null;
                             LatestPitInfo.PitStallExitTime = time;
                         }
-                        
+
                     }
 
                     if (!IsCarInPitLane) {
@@ -242,7 +243,7 @@ namespace APR.DashSupport {
                     if (LatestPitInfo.NumberOfPitstops == 0)
                         return 0;
                     else
-                        return (LatestPitInfo.LastPitStallTimeSeconds * StrategyOberver.FuelFillRateLitresPerSecond ) / StrategyOberver.FuelLitersPerLap;
+                        return (LatestPitInfo.LastPitStallTimeSeconds * StrategyOberver.FuelFillRateLitresPerSecond) / StrategyOberver.FuelLitersPerLap;
                 }
             }
 
@@ -396,7 +397,7 @@ public class PitStops {
             public double _carEstTime;
             public double _carBestLapTime;
             public double _carLastLapTime;
-    
+
             public double CarEstTime { get { return _carEstTime; } }
             public double _CarIdxF2Time;
             public double CarF2Time { get { return _CarIdxF2Time; } }
@@ -405,6 +406,9 @@ public class PitStops {
             public long _spectatedCarIdx;
             public float _specatedCarLapDistPct;
             public int _spectatedCarCurrentLap;
+
+            public int _slowOpponentIdx;
+            public double _slowOpponentLapDistPct;
 
             // This is used for the SC
             public int _safetyCarIdx;
@@ -425,8 +429,12 @@ public class PitStops {
             public bool IsCarInPitLane { get { return _opponent.IsCarInPitLane; } }
             public bool IsApproachingPits { get { return (_trackSurface == 2); } }
             public bool IsOnTrack { get { return (_trackSurface == 3); } }
-            
-            public bool IsSlow { get { return (IsOnTrack && (Speed > 30.0)); } }
+
+            public bool IsSlow {
+                get {
+                    return (IsOnTrack && (Speed < 20.0)) || (IsOffTrack && (Speed > 20.0));
+                }
+            }
 
             public bool IsConnected { get { return _opponent.IsConnected; } }
             public bool IsCarInGarage { get { return _opponent.IsCarInGarage.GetValueOrDefault(); } }
@@ -462,7 +470,7 @@ public class PitStops {
 
             public int CarIdx { get { return Convert.ToInt32(_competitor.CarIdx); } }
             public string Name {
-                get { 
+                get {
                     // Need to know if this is a teams event and we should show team names
                     if (_showTeamNames) {
                         return TeamName;
@@ -506,7 +514,7 @@ public class PitStops {
                         else {
                             return _opponent.StartPosition.GetValueOrDefault();
                         }
-                    } 
+                    }
                     return _opponent.Position;
                 }
             }
@@ -524,11 +532,11 @@ public class PitStops {
 
             public int PositionInClass {
                 get {
-                   
+
                     // If we have not completed a lap
                     if (Lap < 1) {
                         // This is buggy as on lap 1 use live position
-                            return CarClassLivePosition;
+                        return CarClassLivePosition;
                     }
                     return _opponent.PositionInClass;
                 }
@@ -543,8 +551,6 @@ public class PitStops {
                     return _opponent.PositionInClass.ToString();
                 }
             }
-
-
 
             public string CarNumber { get { return _opponent.CarNumber; } }
 
@@ -580,7 +586,7 @@ public class PitStops {
 
             public int LapAheadBehind {
                 get {
-                    if (_spectatedCarCurrentLap > Lap ) {
+                    if (_spectatedCarCurrentLap > Lap) {
                         return 1;
                     }
                     else if (_spectatedCarCurrentLap == Lap) {
@@ -592,9 +598,8 @@ public class PitStops {
 
             public double TrackPositionPercent { get { return _opponent.TrackPositionPercent ?? 0.0; } }
             public string TrackPositionPercentString { get { return TrackPositionPercent.ToString("0.000"); } }
-            public double LapDist { get { return TrackPositionPercent * _trackLength; } }
-            
-            
+            public double LapDisanceInMeters { get { return TrackPositionPercent * _trackLength; } }
+
             public double LapDistPctSpectatedCar {
                 get {
                     // calculate the difference between the two cars
@@ -609,6 +614,7 @@ public class PitStops {
                     return pctGap;
                 }
             }
+
             public double LapDistPctSafetyCar {
                 get {
                     // calculate the difference between the two cars
@@ -627,6 +633,7 @@ public class PitStops {
                     return pctGap;
                 }
             }
+
             public double LapDistSafetyCar {
                 get {
                     // calculate the difference between the two cars
@@ -641,14 +648,48 @@ public class PitStops {
                     return distance;
                 }
             }
+
             public string LapDistSafetyCarString {
                 get {
                     if (LapDistSafetyCar > 0) {
-                        return "      " + LapDistSafetyCar.ToString("0") + "m AHEAD      ";
+                        return  LapDistSafetyCar.ToString("0") + "m AHEAD";
                     }
-                    return "      " + LapDistSafetyCar.ToString("0") + "m BEHIND      ";
+                    return  LapDistSafetyCar.ToString("0") + "m BEHIND";
                 }
             }
+
+            public double LapDistanceSlowCar {
+                get {
+                    // calculate the difference between the two cars
+                    var distance = (_slowOpponentLapDistPct * _trackLength) - (_opponent.TrackPositionPercent.Value * _trackLength);
+                    if (distance > _trackLength / 2) {
+                        distance -= _trackLength;
+                    }
+                    else if (distance < -_trackLength / 2) {
+                        distance += _trackLength;
+                    }
+
+                    return distance;
+                }
+            }
+
+            public bool IsSlowCarAhead {
+                get {
+                    if (LapDistanceSlowCar > 0)
+                        return true;
+                    return false;
+                }
+            }
+            
+            public string LapDistanceSlowCarheadString {
+                get {
+                    if (LapDistanceSlowCar > 0) {
+                        return LapDistanceSlowCar.ToString("0") + "m AHEAD";
+                    }
+                    return LapDistanceSlowCar.ToString("0") + "m AHEAD"; ;
+                }
+            }
+
             public double LapDistSpectatedCar {
                 get {
                      // calculate the difference between the two cars
