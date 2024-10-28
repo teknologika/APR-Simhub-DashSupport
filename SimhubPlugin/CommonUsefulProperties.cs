@@ -98,19 +98,6 @@ namespace APR.DashSupport {
             SetProp("Common.IsLeagueSession", IsLeagueSession);
         }
 
-        /*
-         * if([DataCorePlugin.GameData.NewData.IsInPitLane]>0,'-',
-
-isnull([PersistantTrackerPlugin.SessionBestLiveDeltaSeconds],'-') >=0?'+':'')+format(isnull([PersistantTrackerPlugin.SessionBestLiveDeltaSeconds],'-') ,'0.00')
-
-        */
-
-        private void CalculateDelta() {
-            if (GetProp("PersistantTrackerPlugin.SessionBestLiveDeltaSeconds") != null) {
-                double SessionBestLiveDeltaSeconds = (double)GetProp("PersistantTrackerPlugin.SessionBestLiveDeltaSeconds");
-            }
-        }
-
         private void CreateCommonProperties() {
             AddProp("Common.LapOrTimeString", "");
             AddProp("Common.SessionTypeString", "");

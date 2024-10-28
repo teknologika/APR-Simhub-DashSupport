@@ -130,6 +130,7 @@
     <Compile Include="ExtendedOpponent.cs" />
     <Compile Include="iRacingRelative.cs" />
     <Compile Include="LapDataStore.cs" />
+    <Compile Include="PitStore.cs" />
     <Compile Include="PitStrategyCalculations.cs" />
     <Compile Include="Playground.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

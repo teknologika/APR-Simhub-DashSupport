@@ -13,8 +13,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media.Animation;
+using static APR.DashSupport.APRDashPlugin;
+using static iRacingSDK.SessionData._DriverInfo;
 
 namespace APR.DashSupport {
 
@@ -55,7 +58,118 @@ namespace APR.DashSupport {
     public class ExtendedOpponent {
             public GameReaderCommon.Opponent _opponent;
             public SessionData._DriverInfo._Drivers _competitor;
-          
+            
+            public Telemetry telemetry;
+            public PitStop LatestPitInfo;
+
+            private const float PIT_MINSPEED = 0.01f;
+
+
+            public void CalculatePitInfo(double time, bool underSC) {
+
+                // restore any old pit stop
+                LatestPitInfo = PitStore.Instance.GetLatestStopForCar(this.CarIdx);
+                LatestPitInfo.CarIdx = this.CarIdx;
+
+                // If we are not in the world (blinking?), stop checking
+                if (!IsInWorld) {
+                    return;
+                }
+
+                // Are we NOW in pit lane (pitstall includes pitlane)
+                //  InPitLane = IsApproachingPits || IsInPitStall;
+
+                // Are we NOW in pit stall?
+                //IsInPitStall = IsInPitStall;
+                LatestPitInfo.CurrentStint = Lap - LatestPitInfo.LastPitLap;
+
+                // Were we already in pitlane previously?
+                if (LatestPitInfo.PitLaneEntryTime == null) {
+                    // We were not previously in pitlane
+                    if (IsCarInPitLane) {
+                        // We have only just now entered pitlane
+                        LatestPitInfo.PitLaneEntryTime = time;
+
+                        LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
+
+                        PitStore.Instance.AddOrUpdateStop(LatestPitInfo);
+                       
+                           
+                    }
+                }
+                else {
+                    // We were already in pitlane but have not exited yet
+                    LatestPitInfo.CurrentPitLaneTimeSeconds = time - LatestPitInfo.PitLaneEntryTime.Value;
+
+                    // Were we already in pit stall?
+                    if (LatestPitInfo.PitStallEntryTime == null) {
+                        // We were not previously in our pit stall yet
+                        if (IsInPitStall) {
+                            if (Math.Abs(Speed) > PIT_MINSPEED) {
+                                // Debug.WriteLine("PIT: did not stop in pit stall, ignored.");
+                            }
+                            else {
+                                // We have only just now entered our pit stall
+                                LatestPitInfo.PitStallEntryTime = time;
+                                LatestPitInfo.CurrentPitStallTimeSeconds = 0;
+                            }
+                        }
+                    }
+                    else {
+                        // We already were in our pit stall
+                        LatestPitInfo.CurrentPitStallTimeSeconds = time - LatestPitInfo.PitStallEntryTime.Value;
+
+                        if (!IsInPitStall) {
+                            // We have now left our pit stall
+
+                            LatestPitInfo.LastPitStallTimeSeconds = time - LatestPitInfo.PitStallEntryTime.Value;
+                            LatestPitInfo.CurrentPitStallTimeSeconds = 0;
+
+                            if (LatestPitInfo.PitStallExitTime != null) {
+                                var diff = LatestPitInfo.PitStallExitTime.Value - time;
+                                if (Math.Abs(diff) < 5) {
+                                    // Sim detected pit stall exit again less than 5 seconds after previous exit.
+                                    // This is not possible?
+                                    return;
+                                }
+                            }
+
+                            // Did we already count this stop?
+                            if (!LatestPitInfo._PitCounterHasIncremented) {
+                                // Now increment pitstop count
+                                LatestPitInfo.Pitstops += 1;
+                                LatestPitInfo._PitCounterHasIncremented = true;
+                            }
+
+                            LatestPitInfo.LastPitLap = Lap;
+                            LatestPitInfo.CurrentStint = 0;
+
+                            // Reset
+                            LatestPitInfo.PitStallEntryTime = null;
+                            LatestPitInfo.PitStallExitTime = time;
+                        }
+                        
+                    }
+
+                    if (!IsCarInPitLane) {
+                        // We have now left pitlane
+                        LatestPitInfo.PitLaneExitTime = time;
+                        LatestPitInfo._PitCounterHasIncremented = false;
+
+                        LatestPitInfo.LastPitLaneTimeSeconds = LatestPitInfo.PitLaneExitTime.Value - LatestPitInfo.PitLaneEntryTime.Value;
+                        LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
+
+                        PitStore.Instance.AddOrUpdateStop(LatestPitInfo);
+
+                        // Reset
+                        LatestPitInfo.PitLaneEntryTime = null;
+
+                        PitStore.Instance.AddOrUpdateStop(LatestPitInfo);
+                    }
+                }
+                PitStore.Instance.AddOrUpdateStop(LatestPitInfo);
+            }
+
 
             // FIXME
             public bool _showTeamNames = false;
@@ -89,11 +203,24 @@ namespace APR.DashSupport {
 
             // to do add multi-classes and overall leader
 
-            public bool IsOnTrack { get { return (_trackSurface == 3); } }
-            public bool IsOffTrack { get { return (_trackSurface == 0); } }
             public bool IsInWorld { get { return (_trackSurface > -1); } }
+            public bool IsNotInWorld { get { return (_trackSurface == -1); } }
+            public bool IsOffTrack { get { return (_trackSurface == 0); } }
+            public bool IsInPitStall { get { return (_trackSurface == 1); } }
+            public bool IsCarInPitBox { get { return _opponent.IsCarInPit; } }
+            public bool IsCarInPitLane { get { return _opponent.IsCarInPitLane; } }
+            public bool IsApproachingPits { get { return (_trackSurface == 2); } }
+            public bool IsOnTrack { get { return (_trackSurface == 3); } }
+            
             public bool IsSlow { get { return (IsOnTrack && (Speed > 30.0)); } }
+
+            public bool IsConnected { get { return _opponent.IsConnected; } }
+            public bool IsCarInGarage { get { return _opponent.IsCarInGarage.GetValueOrDefault(); } }
+            public bool IsOutlap { get { return _opponent.IsOutLap; } }
+
             public bool IsSpectator { get { return this.CarIdx == _spectatedCarIdx; } }
+            public bool IsPlayer { get { return _opponent.IsPlayer; } }
+
 
             public double Speed { get { return _opponent.Speed.GetValueOrDefault(); } }
 
@@ -203,12 +330,7 @@ namespace APR.DashSupport {
                 }
             }
 
-            public bool IsConnected { get { return _opponent.IsConnected; } }
-            public bool IsCarInPit { get { return _opponent.IsCarInPit; } }
-            public bool IsCarInPitLane { get { return _opponent.IsCarInPitLane; } }
-            public bool IsCarInGarage { get { return _opponent.IsCarInGarage.GetValueOrDefault(); } }
-            public bool IsOutlap { get { return _opponent.IsOutLap; } }
-            public bool IsPlayer { get { return _opponent.IsPlayer; } }
+
 
             public string CarNumber { get { return _opponent.CarNumber; } }
 
@@ -384,6 +506,31 @@ namespace APR.DashSupport {
             public ExtendedOpponent CarInClassBehind;
 
 
+            // Pit Info Properties
+            // private readonly Driver _driver;
+            /*
+            public bool _PitCounterHasIncremented;
+
+            public int Pitstops { get; set; }
+
+         //   public bool InPitLane { get; set; }
+        //    public bool InPitStall { get; set; }
+
+            public double? PitLaneEntryTime { get; set; }
+            public double? PitLaneExitTime { get; set; }
+
+            public double? PitStallEntryTime { get; set; }
+            public double? PitStallExitTime { get; set; }
+
+            public double LastPitLaneTimeSeconds { get; set; }
+            public double LastPitStallTimeSeconds { get; set; }
+
+            public double CurrentPitLaneTimeSeconds { get; set; }
+            public double CurrentPitStallTimeSeconds { get; set; }
+
+            public int LastPitLap { get; set; }
+            public int CurrentStint { get; set; }
+            */
             public double CarAheadInClassBestLapDelta {
                 get {
                     if (CarInClassAhead != null) {
@@ -517,7 +664,7 @@ namespace APR.DashSupport {
 
             public string DriverNameColour {
                 get {
-                    if (IsCarInPit || IsCarInPitLane || IsCarInGarage || !IsConnected) {
+                    if (IsCarInPitBox || IsCarInPitLane || IsCarInGarage || !IsConnected) {
                         return "#FF808080";
                     }
 
@@ -660,10 +807,14 @@ namespace APR.DashSupport {
             public TimeSpan? CurrentLapTime { get { return _opponent.CurrentLapTime; } }
             public double CurrentLapTimeSeonds { get { return CurrentLapTime.GetValueOrDefault().TotalSeconds; } }
 
-            public string PitInfo {
+            public string PitStatusString {
                 get {
                     if (_opponent.IsCarInPit) {
                         return "BOX";
+                    }
+                  
+                    if (_trackSurface == 2) {
+                        return "APPROACH";
                     }
 
                     if (_opponent.IsCarInPitLane) {
@@ -768,5 +919,7 @@ namespace APR.DashSupport {
 
         }
 
+     
+        
     }
 }

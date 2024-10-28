@@ -41,8 +41,10 @@ namespace APR.DashSupport
         // Timers
         public int frameCounter = 0;
 
+        public double SessionTime;
         DateTime now;
         private long time;
+        
 
         private long endTime1Sec;
         private readonly int every1sec = 10000000;
@@ -131,6 +133,7 @@ namespace APR.DashSupport
 
         private void UpdateSessionData(GameData data) {
             SessionType = data.NewData.SessionTypeName;
+            
             int sessionCount = this.irData.SessionData.SessionInfo.Sessions.Count();
             if (sessionCount > 0) {
                 SessionIndexNumber = sessionCount -1;
@@ -138,7 +141,6 @@ namespace APR.DashSupport
 
             SessionLapsString = this.irData.SessionData.SessionInfo.Sessions[SessionIndexNumber].SessionLaps;
               
-           
             PreviousSessionTick = (double)irData.Telemetry.SessionTime;
             PreviousSessionID = (long)this.irData.SessionData.WeekendInfo.SessionID;
 
@@ -202,7 +204,7 @@ namespace APR.DashSupport
             if (IsV8VetsRaceSession) {
                 foreach (var item in OpponentsExtended) {
                     if (V8VetsSafetyCarNames.Contains(item._competitor.CarScreenName)) {
-                        if (!item.IsCarInPit && SessionType == "Race") {
+                        if (!item.IsCarInPitBox && SessionType == "Race") {
                             IsUnderSafetyCar = true;
                             SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
                             SafetyCarIdx = item.CarIdx;
@@ -374,6 +376,7 @@ namespace APR.DashSupport
 
                 // Setup timers
                 this.time = DateTime.Now.Ticks;
+                this.SessionTime = irData.Telemetry.SessionTime;
                 this.runEvery1Sec = this.time - this.endTime1Sec >= (long)this.every1sec;
                 this.runEvery5Sec = this.time - this.endTime5Sec >= (long)this.every5sec;
 

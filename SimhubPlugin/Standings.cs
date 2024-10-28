@@ -236,7 +236,7 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".GapToLeader", item.GapToClassLeaderString);
                         SetProp("Standings.Position" + counter.ToString() + ".GapToCarAhead", item.ClassAheadInClassGapString);
                         SetProp("Standings.Position" + counter.ToString() + ".GapToCarBehind", item.CarBehindInClassGapString);
-                        SetProp("Standings.Position" + counter.ToString() + ".IsInPit", item.IsCarInPit);
+                        SetProp("Standings.Position" + counter.ToString() + ".IsInPit", item.IsCarInPitBox);
                         SetProp("Standings.Position" + counter.ToString() + ".IsPlayer", item.IsSpectator);
                         SetProp("Standings.Position" + counter.ToString() + ".Lap.LastLap", item.LastLapTimeString);
                         SetProp("Standings.Position" + counter.ToString() + ".Lap.BestLap", item.BestLapTimeString);

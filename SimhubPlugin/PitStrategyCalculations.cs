@@ -22,6 +22,7 @@ namespace APR.DashSupport {
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
         public double Strategy_NumberOfRaceLaps { get; set; } = 0;
+        public double Strategy_NumberOfRaceLapsRemaining { get; set; } = 0;
         public double Strategy_AverageFuelPerLap { get; set; } = 0;
         public double Strategy_AvailableTankSize { get; set; } = 0;
         public double Strategy_SetupFuel { get; set; } = 0;
@@ -66,7 +67,7 @@ namespace APR.DashSupport {
                 AddProp("Strategy.Dahl.FuelDeltaOG", 0);
 
                 AddProp("Strategy.Basic.TotalLaps", 0);
-                AddProp("Strategy.Basic.TotalLaps", 0);
+                AddProp("Strategy.Basic.TotalLapsRemaining", 0);
                 AddProp("Strategy.Basic.AverageFuelPerLap", 0);
                 AddProp("Strategy.Basic.StartingFuel", 0);
                 AddProp("Strategy.Basic.NumberOfStops", 0);
@@ -96,8 +97,8 @@ namespace APR.DashSupport {
 
                 // Setup all the values for our calculations
 
-                // Number of race laps
-                double RomainRob_laps = GetProp("IRacingExtraProperties.iRacing_LapsRemainingFloat");
+                // Total Number of race laps
+                double RomainRob_laps = GetProp("IRacingExtraProperties.iRacing_TotalLaps");
                 if (RomainRob_laps == double.NaN) {
                     Strategy_NumberOfRaceLaps = data.NewData.TotalLaps;
                 }
@@ -105,11 +106,8 @@ namespace APR.DashSupport {
                     Strategy_NumberOfRaceLaps = RomainRob_laps;
                 }
 
-                
-                if (Settings.Strategy_OverrideNumberOfRaceLaps > 0) {
-                    Strategy_NumberOfRaceLaps = Convert.ToInt16(Settings.Strategy_OverrideNumberOfRaceLaps);
-                }
-
+                double Strategy_NumberOfRaceLapsRemaining = GetProp("IRacingExtraProperties.iRacing_LapsRemainingFloat");
+            
                 // Fuel used per lap
                 Strategy_AverageFuelPerLap =  GetProp("DataCorePlugin.Computed.Fuel_LitersPerLap");
                 if (Settings.Strategy_OverrideFuelPerLap > 0) {
@@ -172,6 +170,7 @@ namespace APR.DashSupport {
                 CalculateAverageDelta(ref data);
 
                 SetProp("Strategy.Basic.TotalLaps", Strategy_NumberOfRaceLaps);
+                SetProp("Strategy.Basic.TotalLapsRemaining", Strategy_NumberOfRaceLapsRemaining);
                 SetProp("Strategy.Basic.AverageFuelPerLap", Strategy_AverageFuelPerLap);
                 SetProp("Strategy.Basic.StartingFuel", Strategy_SetupFuel);
                 SetProp("Strategy.Basic.AvailableTankSize", Strategy_AvailableTankSize);
@@ -217,10 +216,10 @@ namespace APR.DashSupport {
            
         }
 
-        public class PitStop{
+        public class StrategyPitStop{
             public int lap;
             public double fuelToAdd;
-            public PitStop(int Lap,double FuelToAdd) {
+            public StrategyPitStop(int Lap,double FuelToAdd) {
                 lap = Lap;
                 fuelToAdd = FuelToAdd;
             }
@@ -235,7 +234,7 @@ namespace APR.DashSupport {
 
         // Strat A - Flat out stretch long, fill tank, short second fill
         public void StratA() {
-            List <PitStop> StratAStops = new List <PitStop>();
+            List <StrategyPitStop> StratAStops = new List <StrategyPitStop>();
 
            
             // get our starting positions
@@ -265,7 +264,7 @@ namespace APR.DashSupport {
                             // to be exta safe we need to add the margin twice which gets us home without a cough.
                             calcFuelToAdd = Math.Ceiling(((fuelNeededToEnd + Strategy_CoughAllowance - Strategy_AverageFuelPerLap) / 0.5) * 0.5) + (Math.Ceiling(Strategy_CoughAllowance/0.5) *0.5);
                         }
-                        StratAStops.Add(new PitStop(i, calcFuelToAdd));
+                        StratAStops.Add(new StrategyPitStop(i, calcFuelToAdd));
                         fuel = fuel + calcFuelToAdd;
 
                         // If we try and fuel more than the tank size, we will only fill the tank

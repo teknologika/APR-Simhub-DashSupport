@@ -1,6 +1,7 @@
 ﻿using GameReaderCommon;
 using iRacingSDK;
 using SimHub.Plugins;
+using SimHub.Plugins.DataPlugins.PersistantTracker;
 using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText.Imp;
@@ -254,6 +255,8 @@ namespace APR.DashSupport {
    
         private List<ExtendedOpponent> _opponentsAhead = new List<ExtendedOpponent>();
         private List<ExtendedOpponent> _opponentsBehind = new List<ExtendedOpponent>();
+        private List<ExtendedOpponent> _opponentsInPitlane = new List<ExtendedOpponent>();
+        private List<ExtendedOpponent> _opponentsInPitBox = new List<ExtendedOpponent>();
 
         public List<ExtendedOpponent> OpponentsAhead {
             get {
@@ -262,7 +265,7 @@ namespace APR.DashSupport {
             }
             set {
                 if (Settings.RelativeShowCarsInPits) {
-                    _opponentsAhead = value.FindAll(a => (!a.IsCarInPitLane || !a.IsCarInPit || !a.IsCarInGarage));
+                    _opponentsAhead = value.FindAll(a => (!a.IsCarInPitLane || !a.IsCarInPitBox || !a.IsCarInGarage));
                 }
                 else {
                     _opponentsAhead = value;
@@ -277,7 +280,7 @@ namespace APR.DashSupport {
             }
             set {
                 if (Settings.RelativeShowCarsInPits) {
-                    _opponentsBehind = value.FindAll(a => (!a.IsCarInPitLane || !a.IsCarInPit || !a.IsCarInGarage));
+                    _opponentsBehind = value.FindAll(a => (!a.IsCarInPitLane || !a.IsCarInPitBox || !a.IsCarInGarage));
                 }
                 else {
                     _opponentsBehind = value;
@@ -385,7 +388,7 @@ namespace APR.DashSupport {
                             float[] lastLapTimes = (float[])irData.Telemetry.FirstOrDefault(x => x.Key == "CarIdxLastLapTime").Value;
 
                             // Add to the Extended Opponents class
-                            OpponentsExtended.Add(new ExtendedOpponent() {
+                            var driver = new ExtendedOpponent() {
                                 _sessionType = SessionType,
                                 _opponent = opponents[j],
                                 _competitor = competitors[i],
@@ -401,7 +404,11 @@ namespace APR.DashSupport {
                                 _safetyCarIdx = SafetyCarIdx,
                                 _safetyCarLapDistPct = SafetyCarLapDistPct,
                                 LicenseColor = LicenseColor(opponents[j].LicenceString)
-                            });
+                            };
+                            
+                            driver.CalculatePitInfo(SessionTime,IsUnderSafetyCar);
+
+                            OpponentsExtended.Add(driver);
 
                             // Update the car class info
                             CheckAndAddCarClass((int)competitors[i].CarClassID, competitors[i].CarClassShortName);
@@ -417,6 +424,11 @@ namespace APR.DashSupport {
                 foreach (var item in OpponentsExtended) {
                     item.CarClassReferenceLapTime = GetReferenceClassLaptime(item.CarClassID);
                 }
+
+                // Get the opponents in pitlane
+                _opponentsInPitlane = OpponentsExtended.FindAll(a => a.IsCarInPitLane == true);
+                _opponentsInPitBox = OpponentsExtended.FindAll(a => a.IsCarInPitBox == true);
+
 
                 if (IsRaceSession) {
                     // update iRating gain / loss
@@ -653,7 +665,7 @@ namespace APR.DashSupport {
                         SetProp("Relative.Ahead." + count + ".IR", opponent.iRatingString);
                         SetProp("Relative.Ahead." + count + ".SRSimple", opponent.SafetyRatingSimple);
                         SetProp("Relative.Ahead." + count + ".IRChange", opponent.iRatingChange);
-                        SetProp("Relative.Ahead." + count + ".PitInfo", opponent.PitInfo);
+                        SetProp("Relative.Ahead." + count + ".PitInfo", opponent.PitStatusString);
                         count++;
                     }
                 }
@@ -680,7 +692,7 @@ namespace APR.DashSupport {
                         SetProp("Relative.Behind." + count + ".SRSimple", opponent.SafetyRatingSimple);
                         SetProp("Relative.Behind." + count + ".IR", opponent.iRatingString);
                         SetProp("Relative.Behind." + count + ".IRChange", opponent.iRatingChange);
-                        SetProp("Relative.Behind." + count + ".PitInfo", opponent.PitInfo);
+                        SetProp("Relative.Behind." + count + ".PitInfo", opponent.PitStatusString);
                         count++;
                     }
                 }
@@ -691,9 +703,77 @@ namespace APR.DashSupport {
                     SetProp("Spectated.Position", SpectatedCar.PositionString);
                     SetProp("Spectated.Name", SpectatedCar.DriverName);
                     SetProp("Spectated.Lap", SpectatedCar.Lap);
+                    SetProp("Spectated.Speed", SpectatedCar._opponent.Speed);
+
+
+                 
+                    double SessionBestLiveDeltaSeconds = 0;
+                    if (GetProp("PersistantTrackerPlugin.SessionBestLiveDeltaSeconds") != null) {
+                        SessionBestLiveDeltaSeconds = (double)GetProp("PersistantTrackerPlugin.SessionBestLiveDeltaSeconds");
+                    }
+
+                    double AllTimeBestLastLapDelta = 0;
+                    if (GetProp("PersistantTrackerPlugin.AllTimeBestLastLapDelta") != null) {
+                        AllTimeBestLastLapDelta = (double)GetProp("PersistantTrackerPlugin.AllTimeBestLastLapDelta");
+                    }
+                    /*
+                    double AllTimeBestLastLapDelta = 0;
+                    if (GetProp("PersistantTrackerPlugin.AllTimeBestLastLapDelta") != null) {
+                        AllTimeBestLastLapDelta = (double)GetProp("PersistantTrackerPlugin.AllTimeBestLastLapDelta");
+                    }
+
+                    PersistantTrackerPlugin.SessionBestLastLapDelta
+
+                    PersistantTrackerPlugin.SessionBestLiveDeltaProgressSeconds
+                    PersistantTrackerPlugin.SessionBestLiveDeltaSeconds
+                    PersistantTrackerPlugin.EstimatedLapTime_SessionBestBasedSimhub_EstimatedDelta
+                    PersistantTrackerPlugin.AllTimeBestLiveDeltaProgressSeconds
+                    PersistantTrackerPlugin.AllTimeBestLiveDeltaSeconds
+                    PersistantTrackerPlugin.AllTimeBestLastLapDelta
+
+                    IRacingExtraProperties.SpectatedCar_DeltaToBest
+                    //PersistantTrackerPlugin.SessionBestLiveDeltaSeconds
+                    */
+
+                    SetProp("Spectated.Delta.Mode", "Personal Session Best");
+                    SetProp("Spectated.Delta.Mode", SessionBestLiveDeltaSeconds);
+
+                    SetProp("Spectated.Delta.PersonalSessionBest", SessionBestLiveDeltaSeconds);
+                    SetProp("Spectated.Delta.AllTimeBest", AllTimeBestLastLapDelta);
+
+
+                    // Future properties
+                    
+                    SetProp("Spectated.Delta.OverallSessionBest", "");
+                    SetProp("Spectated.Delta.Leader.LastLap", "");
+                    SetProp("Spectated.Delta.CarAhead.LastLap", "");
+                    SetProp("Spectated.LiveDelta.PersonalBest", "");
+                    SetProp("Spectated.LiveDelta.SessionBest", "");
+                    SetProp("Spectated.LiveDelta.Leader", "");
                     SetProp("Spectated.Show", SpectatedCar.DriverName != "");
                     SetProp("Spectated.CarNumber", SpectatedCar.CarNumber);
-                    SetProp("Spectated.PitInfo", SpectatedCar.PitInfo);
+
+                    SetProp("Spectated.PitInfo", SpectatedCar.PitStatusString);
+                    SetProp("Spectated.IsInPitLane", SpectatedCar.IsCarInPitLane);
+                    SetProp("Spectated.IsInPit", SpectatedCar.IsCarInPitBox);
+                    SetProp("Spectated.IsConnected", SpectatedCar.IsConnected);
+                    SetProp("Spectated.IsOffTrack", SpectatedCar.IsOffTrack);
+                    SetProp("Spectated.IsOnTrack", SpectatedCar.IsOnTrack);
+                    SetProp("Spectated.CPS1Served", SpectatedCar.CPS1Served);
+                    SetProp("Spectated.CPS2Served", SpectatedCar.CPS2Served);
+                    
+                    /*
+                    SetProp("Spectated.Stops.Number", SpectatedCar.StopsTotalNumber);
+                    SetProp("Spectated.Stops.LastStopOnLap", SpectatedCar.StopsOnLapsCommaDelimitedString);
+                    SetProp("Spectated.Stops.EstimatedRange", SpectatedCar.StopsEstimatedRange);
+                    SetProp("Spectated.Stops.EstimatedTimeInBoxRemaining", SpectatedCar.StopsEstimatedRange);
+                    SetProp("Spectated.Stops.OnLapAsPercentage", SpectatedCar.StopsOnLapsCommaDelimitedStringAsPercentage);
+                    SetProp("Spectated.Stops.TimeInBox", SpectatedCar.StopsTimeInBoxCommaDelimitedString);
+                    SetProp("Spectated.Stops.TimeInBoxAsPercentage", SpectatedCar.StopsTimeInBoxAsPercentageCommaDelimitedString);
+                    SetProp("Spectated.Stops.ExpectedRemaining", SpectatedCar.StopsExpectedRemaining);
+                    SetProp("Spectated.Stops.EstimatedRange", SpectatedCar.StopsEstimatedRange);
+                    */
+
                     SetProp("Spectated.Gap", 0.0);
                     SetProp("Spectated.AheadBehind", "0");
 
@@ -788,6 +868,15 @@ namespace APR.DashSupport {
 
                 AddProp("Spectated.DistanceToSC", "");
                 AddProp("Spectated.Position", "");
+                AddProp("Spectated.Speed", "");
+                AddProp("Spectated.Delta.PersonalSessionBest", "");
+                AddProp("Spectated.Delta.OverallSessionBest", "");
+                AddProp("Spectated.Delta.Leader.LastLap", "");
+                AddProp("Spectated.Delta.CarAhead.LastLap", "");
+                AddProp("Spectated.LiveDelta.PersonalBest", "");
+                AddProp("Spectated.LiveDelta.SessionBest", "");
+                AddProp("Spectated.LiveDelta.Leader", "");
+
                 AddProp("Spectated.Name", "");
                 AddProp("Spectated.CarNumber", "");
                 AddProp("Spectated.PitInfo", "");
@@ -798,7 +887,26 @@ namespace APR.DashSupport {
                 AddProp("Spectated.DriverNameColor", "#FFFFFF");
                 AddProp("Spectated.CarClassColor", "#000000");
                 AddProp("Spectated.LicenseColor", "#FFFFFF");
-                AddProp("Specteted.IsPlayer", true);  
+                AddProp("Specteted.IsPlayer", true);
+
+                AddProp("Spectated.IsInPitLane", false);
+                AddProp("Spectated.IsInPit", false);
+                AddProp("Spectated.IsConnected", false);
+                AddProp("Spectated.IsOffTrack", false);
+                AddProp("Spectated.IsOnTrack", false);
+
+                AddProp("Spectated.Stops.Number", 0);
+                AddProp("Spectated.Stops.LastStopOnLap", 0);
+                AddProp("Spectated.Stops.EstimatedRange", 0);
+                AddProp("Spectated.Stops.EstimatedTimeInBoxRemaining", 0);
+                AddProp("Spectated.Stops.OnLapAsPercentage", 0);
+                AddProp("Spectated.Stops.TimeInBox", 0);
+                AddProp("Spectated.Stops.TimeInBoxAsPercentage", 0);
+                AddProp("Spectated.Stops.ExpectedRemaining", 0);
+                AddProp("Spectated.Stops.EstimatedRange", 0);
+
+
+
 
                 AddProp("Spectated.LastLap", "-.---");
                 AddProp("Spectated.BestLap", "-.---");
