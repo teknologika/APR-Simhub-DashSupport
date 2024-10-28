@@ -389,6 +389,7 @@ namespace APR.DashSupport {
 
                             // Add to the Extended Opponents class
                             var driver = new ExtendedOpponent() {
+                                StrategyOberver = StrategyObserver,
                                 _sessionType = SessionType,
                                 _opponent = opponents[j],
                                 _competitor = competitors[i],

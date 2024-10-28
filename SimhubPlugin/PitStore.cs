@@ -70,6 +70,11 @@ namespace APR.DashSupport {
             return lastStop;
         }
 
+        public List<PitStop> GetAllStopsForCar (int carIdx) {
+            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.LastPitStallTimeSeconds > 0);
+            return allStops;
+        }
+
         public void Reset() {
             instance = new PitStore();
             instance.stopList = new List<PitStop>();
@@ -99,7 +104,7 @@ namespace APR.DashSupport {
 
             // update the stop details
             tmpStop._PitCounterHasIncremented = stop._PitCounterHasIncremented;
-            tmpStop.Pitstops = stop.Pitstops;
+            tmpStop.NumberOfPitstops = stop.NumberOfPitstops;
 
             tmpStop.PitLaneEntryTime = stop.PitLaneEntryTime;
             tmpStop.PitLaneExitTime = stop.PitLaneExitTime;
@@ -125,7 +130,7 @@ namespace APR.DashSupport {
 
         // this all needs to be saved and restored
         public bool _PitCounterHasIncremented;
-        public int Pitstops { get; set; }
+        public int NumberOfPitstops { get; set; }
 
         public double? PitLaneEntryTime { get; set; }
         public double? PitLaneExitTime { get; set; }

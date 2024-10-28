@@ -27,6 +27,7 @@ using System.Runtime.InteropServices.ComTypes;
 using FMOD;
 using static SimHub.Plugins.DataPlugins.PersistantTracker.PersistantTrackerPluginAttachedData;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
+using NAudio.Dmo;
 
 namespace APR.DashSupport
 {
@@ -74,10 +75,14 @@ namespace APR.DashSupport
         public int SessionIndexNumber = 0;
         public string SessionLapsString;
 
-
+       
         public bool IsV8VetsSession = false;
         public bool IsV8VetsRaceSession = false;
         public bool IsUnderSafetyCar = false;
+        public bool IsSafetyCarMovingInPitane = false;
+        public int SafetyCarPeriodCount = 0;
+        public bool SafetyCarCountLock = false;
+
         public string[] V8VetsSafetyCarNames = { "BMW M4 GT4", "Mercedes AMG GT3", "McLaren 720S GT3 EVO" };
         
         
@@ -144,10 +149,22 @@ namespace APR.DashSupport
             PreviousSessionTick = (double)irData.Telemetry.SessionTime;
             PreviousSessionID = (long)this.irData.SessionData.WeekendInfo.SessionID;
 
+
+            //Reset values
+            IsV8VetsSession = false;
+            IsV8VetsRaceSession = false;
+            IsUnderSafetyCar = false;
+            IsSafetyCarMovingInPitane = false;
+            SafetyCarPeriodCount = 0;
+            SafetyCarCountLock = false;
+
             CheckIfV8VetsLeagueSession();
             CheckIfLeagueSession();
 
-            SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
+
+   
+
+        SetProp("Strategy.Vets.IsVetsSession", IsV8VetsSession);
             SetProp("Strategy.Vets.IsVetsRaceSession", IsV8VetsRaceSession);
 
             //UpdateCommonProperties(data);
@@ -200,26 +217,44 @@ namespace APR.DashSupport
 
         private void CheckIfUnderSafetyCar() {
 
-            bool IsUnderSafetyCar = irData.Telemetry.UnderPaceCar;
+            this.IsUnderSafetyCar = irData.Telemetry.UnderPaceCar;
+            if (this.SafetyCarCountLock == false && this.IsUnderSafetyCar) {
+                this.SafetyCarPeriodCount++;
+                this.SafetyCarCountLock =  true;
+            }
+
             if (IsV8VetsRaceSession) {
                 foreach (var item in OpponentsExtended) {
                     if (V8VetsSafetyCarNames.Contains(item._competitor.CarScreenName)) {
-                        if (!item.IsCarInPitBox && SessionType == "Race") {
-                            IsUnderSafetyCar = true;
-                            SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
+                        if (!item.IsCarInPitLane && item.Speed > 0.01f && SessionType == "Race") {  
                             SafetyCarIdx = item.CarIdx;
                             SafetyCarLapDistPct = item.TrackPositionPercent;
-                            return;
+                            this.IsUnderSafetyCar = true;
+                            this.IsSafetyCarMovingInPitane = false;
+                        }
+
+                        if (!item.IsCarInPitBox && item.IsCarInPitLane && item.Speed > 0.01f && SessionType == "Race") {
+                            this.IsSafetyCarMovingInPitane = true;
                         }
                     }
                 }
             }
             else {
-                IsUnderSafetyCar = false;
-                SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
+                this.IsUnderSafetyCar = false;
+                this.SafetyCarCountLock = false;
+            }
+            if(!this.SafetyCarCountLock && this.IsUnderSafetyCar) {
+                this.SafetyCarPeriodCount++;
+                this.SafetyCarCountLock = true;
             }
 
-            SetProp("Strategy.Indicator.UnderSC", IsUnderSafetyCar);
+            if (this.SafetyCarCountLock && !this.IsUnderSafetyCar) {
+                this.SafetyCarCountLock = false;
+            }
+
+            SetProp("Strategy.Indicator.UnderSC", this.IsUnderSafetyCar);
+            SetProp("Strategy.Indicator.SCMovingInPitlane", this.IsSafetyCarMovingInPitane);
+            SetProp("Strategy.Indicator.SCPeriodCount", SafetyCarPeriodCount);
         }
 
         /// <summary>
@@ -324,6 +359,10 @@ namespace APR.DashSupport
             // Strategy Specific Properties
             AddProp("Strategy.Indicator.StratMode", "A");
             AddProp("Strategy.Indicator.UnderSC", false);
+            AddProp("Strategy.Indicator.SCMovingInPitlane", false);
+            AddProp("Strategy.Indicator.SCPeriodCount", 0);
+
+
             AddProp("Strategy.Indicator.CPS1Served", false);
             AddProp("Strategy.Indicator.CPS2Served", false);
 

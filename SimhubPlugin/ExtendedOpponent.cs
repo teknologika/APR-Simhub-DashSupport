@@ -1,4 +1,5 @@
 ﻿using GameReaderCommon;
+using IRacingReader;
 using iRacingSDK;
 using MahApps.Metro.Controls;
 using SimHub.Plugins;
@@ -31,6 +32,36 @@ namespace APR.DashSupport {
         private List<CarClass> carClasses = new List<CarClass>();
         private float trackLength;
 
+        public StrategyBundle StrategyObserver = new StrategyBundle();
+
+        public class StrategyBundle {
+            // todo make this a singleton
+
+            public double FuelFillRateLitresPerSecond;
+            public double StartingFuel;
+            public double FuelLitersPerLap;
+            public bool IsUnderSC;
+            public int SafetyCarPeriodCount;
+        }
+
+        public void UpdateStrategyBundle() {
+
+            // Get the starting fuel
+            StrategyObserver.StartingFuel = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel") ?? 0.0;
+
+            // Get the average fuel per lap
+            StrategyObserver.FuelLitersPerLap = GetProp("DataCorePlugin.Computed.Fuel_LitersPerLap") ?? 0.0;
+
+            //Supercar Gen2 hardcode FIXME
+            StrategyObserver.FuelFillRateLitresPerSecond = 2.4;
+
+            // For vets, are we under SC
+            StrategyObserver.IsUnderSC = IsUnderSafetyCar;
+
+            StrategyObserver.SafetyCarPeriodCount = SafetyCarPeriodCount;
+
+        }
+
         public void UpdateLivePositions() {
             List<ExtendedOpponent> opponentsSortedLivePosition = OpponentsExtended.OrderBy(x => x.Lap).ThenByDescending(x => x.LapDist).ToList();
             List<ExtendedOpponent> opponentsSortedLivePositionInClass = OpponentsExtended.OrderBy(x => x.CarClass).ThenByDescending(x => x.Lap).ThenByDescending(x => x.LapDist).ToList();
@@ -41,8 +72,7 @@ namespace APR.DashSupport {
 
                 livePosition++;
             }
-
-
+          
             foreach (var item in carClasses)
             {
                 int CarClasslivePosition = 1;
@@ -58,12 +88,20 @@ namespace APR.DashSupport {
     public class ExtendedOpponent {
             public GameReaderCommon.Opponent _opponent;
             public SessionData._DriverInfo._Drivers _competitor;
-            
+            public GameData data;
+            public DataSampleEx irdata;
+
             public Telemetry telemetry;
             public PitStop LatestPitInfo;
+            public StrategyBundle StrategyOberver;
 
             private const float PIT_MINSPEED = 0.01f;
-
+           
+            public void FuelDataUpdate () {
+                // FIXME with strat update
+                
+         
+            }
 
             public void CalculatePitInfo(double time, bool underSC) {
 
@@ -93,8 +131,7 @@ namespace APR.DashSupport {
                         LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
 
                         PitStore.Instance.AddOrUpdateStop(LatestPitInfo);
-                       
-                           
+                          
                     }
                 }
                 else {
@@ -137,7 +174,7 @@ namespace APR.DashSupport {
                             // Did we already count this stop?
                             if (!LatestPitInfo._PitCounterHasIncremented) {
                                 // Now increment pitstop count
-                                LatestPitInfo.Pitstops += 1;
+                                LatestPitInfo.NumberOfPitstops += 1;
                                 LatestPitInfo._PitCounterHasIncremented = true;
                             }
 
@@ -169,6 +206,183 @@ namespace APR.DashSupport {
                 }
                 PitStore.Instance.AddOrUpdateStop(LatestPitInfo);
             }
+
+            public int PitStops_NumberOfStops {
+                get {
+                    return LatestPitInfo.NumberOfPitstops;
+                }
+            }
+
+            public int PitStops_LastPitLap {
+                get {
+                    return LatestPitInfo.LastPitLap;
+                }
+            }
+
+            public double PitStops_LastStopTimeInPitBox {
+                get {
+                    return LatestPitInfo.LastPitStallTimeSeconds;
+                }
+            }
+
+            public double PitStops_LastStopTimeInPitLane {
+                get {
+                    return LatestPitInfo.LastPitLaneTimeSeconds;
+                }
+            }
+
+            public double PitStops_LastStopTimeInTransit {
+                get {
+                    return LatestPitInfo.LastPitStallTimeSeconds - LatestPitInfo.LastPitLaneTimeSeconds;
+                }
+            }
+
+            public double LastStopEstimatedRange {
+                get {
+                    if (LatestPitInfo.NumberOfPitstops == 0)
+                        return 0;
+                    else
+                        return (LatestPitInfo.LastPitStallTimeSeconds * StrategyOberver.FuelFillRateLitresPerSecond ) / StrategyOberver.FuelLitersPerLap;
+                }
+            }
+
+            /*
+public class PitStops {
+      
+        public double fuelPerLap = 3.0;
+        public double fuelFillPerSecond = 2.4;
+        public int totalLapsInRace = 1;
+
+        public List<PitStop> Stops = new List<PitStop>();
+
+
+        public int LastStopOnLap {
+            get {
+                if (Stops.Count == 0)
+                    return 0;
+                else
+                    return Stops.Last().Lap;
+            }
+        }
+
+        public double LastStopTimeInPitBox {
+            get {
+                if (Stops.Count == 0)
+                    return 0;
+                else
+                    return Stops.Last().TimeInBox;
+            }
+        }
+
+        public double LastStopEstimatedRange {
+            get {
+                if (Stops.Count == 0)
+                    return 0;
+                else
+                    return (Stops.Last().TimeInBox*fuelFillPerSecond)/fuelPerLap;
+            }
+        }
+
+        public double AllStopsEstimatedRange {
+            get {
+                if (Stops.Count == 0)
+                    return 0;
+                else {
+                    double totalTimeStoppped = 0;
+                    foreach (PitStop stop in Stops) {
+                        totalTimeStoppped += stop.TimeInBox;
+                    }
+                    return (totalTimeStoppped * fuelFillPerSecond) / fuelPerLap;
+                }
+            }
+        }
+
+        public double LastStopTimeInPitLane {
+            get {
+                if (Stops.Count == 0)
+                    return 0;
+                else
+                    return Stops.Last().TimeInLane;
+            }
+        }
+
+        public string StopOnLapsDelimitedString {
+            get {
+                if (Stops.Count == 0)
+                    return "";
+                else
+                    return string.Join(",", Stops);
+            }
+        }
+
+        public string TimeInPitBoxDelimitedString {
+            get {
+                if (Stops.Count == 0)
+                    return "";
+                else {
+                    List<double> stopTimes = new List<double>();
+                    foreach (var item in Stops) {
+                        stopTimes.Add(item.TimeInBox);
+                    }
+                    return string.Join(",", stopTimes);
+                }
+            }
+        }
+
+        public string EstimatedRangeDelimitedString {
+            get {
+                if (Stops.Count == 0)
+                    return "";
+                else {
+                    List<double> estimatedRanges = new List<double>();
+                    foreach (var item in Stops) {
+                        estimatedRanges.Add((item.TimeInBox * fuelFillPerSecond) / fuelPerLap);
+                    }
+                    return string.Join(",", estimatedRanges);
+                }
+            }
+        }
+
+        public string TimeInPitLaneDelimitedString {
+            get {
+                if (Stops.Count == 0)
+                    return "";
+                else {
+                    List<double> laneTimes = new List<double>();
+                    foreach (var item in Stops) {
+                        laneTimes.Add(item.TimeInLane);
+                    }
+                    return string.Join(",", laneTimes);
+                }
+            }
+        }
+
+        public int StopsTotalNumber {
+            get {
+                int stopCount = Stops.Count();
+                return Stops.Count;
+
+            }
+        }
+
+        public int StopsCPSNumber {
+            get {
+                int CPSCount = Stops.FindAll(x => x.CountsAsCPS).Count();
+                return CPSCount;
+            }
+        }
+
+        public int NummberOfStops {  get { return Stops.Count; } }
+
+       
+        
+    }
+
+  
+
+}
+*/
+
 
 
             // FIXME
