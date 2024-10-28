@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media.Animation;
@@ -432,7 +433,7 @@ public class PitStops {
 
             public bool IsSlow {
                 get {
-                    return (IsOnTrack && (Speed < 20.0)) || (IsOffTrack && (Speed > 20.0));
+                    return ( IsOnTrack && (Speed < 20.0)) || (IsOffTrack && (Speed > 20.0));
                 }
             }
 
@@ -675,18 +676,18 @@ public class PitStops {
 
             public bool IsSlowCarAhead {
                 get {
-                    if (LapDistanceSlowCar > 0)
+                    if (LapDistanceSlowCar > 0 && Speed > 30)
                         return true;
                     return false;
                 }
             }
             
-            public string LapDistanceSlowCarheadString {
+            public string LapDistanceSlowCarAheadString {
                 get {
-                    if (LapDistanceSlowCar > 0) {
+                    if (LapDistanceSlowCar > 0 && Speed > 30) {
                         return LapDistanceSlowCar.ToString("0") + "m AHEAD";
                     }
-                    return LapDistanceSlowCar.ToString("0") + "m AHEAD"; ;
+                    return "" ;
                 }
             }
 

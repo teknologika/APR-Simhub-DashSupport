@@ -693,7 +693,7 @@ namespace APR.DashSupport {
                         SetProp("Relative.Behind." + count + ".IR", opponent.iRatingString);
                         SetProp("Relative.Behind." + count + ".IRChange", opponent.iRatingChange);
                         SetProp("Relative.Behind." + count + ".PitInfo", opponent.PitStatusString);
-
+                        SetProp("Relative.Behind." + count + ".IsSlow", opponent.IsSlow);
 
                         count++;
                     }
@@ -706,8 +706,9 @@ namespace APR.DashSupport {
                     SetProp("Spectated.Name", SpectatedCar.DriverName);
                     SetProp("Spectated.Lap", SpectatedCar.Lap);
                     SetProp("Spectated.Speed", SpectatedCar._opponent.Speed);
+                    SetProp("Spectated.IsSlowCarAhead", SpectatedCar.IsSlow);
                     SetProp("Spectated.IsSlowCarAhead", SpectatedCar.IsSlowCarAhead);
-                    SetProp("Spectated.SlowCarAheadString", SpectatedCar.LapDistanceSlowCarheadString);
+                    SetProp("Spectated.SlowCarAheadString", SpectatedCar.LapDistanceSlowCarAheadString);
 
                     double SessionBestLiveDeltaSeconds = 0;
                     if (GetProp("PersistantTrackerPlugin.SessionBestLiveDeltaSeconds") != null) {
@@ -840,7 +841,7 @@ namespace APR.DashSupport {
                     AddProp("Relative.Ahead." + i + ".IR", "");
                     AddProp("Relative.Ahead." + i + ".IRChange", "");
                     AddProp("Relative.Ahead." + i + ".PitInfo", "");
-                    SetProp("Relative.Ahead." + i + ".IsSlow", "");
+                    AddProp("Relative.Ahead." + i + ".IsSlow", "");
                 }
 
                 for (int i = 1; i < Settings.RelativeNumberOfCarsBehindToShow + 1; i++) {
@@ -860,6 +861,7 @@ namespace APR.DashSupport {
                     AddProp("Relative.Behind." + i + ".IR", "");
                     AddProp("Relative.Behind." + i + ".IRChange", "");
                     AddProp("Relative.Behind." + i + ".PitInfo", "");
+                    AddProp("Relative.Behind." + i + ".IsSlow", "");
                 }
 
                 AddProp("Relative.Layout.FontSize", Settings.RelativeFontSize);
@@ -879,6 +881,7 @@ namespace APR.DashSupport {
                 AddProp("Spectated.LiveDelta.PersonalBest", "");
                 AddProp("Spectated.LiveDelta.SessionBest", "");
                 AddProp("Spectated.LiveDelta.Leader", "");
+                AddProp("Spectated.IsSlow", "");
                 AddProp("Spectated.IsSlowCarAhead", "");
                 AddProp("Spectated.SlowCarAheadString", "");
 
