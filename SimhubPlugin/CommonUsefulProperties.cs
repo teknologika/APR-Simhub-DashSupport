@@ -94,7 +94,10 @@ namespace APR.DashSupport {
             if (leagueID > 0) {
                 IsLeagueSession = true;
             }
-            IsLeagueSession = false;
+            else {
+                IsLeagueSession = false;
+            }
+            
             SetProp("Common.IsLeagueSession", IsLeagueSession);
         }
 
