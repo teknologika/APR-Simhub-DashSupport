@@ -114,6 +114,9 @@ namespace APR.DashSupport {
                         LatestPitInfo.PitLaneEntryTime = time;
                         LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
                         LatestPitInfo.IsUnderSC = StrategyObserver.IsUnderSC || StrategyObserver.IsSafetyCarMovingInPitane;
+                        LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
+
+
 
                         LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
 
@@ -344,19 +347,23 @@ namespace APR.DashSupport {
             public int PitStops_NumberOfCPSStops {
                 get {
                         var Stops = PitStore.Instance.GetAllCPSStopsForCar(CarIdx);
-                        return Stops.Count -1;
+                        return Stops.Count;
                 }
             }
 
             public bool PitStops_CPS1Served {
                 get {
-                    return (PitStops_NumberOfCPSStops == 1);
+                    if (PitStops_NumberOfCPSStops >= 1)
+                        return true;
+                    return false;
                 }
             }
 
             public bool PitStops_CPS2Served {
                 get {
-                    return (PitStops_NumberOfCPSStops == 2);
+                    if (PitStops_NumberOfCPSStops >= 2)
+                        return true;
+                    return false;
                 }
             }
 

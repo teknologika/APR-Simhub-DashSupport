@@ -94,8 +94,9 @@ namespace APR.DashSupport {
         }
 
         public List<PitStop> GetAllCPSStopsForCar(int carIdx) {
-            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx);
-            var distinctStops = allStops.GroupBy(x => x.SafetyCarPeriodNumber).Select(y => y.First()).ToList();
+            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.IsCPSStop);
+            var cpsStops = allStops.FindAll(x => x.IsCPSStop).ToList();
+            var distinctStops = cpsStops.GroupBy(x => x.SafetyCarPeriodNumber).Select(y => y.First()).ToList();
             return distinctStops;
         }
 
@@ -116,6 +117,8 @@ namespace APR.DashSupport {
                 tmpStop.CarIdx = stop.CarIdx;
                 tmpStop.FirstSCPeriodBreaksEarlySCRule = StrategyBundle.Instance.FirstSCPeriodBreaksEarlySCRule;
                 tmpStop.IsUnderSC = StrategyBundle.Instance.IsSafetyCarMovingInPitane;
+
+
 
                 instance.stopList.Add(tmpStop);
 

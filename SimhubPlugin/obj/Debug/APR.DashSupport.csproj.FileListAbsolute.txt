@@ -13,7 +13,6 @@ C:\Users\bruce\Documents\GitHub\Teknologka\APR-Simhub-DashSupport\SimhubPlugin\o
 C:\Users\bruce\Documents\GitHub\Teknologka\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\APR.DashSupport.dll
 C:\Users\bruce\Documents\GitHub\Teknologka\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\APR.DashSupport.pdb
 C:\Program Files\SimHub\APR.DashSupport.dll
-C:\Program Files\SimHub\APR.DashSupport.pdb
 C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\APR.DashSupport.csproj.AssemblyReference.cache
 C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\SettingsControl.g.cs
 C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\APR.DashSupport_MarkupCompile.cache
@@ -26,3 +25,4 @@ C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\AP
 C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\APR.Dash.FFE62091.Up2Date
 C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\APR.DashSupport.dll
 C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\APR.DashSupport.pdb
+C:\Program Files\SimHub\APR.DashSupport.pdb

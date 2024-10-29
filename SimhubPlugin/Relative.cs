@@ -754,20 +754,14 @@ namespace APR.DashSupport {
                     SetProp("Spectated.IsConnected", SpectatedCar.IsConnected);
                     SetProp("Spectated.IsOffTrack", SpectatedCar.IsOffTrack);
                     SetProp("Spectated.IsOnTrack", SpectatedCar.IsOnTrack);
-                    SetProp("Spectated.CPS1Served", SpectatedCar.PitStops_CPS1Served);
-                    SetProp("Spectated.CPS2Served", SpectatedCar.PitStops_CPS2Served);
-                    
-                    /*
-                    SetProp("Spectated.Stops.Number", SpectatedCar.StopsTotalNumber);
-                    SetProp("Spectated.Stops.LastStopOnLap", SpectatedCar.StopsOnLapsCommaDelimitedString);
-                    SetProp("Spectated.Stops.EstimatedRange", SpectatedCar.StopsEstimatedRange);
-                    SetProp("Spectated.Stops.EstimatedTimeInBoxRemaining", SpectatedCar.StopsEstimatedRange);
-                    SetProp("Spectated.Stops.OnLapAsPercentage", SpectatedCar.StopsOnLapsCommaDelimitedStringAsPercentage);
-                    SetProp("Spectated.Stops.TimeInBox", SpectatedCar.StopsTimeInBoxCommaDelimitedString);
-                    SetProp("Spectated.Stops.TimeInBoxAsPercentage", SpectatedCar.StopsTimeInBoxAsPercentageCommaDelimitedString);
-                    SetProp("Spectated.Stops.ExpectedRemaining", SpectatedCar.StopsExpectedRemaining);
-                    SetProp("Spectated.Stops.EstimatedRange", SpectatedCar.StopsEstimatedRange);
-                    */
+
+                    SetProp("Spectated.PitStops.CPS1Served", SpectatedCar.PitStops_CPS1Served);
+                    SetProp("Spectated.PitStops.CPS2Served", SpectatedCar.PitStops_CPS2Served);
+                    SetProp("Spectated.PitStops.NumberOfCPSStops", SpectatedCar.PitStops_NumberOfCPSStops);
+                    SetProp("Spectated.PitStops.NumberOfStops", SpectatedCar.PitStops_NumberOfStops);
+                    SetProp("Spectated.PitStops.EstimatedNextStop", SpectatedCar.PitStops_EstimatedNextStop);
+                    SetProp("Spectated.PitStops.LastStopEstimatedRange", SpectatedCar.PitStops_LastStopEstimatedRange);
+                    SetProp("Spectated.PitStops.NumberOfStops", SpectatedCar.PitStops_NumberOfStops);
 
                     SetProp("Spectated.Gap", 0.0);
                     SetProp("Spectated.AheadBehind", "0");
@@ -805,8 +799,15 @@ namespace APR.DashSupport {
                     SetProp("Spectated.BestLapIsClassBestLap", SpectatedCar.IsBestLapClassBestLap);
                     SetProp("Spectated.BestLapIsOverallBestLap", SpectatedCar.IsBestLapOverallBest);
 
-                    // SetProp("Spectated.CPS1Served", SpectatedCar.CPS1Served);
-                    // SetProp("Spectated.CPS2Served", SpectatedCar.CPS2Served);
+
+                    SetProp("Spectated.PitStops.CPS1Served", SpectatedCar.PitStops_CPS1Served);
+                    SetProp("Spectated.PitStops.CPS2Served", SpectatedCar.PitStops_CPS2Served);
+                    SetProp("Spectated.PitStops.NumberOfCPSStops", SpectatedCar.PitStops_NumberOfCPSStops);
+                    SetProp("Spectated.PitStops.NumberOfStops", SpectatedCar.PitStops_NumberOfStops);
+                    SetProp("Spectated.PitStops.EstimatedNextStop", SpectatedCar.PitStops_EstimatedNextStop);
+                    SetProp("Spectated.PitStops.LastStopEstimatedRange", SpectatedCar.PitStops_LastStopEstimatedRange);
+                    SetProp("Spectated.PitStops.NumberOfStops", SpectatedCar.PitStops_NumberOfStops);
+
                 }
             }
         }
@@ -895,19 +896,6 @@ namespace APR.DashSupport {
                 AddProp("Spectated.IsOffTrack", false);
                 AddProp("Spectated.IsOnTrack", false);
 
-                AddProp("Spectated.Stops.Number", 0);
-                AddProp("Spectated.Stops.LastStopOnLap", 0);
-                AddProp("Spectated.Stops.EstimatedRange", 0);
-                AddProp("Spectated.Stops.EstimatedTimeInBoxRemaining", 0);
-                AddProp("Spectated.Stops.OnLapAsPercentage", 0);
-                AddProp("Spectated.Stops.TimeInBox", 0);
-                AddProp("Spectated.Stops.TimeInBoxAsPercentage", 0);
-                AddProp("Spectated.Stops.ExpectedRemaining", 0);
-                AddProp("Spectated.Stops.EstimatedRange", 0);
-
-
-
-
                 AddProp("Spectated.LastLap", "-.---");
                 AddProp("Spectated.BestLap", "-.---");
 
@@ -937,8 +925,13 @@ namespace APR.DashSupport {
                 AddProp("Spectated.BestLapIsClassBestLap", "");
                 AddProp("Spectated.BestLapIsOverallBestLap", "");
 
-                AddProp("Spectated.CPS1Served", false);
-                AddProp("Spectated.CPS2Served", false);
+                AddProp("Spectated.PitStops.CPS1Served", "");
+                AddProp("Spectated.PitStops.CPS2Served", "");
+                AddProp("Spectated.PitStops.NumberOfCPSStops", "");
+                AddProp("Spectated.PitStops.NumberOfStops", "");
+                AddProp("Spectated.PitStops.EstimatedNextStop", "");
+                AddProp("Spectated.PitStops.LastStopEstimatedRange", "");
+                AddProp("Spectated.PitStops.NumberOfStops", "");
 
                 int totalRowHeight = (Settings.RelativeRowHeight + Settings.RelativeRowOffset);
                 int headerHeight = 50;
@@ -961,6 +954,7 @@ namespace APR.DashSupport {
                 AddProp("Relative.Layout.WindowHeight", windowHeight);
             }
         }
+       
         public void ClearRelativeProperties() {
             if (Settings.EnableRelatives) {
                 for (int i = 1; i < Settings.RelativeNumberOfCarsAheadToShow + 1; i++) {
@@ -1020,6 +1014,14 @@ namespace APR.DashSupport {
                 SetProp("Spectated.IR", "");
                 SetProp("Spectated.IRChange", "");
                 SetProp("Spectated.PitInfo", "");
+
+                SetProp("Spectated.PitStops.CPS1Served", "");
+                SetProp("Spectated.PitStops.CPS2Served", "");
+                SetProp("Spectated.PitStops.NumberOfCPSStops", "");
+                SetProp("Spectated.PitStops.NumberOfStops", "");
+                SetProp("Spectated.PitStops.EstimatedNextStop", "");
+                SetProp("Spectated.PitStops.LastStopEstimatedRange", "");
+                SetProp("Spectated.PitStops.NumberOfStops", "");
 
                 SetProp("Relative.Layout.NumberOfCarsAhead", Settings.RelativeNumberOfCarsAheadToShow);
                 SetProp("Relative.Layout.NumbersOfCarsBehind", Settings.RelativeNumberOfCarsBehindToShow);

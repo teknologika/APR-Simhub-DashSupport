@@ -247,10 +247,17 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".BestLapIsClassBestLap", item.IsBestLapClassBestLap);
                         SetProp("Standings.Position" + counter.ToString() + ".BestLapIsOverallBest", item.IsBestLapOverallBest);
                         SetProp("Standings.Position" + counter.ToString() + ".RowIsVisible", item.DriverName != "");
-                        SetProp("Standings.Position" + counter.ToString() + ".CPS1Served", item.PitStops_CPS1Served);
-                        SetProp("Standings.Position" + counter.ToString() + ".CPS2Served", item.PitStops_CPS2Served);
+
                         SetProp("Standings.Position" + counter.ToString() + ".IsSlow", item.IsSlow);
-                    
+
+                        SetProp("Standings.Position" + counter.ToString() + ".PitStops.CPS1Served", item.PitStops_CPS1Served);
+                        SetProp("Standings.Position" + counter.ToString() + ".PitStops.CPS2Served", item.PitStops_CPS2Served);
+                        SetProp("Standings.Position" + counter.ToString() + ".PitStops.NumberOfCPSStops", item.PitStops_NumberOfCPSStops);
+                        SetProp("Standings.Position" + counter.ToString() + ".PitStops.NumberOfStops", item.PitStops_NumberOfStops);
+                        SetProp("Standings.Position" + counter.ToString() + ".PitStops.EstimatedNextStop", item.PitStops_EstimatedNextStop);
+                        SetProp("Standings.Position" + counter.ToString() + ".PitStops.LastStopEstimatedRange", item.PitStops_LastStopEstimatedRange);
+                        SetProp("Standings.Position" + counter.ToString() + ".PitStops.NumberOfStops", item.PitStops_NumberOfStops);
+
 
                         if (item.IsPlayer || item.IsSpectator) {
                             SetProp("Standings.Position" + counter.ToString() + ".Class.Color", Settings.Color_Black);
@@ -342,13 +349,21 @@ namespace APR.DashSupport {
 
                     AddProp("Standings.Position" + iString + ".RowIsVisible", false);
 
-                    AddProp("Standings.Position" + iString + ".PitStops.CPS1Served", false);
-                    AddProp("Standings.Position" + iString + ".PitStops.CPS2Served", false);
                     AddProp("Standings.Position" + iString + ".PitStops.AllPit", false);
                     AddProp("Standings.Position" + iString + ".PitStops.CPS2Served", false);
                     AddProp("Standings.Position" + iString + ".IsSlow", false);
+
+
+                    AddProp("Standings.Position" + iString + ".PitStops.CPS1Served", false);
+                    AddProp("Standings.Position" + iString + ".PitStops.CPS2Served", false);
+                    AddProp("Standings.Position" + iString + ".PitStops.NumberOfCPSStops", "");
+                    AddProp("Standings.Position" + iString + ".PitStops.NumberOfStops", "");
+                    AddProp("Standings.Position" + iString + ".PitStops.EstimatedNextStop", "");
+                    AddProp("Standings.Position" + iString + ".PitStops.LastStopEstimatedRange", "");
+                    AddProp("Standings.Position" + iString + ".PitStops.NumberOfStops", "");
+
                 }
-                
+
             }
         }
 
