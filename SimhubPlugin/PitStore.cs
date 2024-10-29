@@ -41,9 +41,9 @@ namespace APR.DashSupport {
         private const int MAXCARS = 64;
 
 
-        public double FuelPerLap = 3.0; // Just a random default
-        public double FuelFillPerSecond = 2.4; // Supercar Gen2 as default
-        public int TotalLapsInRace = 0;
+      //  public double FuelPerLap = 3.0; // Just a random default
+      //  public double FuelFillPerSecond = 2.4; // Supercar Gen2 as default
+      //  public int TotalLapsInRace = 0;
 
         private static PitStore instance = null;
         private static readonly object padlock = new object();
@@ -75,15 +75,20 @@ namespace APR.DashSupport {
             return allStops;
         }
 
+        public List<PitStop> GetCountOfStopsUnderSCPeriodForCar(int carIdx, int SafetyCarPeriodNumber) {
+            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.LastPitStallTimeSeconds > 0 && x.SafetyCarPeriodNumber == SafetyCarPeriodNumber);
+            return allStops;
+        }
+
+        public List<PitStop> GetAllCPSStopsForCar(int carIdx) {
+            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx);
+            var distinctStops = allStops.GroupBy(x => x.SafetyCarPeriodNumber).Select(y => y.First()).ToList();
+            return distinctStops;
+        }
+
         public void Reset() {
             instance = new PitStore();
             instance.stopList = new List<PitStop>();
-        }
-
-        public void Update(double fuelPerLap, int totalLapsInRace, double fuelFillRatePerSecond) {
-            FuelPerLap = fuelPerLap;
-            TotalLapsInRace = totalLapsInRace;
-            FuelFillPerSecond = fuelFillRatePerSecond;
         }
 
         public void AddOrUpdateStop(PitStop stop) {
@@ -96,6 +101,9 @@ namespace APR.DashSupport {
                 tmpStop = new PitStop();
                 tmpStop.Lap = stop.Lap;
                 tmpStop.CarIdx = stop.CarIdx;
+                tmpStop.FirstSCPeriodBreaksEarlySCRule = StrategyBundle.Instance.FirstSCPeriodBreaksEarlySCRule;
+                tmpStop.IsUnderSC = StrategyBundle.Instance.IsUnderSC;
+
                 instance.stopList.Add(tmpStop);
 
                 // update our reference
@@ -127,6 +135,29 @@ namespace APR.DashSupport {
     public class PitStop {
         public int Lap;
         public int CarIdx;
+        public bool IsUnderSC;
+        public int SafetyCarPeriodNumber;
+        public bool FirstSCPeriodBreaksEarlySCRule;
+        public bool IsCPSStop {
+            get {
+                bool isValid = true;
+
+                // Does the SC come early?
+                if (FirstSCPeriodBreaksEarlySCRule && SafetyCarPeriodNumber == 1) {
+                    isValid = false;
+                }
+                // Was it too short
+                if (this.LastPitStallTimeSeconds < 0.5) {
+                    isValid = false;
+                }
+                // is it a second stop
+                int countOfStopsInThisSCPeriod = PitStore.Instance.GetAllStopsForCar(this.CarIdx).FindAll(x => x.SafetyCarPeriodNumber == SafetyCarPeriodNumber).Count();
+                if (countOfStopsInThisSCPeriod > 1) {
+                    return false;
+                }
+                return isValid;
+            }
+        }
 
         // this all needs to be saved and restored
         public bool _PitCounterHasIncremented;

@@ -150,6 +150,7 @@
     <Compile Include="SimRaceX\ObservableObject.cs" />
     <Compile Include="SimRaceX\TelemeteryData.cs" />
     <Compile Include="Standings.cs" />
+    <Compile Include="StrategyBundle.cs" />
     <Compile Include="TelemeteryExport.cs" />
     <Compile Include="RadioAndTextChat.cs" />
     <Compile Include="WheelControls.cs" />

@@ -390,7 +390,6 @@ namespace APR.DashSupport {
 
                             // Add to the Extended Opponents class
                             var driver = new ExtendedOpponent() {
-                                StrategyOberver = StrategyObserver,
                                 _sessionType = SessionType,
                                 _opponent = opponents[j],
                                 _competitor = competitors[i],
@@ -605,8 +604,8 @@ namespace APR.DashSupport {
                 }
 
                 // Grab the slow poke
-                var _slowOpponent = OpponentsAhead.Find(x => x.IsOffTrack || (x.IsOnTrack && x.Speed > 6.0)) ?? null;
-                if (_slowOpponent != null) {
+                var _slowOpponent = OpponentsAhead.Find(x => x.IsOffTrack || (x.IsOnTrack && x.Speed < 30.0)) ?? null;
+                if (_slowOpponent != null && spectator.Speed > 40) {
                     spectator._slowOpponentIdx = _slowOpponent.CarIdx;
                     spectator._slowOpponentLapDistPct = _slowOpponent.TrackPositionPercent;
                 }
@@ -762,8 +761,8 @@ namespace APR.DashSupport {
                     SetProp("Spectated.IsConnected", SpectatedCar.IsConnected);
                     SetProp("Spectated.IsOffTrack", SpectatedCar.IsOffTrack);
                     SetProp("Spectated.IsOnTrack", SpectatedCar.IsOnTrack);
-                    SetProp("Spectated.CPS1Served", SpectatedCar.CPS1Served);
-                    SetProp("Spectated.CPS2Served", SpectatedCar.CPS2Served);
+                    SetProp("Spectated.CPS1Served", SpectatedCar.PitStops_CPS1Served);
+                    SetProp("Spectated.CPS2Served", SpectatedCar.PitStops_CPS2Served);
                     
                     /*
                     SetProp("Spectated.Stops.Number", SpectatedCar.StopsTotalNumber);
