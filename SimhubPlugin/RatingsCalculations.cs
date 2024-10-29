@@ -43,7 +43,7 @@ namespace APR.DashSupport {
                          (1 - Math.Exp(-driverIRating / weight)) * Math.Exp(-iRatings[i] / weight));
                 }
             }
-            catch (Exception ex) { }
+            catch { }
 
 
             double expScore = tmpexpScore - 0.5;

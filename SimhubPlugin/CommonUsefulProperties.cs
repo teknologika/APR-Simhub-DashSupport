@@ -2,7 +2,6 @@
 using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText.Imp;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;

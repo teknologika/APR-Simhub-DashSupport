@@ -40,6 +40,7 @@ namespace APR.DashSupport {
     public sealed class PitStore {
         private const int MAXCARS = 64;
 
+        
 
       //  public double FuelPerLap = 3.0; // Just a random default
       //  public double FuelFillPerSecond = 2.4; // Supercar Gen2 as default
@@ -75,6 +76,18 @@ namespace APR.DashSupport {
             return allStops;
         }
 
+        public List<PitStop> GetAllCarsInPitlane() {
+            var allStops = PitStore.instance.stopList.FindAll(x => x.CurrentPitLaneTimeSeconds > 0);
+            allStops.Find(x => x.CarIdx == StrategyBundle.Instance.SafetyCarIdx);
+
+            return allStops;
+        }
+
+       // public List<PitStop> GetAllCarsInPitlaneAsDeliitedString() {
+            //var carsIinLane;
+           // return allStops;
+      //  }
+
         public List<PitStop> GetCountOfStopsUnderSCPeriodForCar(int carIdx, int SafetyCarPeriodNumber) {
             var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.LastPitStallTimeSeconds > 0 && x.SafetyCarPeriodNumber == SafetyCarPeriodNumber);
             return allStops;
@@ -102,7 +115,7 @@ namespace APR.DashSupport {
                 tmpStop.Lap = stop.Lap;
                 tmpStop.CarIdx = stop.CarIdx;
                 tmpStop.FirstSCPeriodBreaksEarlySCRule = StrategyBundle.Instance.FirstSCPeriodBreaksEarlySCRule;
-                tmpStop.IsUnderSC = StrategyBundle.Instance.IsUnderSC;
+                tmpStop.IsUnderSC = StrategyBundle.Instance.IsSafetyCarMovingInPitane;
 
                 instance.stopList.Add(tmpStop);
 
@@ -132,9 +145,12 @@ namespace APR.DashSupport {
         }
     }
 
+
+
     public class PitStop {
         public int Lap;
         public int CarIdx;
+        public string DriverName;
         public bool IsUnderSC;
         public int SafetyCarPeriodNumber;
         public bool FirstSCPeriodBreaksEarlySCRule;
@@ -177,13 +193,6 @@ namespace APR.DashSupport {
 
         public int LastPitLap { get; set; }
         public int CurrentStint { get; set; }
-
-        // need to add the history stuff
-        // lap stopped
-        // time in box
-        // time in lane
-        // Was under SC
-
 
     }
 }

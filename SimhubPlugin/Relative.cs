@@ -363,17 +363,18 @@ namespace APR.DashSupport {
         private void UpdateRelativesAndStandings(GameData data) {
 
             if (Settings.EnableRelatives || Settings.EnableStandings) {
+                StrategyBundle StrategicObserer = StrategyBundle.Instance;
 
                 this.opponents = data.NewData.Opponents;
 
                 SessionData._DriverInfo._Drivers[] competitors = irData.SessionData.DriverInfo.CompetingDrivers;
                 this.opponents = data.NewData.Opponents;
                 this.OpponentsExtended = new List<ExtendedOpponent>();
-                
+
                 // Get the Spectated car info
-                int spectatedCarIdx = irData.Telemetry.CamCarIdx;
-                float spectatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[spectatedCarIdx];
-                int spectatedCarCurrentLap = irData.Telemetry.CarIdxLap[spectatedCarIdx];
+                StrategicObserer.SpectatedCarIdx = irData.Telemetry.CamCarIdx;
+                StrategicObserer.SpecatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[StrategicObserer.SpectatedCarIdx];
+                StrategicObserer.SpectatedCarCurrentLap = irData.Telemetry.CarIdxLap[StrategicObserer.SpectatedCarIdx];
 
                 // TODO: make LastLapIsPersonalBest work
 
@@ -390,24 +391,16 @@ namespace APR.DashSupport {
 
                             // Add to the Extended Opponents class
                             var driver = new ExtendedOpponent() {
-                                _sessionType = SessionType,
                                 _opponent = opponents[j],
                                 _competitor = competitors[i],
                                 _carEstTime = irData.Telemetry.CarIdxEstTime[competitors[i].CarIdx],
                                 _carBestLapTime = bestLapTimes[competitors[i].CarIdx],
                                 _carLastLapTime = lastLapTimes[competitors[i].CarIdx],
                                 _trackSurface = (int)irData.Telemetry.CarIdxTrackSurface[competitors[i].CarIdx],
-                                _trackLength = trackLength,
-                                _spectatedCarIdx = spectatedCarIdx,
-                                _spectatedCarCurrentLap = spectatedCarCurrentLap,
-                                _specatedCarLapDistPct = spectatedCarLapDistPct,
-                                _IsunderSafetyCar = IsUnderSafetyCar,
-                                _safetyCarIdx = SafetyCarIdx,
-                                _safetyCarLapDistPct = SafetyCarLapDistPct,
                                 LicenseColor = LicenseColor(opponents[j].LicenceString)
                             };
                             
-                            driver.CalculatePitInfo(SessionTime,IsUnderSafetyCar);
+                            driver.CalculatePitInfo(SessionTime);
 
                             OpponentsExtended.Add(driver);
 
@@ -419,7 +412,7 @@ namespace APR.DashSupport {
                 }
 
                 // Create the spectator
-                ExtendedOpponent spectator = OpponentsExtended.Find(a => a.CarIdx == spectatedCarIdx);
+                ExtendedOpponent spectator = OpponentsExtended.Find(a => a.CarIdx == StrategicObserer.SpectatedCarIdx);
 
                 // update car reference lap time
                 foreach (var item in OpponentsExtended) {
@@ -606,8 +599,8 @@ namespace APR.DashSupport {
                 // Grab the slow poke
                 var _slowOpponent = OpponentsAhead.Find(x => x.IsOffTrack || (x.IsOnTrack && x.Speed < 30.0)) ?? null;
                 if (_slowOpponent != null && spectator.Speed > 40) {
-                    spectator._slowOpponentIdx = _slowOpponent.CarIdx;
-                    spectator._slowOpponentLapDistPct = _slowOpponent.TrackPositionPercent;
+                    StrategicObserer.SlowOpponentIdx = _slowOpponent.CarIdx;
+                    StrategicObserer.SlowOpponentLapDistPct = _slowOpponent.TrackPositionPercent;
                 }
       
                 UpdateRelativeProperties();

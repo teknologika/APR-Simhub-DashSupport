@@ -171,6 +171,7 @@ namespace APR.DashSupport
         public bool ColumnShowDriverName { get; set; } = true;
         public bool ColumnShowGapToLeader { get; set; } = true;
         public bool ColumnShowGapToCarInFront { get; set; } = true;
+        public bool ColumnShowMiscData { get; set; } = true;
         public bool ColumnShowFastestLap { get; set; } = true;
         public bool ColumnShowLastLap { get; set; } = true;
 
@@ -180,6 +181,7 @@ namespace APR.DashSupport
         public int ColumnWidthDriverName { get; set; } = 200;
         public int ColumnWidthGapToLeader { get; set; } = 60;
         public int ColumnWidthGapToCarInFront { get; set; } = 60;
+        public int ColumnWidthMiscData { get; set; } = 60;
         public int ColumnWidthFastestLap { get; set; } = 80;
         public int ColumnWidthLastLap { get; set; } = 80;
 
@@ -236,13 +238,24 @@ namespace APR.DashSupport
             }
         }
 
-        public int ColumnStartLastLap {
+        public int ColumnStartMiscData {
             get {
                 if (ColumnShowGapToCarInFront) {
                     return ColumnStartGapToCarInFront + ColumnWidthGapToCarInFront;
                 }
                 else {
                     return ColumnStartGapToCarInFront;
+                }
+            }
+        }
+
+        public int ColumnStartLastLap {
+            get {
+                if (ColumnShowMiscData) {
+                    return ColumnStartMiscData + ColumnWidthMiscData;
+                }
+                else {
+                    return ColumnStartMiscData;
                 }
             }
         }

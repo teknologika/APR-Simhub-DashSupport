@@ -42,13 +42,13 @@ namespace APR.DashSupport {
                         if (instance == null) {
                             instance = new StrategyBundle();
                             instance.FirstSCPeriodBreaksEarlySCRule = false;
-
-
                         }
                         return instance;
                     }
                 }
             }
+
+            public static void Reset() { instance = new StrategyBundle(); }
 
             public double TotaLaps;
             public double CurrentLap;
@@ -66,14 +66,36 @@ namespace APR.DashSupport {
             }
 
             public double EstimatedTotalFuel { get { return (TotaLaps * FuelLitersPerLap) + CoughAllowance; } }
+
+            // Saftey car
             public bool IsUnderSC;
+            public bool IsSafetyCarMovingInPitane;
+            public bool SafetyCarCountLock;
+
             public int SafetyCarPeriodCount;
             public bool FirstSCPeriodBreaksEarlySCRule;
+
+            public int SafetyCarIdx;
+            public double SafetyCarTrackDistancePercent;
+
+
+            // these need to be injected on creation for calcs to work
+            public float TrackLength;
+
+            public string SessionType;
+
+            // Car being driven / spectating from
+            public long SpectatedCarIdx;
+            public float SpecatedCarLapDistPct;
+            public int SpectatedCarCurrentLap;
+
+            public int SlowOpponentIdx;
+            public double SlowOpponentLapDistPct;
+
         }
 
         public void UpdateStrategyBundle(GameData data) {
             StrategyBundle StrategyObserver = StrategyBundle.Instance;
-
 
             // Get the starting fuel
             StrategyObserver.StartingFuel = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel") ?? 0.0;
@@ -83,11 +105,6 @@ namespace APR.DashSupport {
 
             //Supercar Gen2 hardcode FIXME
             StrategyObserver.FuelFillRateLitresPerSecond = 2.4; // Supercar Gen2
-
-            // For vets, are we under SC
-            StrategyObserver.IsUnderSC = IsUnderSafetyCar;
-
-            StrategyObserver.SafetyCarPeriodCount = SafetyCarPeriodCount;
 
             StrategyObserver.TotaLaps = data.NewData.TotalLaps; // Might break for timed races
 
@@ -100,8 +117,8 @@ namespace APR.DashSupport {
                 }
             }
 
-                // Available tank size
-                var AvailableFuelTankPercent = irData.SessionData.DriverInfo.DriverCarMaxFuelPct;
+            // Available tank size
+            var AvailableFuelTankPercent = irData.SessionData.DriverInfo.DriverCarMaxFuelPct;
             var UnrestrictedTankSizeInLtr = irData.SessionData.DriverInfo.DriverCarFuelMaxLtr;
             StrategyObserver.AvailableTankSize = AvailableFuelTankPercent * UnrestrictedTankSizeInLtr;
 

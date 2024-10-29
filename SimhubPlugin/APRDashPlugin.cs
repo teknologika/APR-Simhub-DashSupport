@@ -78,10 +78,10 @@ namespace APR.DashSupport
        
         public bool IsV8VetsSession = false;
         public bool IsV8VetsRaceSession = false;
-        public bool IsUnderSafetyCar = false;
-        public bool IsSafetyCarMovingInPitane = false;
-        public int SafetyCarPeriodCount = 0;
-        public bool SafetyCarCountLock = false;
+       // public bool IsUnderSafetyCar_legacy = false;
+       // public bool IsSafetyCarMovingInPitane = false;
+       // public int SafetyCarPeriodCount = 0;
+       // public bool SafetyCarCountLock = false;
 
         public string[] V8VetsSafetyCarNames = { "BMW M4 GT4", "Mercedes AMG GT3", "McLaren 720S GT3 EVO" };
         
@@ -108,8 +108,8 @@ namespace APR.DashSupport
         public string DriverBehindId = string.Empty;
         public string DriverBehindName = string.Empty;
 
-        public int SafetyCarIdx;
-        public double SafetyCarLapDistPct;
+        //public int SafetyCarIdx;
+        //public double SafetyCarLapDistPct;
 
 
         public class relative {
@@ -153,10 +153,12 @@ namespace APR.DashSupport
             //Reset values
             IsV8VetsSession = false;
             IsV8VetsRaceSession = false;
-            IsUnderSafetyCar = false;
-            IsSafetyCarMovingInPitane = false;
-            SafetyCarPeriodCount = 0;
-            SafetyCarCountLock = false;
+            //IsUnderSafetyCar_legacy = false;
+           // IsSafetyCarMovingInPitane = false;
+           // SafetyCarPeriodCount = 0;
+           // SafetyCarCountLock = false;
+
+            StrategyBundle.Reset();
 
             CheckIfV8VetsLeagueSession();
             CheckIfLeagueSession();
@@ -216,45 +218,52 @@ namespace APR.DashSupport
         }
 
         private void CheckIfUnderSafetyCar() {
+            StrategyBundle StrategyObserver = StrategyBundle.Instance;
 
-            this.IsUnderSafetyCar = irData.Telemetry.UnderPaceCar;
-            if (this.SafetyCarCountLock == false && this.IsUnderSafetyCar) {
-                this.SafetyCarPeriodCount++;
-                this.SafetyCarCountLock =  true;
+            StrategyObserver.IsUnderSC = irData.Telemetry.UnderPaceCar;
+            if (StrategyObserver.SafetyCarCountLock == false && StrategyObserver.IsUnderSC) {
+                StrategyObserver.SafetyCarPeriodCount++;
+                StrategyObserver.SafetyCarPeriodCount++;
+                StrategyObserver.SafetyCarCountLock =  true;
             }
 
             if (IsV8VetsRaceSession) {
                 foreach (var item in OpponentsExtended) {
                     if (V8VetsSafetyCarNames.Contains(item._competitor.CarScreenName)) {
                         if (!item.IsCarInPitLane && item.Speed > 0.01f && SessionType == "Race") {  
-                            SafetyCarIdx = item.CarIdx;
-                            SafetyCarLapDistPct = item.TrackPositionPercent;
-                            this.IsUnderSafetyCar = true;
-                            this.IsSafetyCarMovingInPitane = false;
+
+                            StrategyObserver.SafetyCarIdx = item.CarIdx;
+                            StrategyObserver.SafetyCarTrackDistancePercent = item.TrackPositionPercent;
+
+                            StrategyObserver.IsUnderSC = true;
+                            StrategyObserver.IsSafetyCarMovingInPitane = false;
                         }
 
                         if (!item.IsCarInPitBox && item.IsCarInPitLane && item.Speed > 0.01f && SessionType == "Race") {
-                            this.IsSafetyCarMovingInPitane = true;
+
+                            StrategyObserver.IsUnderSC = true;
+                            StrategyObserver.IsSafetyCarMovingInPitane = true;
+
                         }
                     }
                 }
             }
             else {
-                this.IsUnderSafetyCar = false;
-                this.SafetyCarCountLock = false;
+                StrategyObserver.IsUnderSC = false;
+                StrategyObserver.SafetyCarCountLock = false;
             }
-            if(!this.SafetyCarCountLock && this.IsUnderSafetyCar) {
-                this.SafetyCarPeriodCount++;
-                this.SafetyCarCountLock = true;
-            }
-
-            if (this.SafetyCarCountLock && !this.IsUnderSafetyCar) {
-                this.SafetyCarCountLock = false;
+            if(!StrategyObserver.SafetyCarCountLock && StrategyObserver.IsUnderSC) {
+                StrategyObserver.SafetyCarPeriodCount++;
+                StrategyObserver.SafetyCarCountLock = true;
             }
 
-            SetProp("Strategy.Indicator.UnderSC", this.IsUnderSafetyCar);
-            SetProp("Strategy.Indicator.SCMovingInPitlane", this.IsSafetyCarMovingInPitane);
-            SetProp("Strategy.Indicator.SCPeriodCount", SafetyCarPeriodCount);
+            if (StrategyObserver.SafetyCarCountLock && !StrategyObserver.IsUnderSC) {
+                StrategyObserver.SafetyCarCountLock = false;
+            }
+
+            SetProp("Strategy.Indicator.UnderSC", StrategyObserver.IsUnderSC);
+            SetProp("Strategy.Indicator.SCMovingInPitlane", StrategyObserver.IsSafetyCarMovingInPitane);
+            SetProp("Strategy.Indicator.SCPeriodCount", StrategyObserver.SafetyCarPeriodCount);
         }
 
         /// <summary>
