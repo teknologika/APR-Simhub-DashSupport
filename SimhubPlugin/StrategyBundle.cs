@@ -50,8 +50,8 @@ namespace APR.DashSupport {
 
             public static void Reset() { instance = new StrategyBundle(); }
 
-            public double TotaLaps;
-            public double CurrentLap;
+            public int TotaLaps;
+            public int CurrentLap;
             public double CoughAllowance = 1.0;
             public double FuelFillRateLitresPerSecond;
             public double StartingFuel;
@@ -97,8 +97,12 @@ namespace APR.DashSupport {
         public void UpdateStrategyBundle(GameData data) {
             StrategyBundle StrategyObserver = StrategyBundle.Instance;
 
-            // Get the starting fuel
-            StrategyObserver.StartingFuel = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel") ?? 0.0;
+            // Get the amount of fuel in the setup aka starting fuel
+            if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel") != null) {
+                string setupFuelString = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel");
+                StrategyObserver.StartingFuel = double.Parse(setupFuelString.Replace(" L", ""));
+            }
+
 
             // Get the average fuel per lap
             StrategyObserver.FuelLitersPerLap = GetProp("DataCorePlugin.Computed.Fuel_LitersPerLap") ?? 0.0;

@@ -514,6 +514,7 @@ namespace APR.DashSupport
                 }
 
                 if (frameCounter == 9) {
+                    UpdateStrategyBundle(data);
                     CheckIfUnderSafetyCar();
                     if (runEvery1Sec) {
                         if (data != null) {
@@ -691,6 +692,7 @@ namespace APR.DashSupport
             else {
                 // Standings support removed 18/06/2023
                 ClearStandings();
+                PitStore.Reset();
             }
 
 
@@ -741,6 +743,8 @@ namespace APR.DashSupport
             ClearStandings();
             ClearRelativeProperties();
             ResetRelativeAndStandingsData();
+            PitStore.Reset();
+            StrategyBundle.Reset();
         }
 
         private void PluginManager_NewLap(int completedLapNumber, bool testLap, PluginManager manager, ref GameData data) {

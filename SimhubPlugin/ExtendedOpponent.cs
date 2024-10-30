@@ -80,11 +80,13 @@ namespace APR.DashSupport {
 
                 StrategyObserver = StrategyBundle.Instance;
 
-                // restore any old pit stop
-                LatestPitInfo = PitStore.Instance.GetLatestStopForCar(this.CarIdx);
+                // restore any old pit stop or use the new one
+                LatestPitInfo = PitStore.Instance.GetInProgressStopForCar(this.CarIdx);
                 LatestPitInfo.CarIdx = this.CarIdx;
                 LatestPitInfo.DriverName = this.DriverName;
-               
+
+                
+
 
 #if DEBUG
                 var name = LatestPitInfo.DriverName;
@@ -111,12 +113,11 @@ namespace APR.DashSupport {
                       
                         // We have only just now entered pitlane
                         LatestPitInfo.Lap = Lap;
+                        LatestPitInfo.LastPitLap = Lap;
                         LatestPitInfo.PitLaneEntryTime = time;
                         LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
                         LatestPitInfo.IsUnderSC = StrategyObserver.IsUnderSC || StrategyObserver.IsSafetyCarMovingInPitane;
                         LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
-
-
 
                         LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
 
@@ -150,8 +151,6 @@ namespace APR.DashSupport {
                         // We already were in our pit stall
                         LatestPitInfo.CurrentPitStallTimeSeconds = time - LatestPitInfo.PitStallEntryTime.Value;
 
-
-
                         if (!IsInPitStall) {
 
                             // We have now left our pit stall
@@ -179,8 +178,31 @@ namespace APR.DashSupport {
                                 LatestPitInfo._PitCounterHasIncremented = true;
                             }
 
-                            LatestPitInfo.LastPitLap = Lap;
+                           // LatestPitInfo.LastPitLap = Lap;
+                           // LatestPitInfo.Lap = Lap;
                             LatestPitInfo.CurrentStint = 0;
+
+                            // Was the Stop a valid CPS for vets?
+                            bool isValid = true;
+
+                            // Does the SC come early?
+                            if (LatestPitInfo.FirstSCPeriodBreaksEarlySCRule && LatestPitInfo.SafetyCarPeriodNumber == 1) {
+                                isValid = false;
+                            }
+                            // Was it too short
+                            if (LatestPitInfo.LastPitStallTimeSeconds < 0.5) {
+                                isValid = false;
+                            }
+
+                            if (LatestPitInfo.Lap < 2) {
+                                isValid = false;
+                            }
+                            // is it a second stop
+                            int countOfStopsInThisSCPeriod = PitStore.Instance.GetAllStopsForCar(this.CarIdx).FindAll(x => x.SafetyCarPeriodNumber == LatestPitInfo.SafetyCarPeriodNumber).Count();
+                            if (countOfStopsInThisSCPeriod > 1) {
+                                isValid = false;
+                            }
+                            LatestPitInfo.IsCPSStop = isValid;
 
                             // Reset
                             LatestPitInfo.PitStallEntryTime = null;
@@ -234,7 +256,7 @@ namespace APR.DashSupport {
                         var Stops = PitStore.Instance.GetAllStopsForCar(CarIdx);
 
                         foreach (PitStop stop in Stops) {
-                            stopLap.Add(stop.Lap);
+                            stopLap.Add(stop.LastPitLap);
                         }
                         return string.Join(",", stopLap);
                     }

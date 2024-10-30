@@ -65,7 +65,18 @@ namespace APR.DashSupport {
             }
         }
 
+        public static void Reset() {
+            instance = new PitStore();
+            instance.stopList = new List<PitStop>();
+        }
+
         public PitStop GetLatestStopForCar(int carIdx) {
+
+            var lastStop = PitStore.instance.stopList.FindLast(x => x.CarIdx == carIdx) ?? new PitStop();
+            return lastStop;
+        }
+
+        public PitStop GetInProgressStopForCar(int carIdx) {
 
             var lastStop = PitStore.instance.stopList.FindLast(x => x.CarIdx == carIdx) ?? new PitStop();
             return lastStop;
@@ -94,21 +105,19 @@ namespace APR.DashSupport {
         }
 
         public List<PitStop> GetAllCPSStopsForCar(int carIdx) {
-            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.IsCPSStop);
+            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.LastPitLap > 0 && x.LastPitStallTimeSeconds > 0);
             var cpsStops = allStops.FindAll(x => x.IsCPSStop).ToList();
             var distinctStops = cpsStops.GroupBy(x => x.SafetyCarPeriodNumber).Select(y => y.First()).ToList();
             return distinctStops;
         }
 
-        public void Reset() {
-            instance = new PitStore();
-            instance.stopList = new List<PitStop>();
-        }
+
 
         public void AddOrUpdateStop(PitStop stop) {
 
             // Check if our stop is in the store
-            var tmpStop = instance.stopList.Find(x => (x.Lap == stop.Lap) && (x.CarIdx == stop.CarIdx));
+           // var tmpStop = instance.stopList.Find(x => (x.Lap == stop.Lap) && (x.CarIdx == stop.CarIdx));
+            var tmpStop = instance.stopList.FindLast(x => (x.LastPitLaneTimeSeconds == 0) && (x.CarIdx == stop.CarIdx));
 
             // if not add it to the store
             if (tmpStop == null) {
@@ -117,13 +126,20 @@ namespace APR.DashSupport {
                 tmpStop.CarIdx = stop.CarIdx;
                 tmpStop.FirstSCPeriodBreaksEarlySCRule = StrategyBundle.Instance.FirstSCPeriodBreaksEarlySCRule;
                 tmpStop.IsUnderSC = StrategyBundle.Instance.IsSafetyCarMovingInPitane;
+                tmpStop.IsCPSStop = true;
+                tmpStop.DriverName = stop.DriverName;
 
-
-
-                instance.stopList.Add(tmpStop);
+                if (stop.CarIdx != StrategyBundle.Instance.SafetyCarIdx) {
+                    instance.stopList.Add(tmpStop);
+                }
 
                 // update our reference
                 tmpStop = instance.stopList.Find(x => (x.Lap == stop.Lap) && (x.CarIdx == stop.CarIdx));
+            }
+
+            // Update the lap
+            if (tmpStop.PitLaneEntryTime == 0) {
+                tmpStop.Lap = StrategyBundle.Instance.CurrentLap;
             }
 
             // update the stop details
@@ -144,7 +160,6 @@ namespace APR.DashSupport {
 
             tmpStop.LastPitLap = stop.LastPitLap;
             tmpStop.CurrentStint = stop.CurrentStint;
-
         }
     }
 
@@ -157,26 +172,8 @@ namespace APR.DashSupport {
         public bool IsUnderSC;
         public int SafetyCarPeriodNumber;
         public bool FirstSCPeriodBreaksEarlySCRule;
-        public bool IsCPSStop {
-            get {
-                bool isValid = true;
-
-                // Does the SC come early?
-                if (FirstSCPeriodBreaksEarlySCRule && SafetyCarPeriodNumber == 1) {
-                    isValid = false;
-                }
-                // Was it too short
-                if (this.LastPitStallTimeSeconds < 0.5) {
-                    isValid = false;
-                }
-                // is it a second stop
-                int countOfStopsInThisSCPeriod = PitStore.Instance.GetAllStopsForCar(this.CarIdx).FindAll(x => x.SafetyCarPeriodNumber == SafetyCarPeriodNumber).Count();
-                if (countOfStopsInThisSCPeriod > 1) {
-                    return false;
-                }
-                return isValid;
-            }
-        }
+        public bool IsCPSStop = true;
+           
 
         // this all needs to be saved and restored
         public bool _PitCounterHasIncremented;
@@ -196,6 +193,10 @@ namespace APR.DashSupport {
 
         public int LastPitLap { get; set; }
         public int CurrentStint { get; set; }
+
+        public override string ToString() {
+            return $"{DriverName} L:{Lap} BT:{CurrentPitStallTimeSeconds} PT:{CurrentPitLaneTimeSeconds} LBT:{LastPitStallTimeSeconds} LPT:{LastPitLaneTimeSeconds} CPS{IsCPSStop}";
+        }
 
     }
 }
