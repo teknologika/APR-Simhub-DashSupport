@@ -107,7 +107,7 @@ namespace APR.DashSupport {
                         LatestPitInfo.PitLaneEntryTime = time;
                         LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
                         LatestPitInfo.IsUnderSC = StrategyObserver.IsUnderSC || StrategyObserver.IsSafetyCarMovingInPitane;
-
+                        LatestPitInfo.IsCPSStop = true;
                         LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
                         LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
                         PitStore.Instance.AddStop(LatestPitInfo);
@@ -143,8 +143,6 @@ namespace APR.DashSupport {
                         if (!IsInPitStall) {
 
                             // We have now left our pit stall
-
-
                             LatestPitInfo.LastPitStallTimeSeconds = time - LatestPitInfo.PitStallEntryTime.Value;
                             LatestPitInfo.CurrentPitStallTimeSeconds = 0;
 
@@ -170,9 +168,28 @@ namespace APR.DashSupport {
                            // LatestPitInfo.Lap = Lap;
                             LatestPitInfo.CurrentStint = 0;
 
+
+                            // Was the Stop a valid CPS for vets?
+                            bool isValid = true;
+
+                            // Does the SC come early?
+                            if (StrategyObserver.FirstSCPeriodBreaksEarlySCRule && LatestPitInfo.SafetyCarPeriodNumber == 1) {
+                                isValid = false;
+                            }
+                            // Was it too short
+                            if (LatestPitInfo.LastPitStallTimeSeconds < 0.5) {
+                                isValid = false;
+                            }
+
+                            if (LatestPitInfo.LastPitLap < 2) {
+                                isValid = false;
+                            }
+                            LatestPitInfo.IsCPSStop = isValid;
+
                             // Reset
                             LatestPitInfo.PitStallEntryTime = null;
                             LatestPitInfo.PitStallExitTime = time;
+
                         }
                         PitStore.Instance.UpdateLastStop(LatestPitInfo);
                     }
@@ -345,13 +362,13 @@ namespace APR.DashSupport {
 
 
                     // For each safety car period
-                    var stopsUnderSC = PitStore.Instance.GetAllStopsForCarNotUnderSC(CarIdx).ToList();
+                    var stopsUnderSC = PitStore.Instance.GetAllStopsForCarUnderSC(CarIdx).ToList();
 
                     int numberOfStopsUnderSC = 0;
                     for (int i = 0; i < StrategyObserver.SafetyCarPeriodCount; i++)
                     {
                         // if there was one or more stops, add 1 to the count
-                        int stopsInScPeriod = stopsUnderSC.FindAll(x => (x.SafetyCarPeriodNumber == 1+1)).Count();
+                        int stopsInScPeriod = stopsUnderSC.FindAll(x => (x.SafetyCarPeriodNumber == i+1)).Count();
                         if (stopsInScPeriod > 1) {
                             stopsInScPeriod = 1;
                         }

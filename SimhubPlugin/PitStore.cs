@@ -116,26 +116,9 @@ namespace APR.DashSupport {
         }
 
         public List<PitStop> GetAllCPSStopsForCar(int carIdx) {
-            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.LastPitLap > 0 && x.LastPitStallTimeSeconds > 0);
+            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.LastPitLap > 0 && x.LastPitStallTimeSeconds > 0 && x.IsCPSStop);
 
-            foreach (var item in allStops) {
-                // Was the Stop a valid CPS for vets?
-                bool isValid = true;
-
-                // Does the SC come early?
-                if (item.FirstSCPeriodBreaksEarlySCRule && item.SafetyCarPeriodNumber == 1) {
-                    isValid = false;
-                }
-                // Was it too short
-                if (item.LastPitStallTimeSeconds < 0.5) {
-                    isValid = false;
-                }
-
-                if (item.Lap < 2) {
-                    isValid = false;
-                }
-                item.IsCPSStop = isValid;
-            }
+           
             return allStops;
 
         }
