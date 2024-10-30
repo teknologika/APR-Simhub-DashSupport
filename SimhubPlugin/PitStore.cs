@@ -88,6 +88,16 @@ namespace APR.DashSupport {
             return allStops;
         }
 
+        public List<PitStop> GetAllStopsForCarNotUnderSC(int carIdx) {
+            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.LastPitStallTimeSeconds > 0 && !x.IsUnderSC );
+            return allStops;
+        }
+
+        public List<PitStop> GetAllStopsForCarUnderSC(int carIdx) {
+            var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.LastPitStallTimeSeconds > 0 && x.IsUnderSC);
+            return allStops;
+        }
+
         public List<PitStop> GetAllCarsInPitlane() {
             var allStops = PitStore.instance.stopList.FindAll(x => x.CurrentPitLaneTimeSeconds > 0);
             allStops.Find(x => x.CarIdx == StrategyBundle.Instance.SafetyCarIdx);

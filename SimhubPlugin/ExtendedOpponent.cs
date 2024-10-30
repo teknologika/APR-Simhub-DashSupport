@@ -334,8 +334,32 @@ namespace APR.DashSupport {
 
             public int PitStops_NumberOfCPSStops {
                 get {
-                        var Stops = PitStore.Instance.GetAllCPSStopsForCar(CarIdx);
-                        return Stops.Count;
+
+                    int numberOfCPS = 0;
+
+                    // Get the number of stops not under SC
+                    var stopsNotUnderSC = PitStore.Instance.GetAllStopsForCarNotUnderSC(CarIdx).ToList();
+                    numberOfCPS = stopsNotUnderSC.Count;
+
+                    // Get the number of stops under SC
+
+
+                    // For each safety car period
+                    var stopsUnderSC = PitStore.Instance.GetAllStopsForCarNotUnderSC(CarIdx).ToList();
+
+                    int numberOfStopsUnderSC = 0;
+                    for (int i = 0; i < StrategyObserver.SafetyCarPeriodCount; i++)
+                    {
+                        // if there was one or more stops, add 1 to the count
+                        int stopsInScPeriod = stopsUnderSC.FindAll(x => (x.SafetyCarPeriodNumber == 1+1)).Count();
+                        if (stopsInScPeriod > 1) {
+                            stopsInScPeriod = 1;
+                        }
+                        numberOfStopsUnderSC += stopsInScPeriod;
+                    }
+
+                    numberOfCPS = numberOfCPS + numberOfStopsUnderSC;
+                    return numberOfCPS;
                 }
             }
 
