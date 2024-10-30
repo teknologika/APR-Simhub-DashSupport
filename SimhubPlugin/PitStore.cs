@@ -29,6 +29,7 @@ using static SimHub.Plugins.DataPlugins.PersistantTracker.PersistantTrackerPlugi
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
 using System.Net.Security;
 using static SimHub.Plugins.UI.SupportedGamePicker;
+using System.Windows.Forms;
 
 namespace APR.DashSupport {
 
@@ -106,39 +107,44 @@ namespace APR.DashSupport {
 
         public List<PitStop> GetAllCPSStopsForCar(int carIdx) {
             var allStops = PitStore.instance.stopList.FindAll(x => x.CarIdx == carIdx && x.LastPitLap > 0 && x.LastPitStallTimeSeconds > 0);
-            var cpsStops = allStops.FindAll(x => x.IsCPSStop).ToList();
-            var distinctStops = cpsStops.GroupBy(x => x.SafetyCarPeriodNumber).Select(y => y.First()).ToList();
-            return distinctStops;
-        }
 
+            foreach (var item in allStops) {
+                // Was the Stop a valid CPS for vets?
+                bool isValid = true;
 
-
-        public void AddOrUpdateStop(PitStop stop) {
-
-            // Check if our stop is in the store
-           // var tmpStop = instance.stopList.Find(x => (x.Lap == stop.Lap) && (x.CarIdx == stop.CarIdx));
-            var tmpStop = instance.stopList.FindLast(x => (x.LastPitLaneTimeSeconds == 0) && (x.CarIdx == stop.CarIdx));
-
-            // if not add it to the store
-            if (tmpStop == null) {
-                tmpStop = new PitStop();
-                tmpStop.Lap = stop.Lap;
-                tmpStop.CarIdx = stop.CarIdx;
-                tmpStop.FirstSCPeriodBreaksEarlySCRule = StrategyBundle.Instance.FirstSCPeriodBreaksEarlySCRule;
-                tmpStop.IsUnderSC = StrategyBundle.Instance.IsSafetyCarMovingInPitane;
-                tmpStop.IsCPSStop = true;
-                tmpStop.DriverName = stop.DriverName;
-
-                if (stop.CarIdx != StrategyBundle.Instance.SafetyCarIdx) {
-                    instance.stopList.Add(tmpStop);
+                // Does the SC come early?
+                if (item.FirstSCPeriodBreaksEarlySCRule && item.SafetyCarPeriodNumber == 1) {
+                    isValid = false;
+                }
+                // Was it too short
+                if (item.LastPitStallTimeSeconds < 0.5) {
+                    isValid = false;
                 }
 
-                // update our reference
-                tmpStop = instance.stopList.Find(x => (x.Lap == stop.Lap) && (x.CarIdx == stop.CarIdx));
+                if (item.Lap < 2) {
+                    isValid = false;
+                }
+                item.IsCPSStop = isValid;
             }
+            return allStops;
+
+        }
+
+        public void AddStop(PitStop stop) {
+
+            if (stop.CarIdx != StrategyBundle.Instance.SafetyCarIdx) {
+                instance.stopList.Add(stop);
+            }
+        }
+
+        public void UpdateLastStop(PitStop stop) {
+
+            // Check if our stop is in the store
+            var tmpStop = instance.stopList.Find(x => (x.Lap == stop.Lap) && (x.CarIdx == stop.CarIdx));
+            //var tmpStop = instance.stopList.FindLast(x => x.CarIdx == stop.CarIdx);
 
             // Update the lap
-            if (tmpStop.PitLaneEntryTime == 0) {
+            if (tmpStop.PitLaneEntryTime >= 0) {
                 tmpStop.Lap = StrategyBundle.Instance.CurrentLap;
             }
 
@@ -172,8 +178,8 @@ namespace APR.DashSupport {
         public bool IsUnderSC;
         public int SafetyCarPeriodNumber;
         public bool FirstSCPeriodBreaksEarlySCRule;
-        public bool IsCPSStop = true;
-           
+        public bool IsCPSStop;
+        public bool SCFirstStop = true;
 
         // this all needs to be saved and restored
         public bool _PitCounterHasIncremented;
