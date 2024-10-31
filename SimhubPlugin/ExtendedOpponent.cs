@@ -49,8 +49,8 @@ namespace APR.DashSupport {
             public DataSampleEx irdata;
 
             public Telemetry telemetry;
-            public PitStop LatestPitInfo;
-            public StrategyBundle StrategyObserver;
+            public PitStop LatestPitInfo = new PitStop();
+            public StrategyBundle StrategyObserver = StrategyBundle.Instance;
 
             private const float PIT_MINSPEED = 0.01f;
 
@@ -59,13 +59,17 @@ namespace APR.DashSupport {
             }
 
             public void CalculatePitInfo(double time) {
+                if (CarIdx == StrategyBundle.Instance.SafetyCarIdx) {
+                    return;
+                }
 
                 StrategyObserver = StrategyBundle.Instance;
 
                 // restore any old pit stop or use the new one
                 LatestPitInfo = PitStore.Instance.GetInProgressStopForCar(this.CarIdx);
-                LatestPitInfo.CarIdx = this.CarIdx;
-                LatestPitInfo.DriverName = this.DriverName;
+
+                // LatestPitInfo.CarIdx = this.CarIdx;
+                //LatestPitInfo.DriverName = this.DriverName;
 
                 // If we are not in the world (blinking?), stop checking
                 if (!IsInWorld) {
@@ -83,20 +87,26 @@ namespace APR.DashSupport {
                 if (LatestPitInfo.PitLaneEntryTime == null) {
                     // We were not previously in pitlane
                     if (IsCarInPitLane) {
-                        Debug.WriteLine(LatestPitInfo.DriverName + " in lane");
+                        if (LatestPitInfo.DriverName == null) {
+                            LatestPitInfo.DriverName = this.DriverName;
+                            LatestPitInfo.CarIdx = this.CarIdx;
 
-                        // We have only just now entered pitlane
-                        LatestPitInfo.Lap = Lap;
-                        LatestPitInfo.LastPitLap = Lap;
-                        LatestPitInfo.PitLaneEntryTime = time;
-                        LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
-                        LatestPitInfo.IsUnderSC = StrategyObserver.IsUnderSC || StrategyObserver.IsSafetyCarMovingInPitane;
-                        LatestPitInfo.IsCPSStop = true;
-                        LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
-                        LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
-                        PitStore.Instance.AddStop(LatestPitInfo);
-                        
-                     }
+
+                            Debug.WriteLine(LatestPitInfo.DriverName + " in lane");
+
+                            // We have only just now entered pitlane]
+                            LatestPitInfo.Lap = Lap;
+                            LatestPitInfo.DriverName = DriverName;
+                            LatestPitInfo.LastPitLap = Lap;
+                            LatestPitInfo.PitLaneEntryTime = time;
+                            LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
+                            LatestPitInfo.IsUnderSC = StrategyObserver.IsUnderSC || StrategyObserver.IsSafetyCarMovingInPitane;
+                            LatestPitInfo.IsCPSStop = true;
+                            LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
+                            LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
+                            PitStore.Instance.AddStop(LatestPitInfo);
+                        }
+                    }
                 }
                 else {
 
@@ -280,25 +290,26 @@ namespace APR.DashSupport {
                     var Stops = PitStore.Instance.GetAllStopsForCar(CarIdx);
 
                     // Add the starting fuel
-                    double range = StrategyObserver.StartingFuel / StrategyObserver.FuelLitersPerLap;
+                    double rangeInLaps = StrategyObserver.StartingFuel / StrategyObserver.FuelLitersPerLap;
                        
                     // track our fuel usage
-                    double trackRange = range;
-                    int LastPitLap = 12;
-                    estimatedRange.Add(range.ToString("0"));
+                    double trackRangeInLaps = rangeInLaps;
+                    int LastPitLap = 0;
+                    estimatedRange.Add(rangeInLaps.ToString("0"));
 
-                    for (int i = 0; i < Stops.Count; i++)
+                    for ( int i = 0; i < Stops.Count; i++)
                     {
                         // How much did we burn
-                        double fuelBurnt = (Stops[i].LastPitLap - LastPitLap * StrategyBundle.Instance.FuelLitersPerLap);
+                        double fuelBurnt = ((Stops[i].LastPitLap - LastPitLap) * StrategyObserver.FuelLitersPerLap);
                         LastPitLap = Stops[i].LastPitLap;
 
                         // How much did we add
                         double fuelAdded = (Stops[i].LastPitStallTimeSeconds * StrategyObserver.FuelFillRateLitresPerSecond);
-                           
+
+                        double LapsDelta = (fuelAdded - fuelBurnt) / StrategyObserver.FuelLitersPerLap;
                         // push to the array
-                        trackRange = trackRange - fuelBurnt + fuelAdded;
-                        estimatedRange.Add(trackRange.ToString("0"));
+                        trackRangeInLaps = trackRangeInLaps + LapsDelta;
+                        estimatedRange.Add(trackRangeInLaps.ToString("0"));
                     }
 
                     return string.Join(",", estimatedRange);
@@ -307,32 +318,20 @@ namespace APR.DashSupport {
 
             public string PitStops_AllStopsEstimatedRangeDelimitedStringPct {
                 get {
-
-                    List<string> estimatedRangePct = new List<string>();
-
-                    var Stops = PitStore.Instance.GetAllStopsForCar(CarIdx);
-                   
-                    // Add the starting fuel
-                    double range = StrategyObserver.StartingFuel / StrategyObserver.FuelLitersPerLap;
-
-                    // track our fuel usage
-                    double trackRange = range;
-
-                    double trackRangePct = range / StrategyObserver.EstimatedTotalFuel;
-                    estimatedRangePct.Add((trackRangePct).ToString("0.0"));
-
-                    for (int i = 0; i < Stops.Count; i++) {
-                        // How much did we burn
-                        double fuelBurnt = (Stops[i].CurrentStint * StrategyObserver.FuelLitersPerLap);
-
-                        // How much did we add
-                        double fuelAdded = (Stops[i].LastPitStallTimeSeconds * StrategyObserver.FuelFillRateLitresPerSecond);
-
-                        // push to the array
-                        trackRange = (trackRangePct - fuelBurnt + fuelAdded);
-                        trackRangePct = trackRange / StrategyObserver.FuelLitersPerLap;
-                        estimatedRangePct.Add((trackRangePct).ToString("0.0"));
+                    string[] estRanges = PitStops_AllStopsEstimatedRangeDelimitedString.Split(',');
+                    if (estRanges.Count() == 0) {
+                        return "";
                     }
+                    List<string> estimatedRangePct = new List<string>();
+                    for (int i = 0; i < estRanges.Count(); i++)
+                    {
+                        double lapsCalcPct = Convert.ToDouble(estRanges[i]) / StrategyObserver.TotaLaps;
+                        estimatedRangePct.Add((lapsCalcPct*100).ToString("0"));
+                    }
+
+
+                    //StrategyObserver.EstimatedTotalFuel;
+
 
                     return string.Join(",", estimatedRangePct);
                 }

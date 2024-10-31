@@ -133,12 +133,12 @@ namespace APR.DashSupport {
         public void UpdateLastStop(PitStop stop) {
 
             // Check if our stop is in the store
-            var tmpStop = instance.stopList.Find(x => (x.Lap == stop.Lap) && (x.CarIdx == stop.CarIdx));
+            var tmpStop = instance.stopList.Find(x => (x.LastPitLap == stop.LastPitLap) && (x.CarIdx == stop.CarIdx));
             //var tmpStop = instance.stopList.FindLast(x => x.CarIdx == stop.CarIdx);
 
             // Update the lap
             if (tmpStop.PitLaneEntryTime >= 0) {
-                tmpStop.Lap = StrategyBundle.Instance.CurrentLap;
+            //    tmpStop.Lap = StrategyBundle.Instance.CurrentLap;
             }
 
             // update the stop details
