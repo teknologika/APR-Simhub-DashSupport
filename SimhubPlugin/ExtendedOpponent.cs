@@ -5,6 +5,7 @@ using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 
 namespace APR.DashSupport {
@@ -77,7 +78,7 @@ namespace APR.DashSupport {
                 }
 
                 // Are we NOW in pit lane (pitstall includes pitlane)
-                //  InPitLane = IsApproachingPits || IsInPitStall;
+                var InPitLane = IsApproachingPits || IsInPitStall;
 
                 // Are we NOW in pit stall?
                 //IsInPitStall = IsInPitStall;
@@ -86,26 +87,26 @@ namespace APR.DashSupport {
                 // Were we already in pitlane previously?
                 if (LatestPitInfo.PitLaneEntryTime == null) {
                     // We were not previously in pitlane
-                    if (IsCarInPitLane) {
+                    if (InPitLane) {
                         if (LatestPitInfo.DriverName == null) {
                             LatestPitInfo.DriverName = this.DriverName;
                             LatestPitInfo.CarIdx = this.CarIdx;
-
-
-                            Debug.WriteLine(LatestPitInfo.DriverName + " in lane");
-
-                            // We have only just now entered pitlane]
-                            LatestPitInfo.Lap = Lap;
-                            LatestPitInfo.DriverName = DriverName;
-                            LatestPitInfo.LastPitLap = Lap;
-                            LatestPitInfo.PitLaneEntryTime = time;
-                            LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
-                            LatestPitInfo.IsUnderSC = StrategyObserver.IsUnderSC || StrategyObserver.IsSafetyCarMovingInPitane;
-                            LatestPitInfo.IsCPSStop = true;
-                            LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
-                            LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
-                            PitStore.Instance.AddStop(LatestPitInfo);
                         }
+
+                        Debug.WriteLine(LatestPitInfo.DriverName + " in lane");
+
+                        // We have only just now entered pitlane]
+                        LatestPitInfo.Lap = Lap;
+                        LatestPitInfo.DriverName = DriverName;
+                        LatestPitInfo.LastPitLap = Lap;
+                        LatestPitInfo.PitLaneEntryTime = time;
+                        LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
+                        LatestPitInfo.IsUnderSC = StrategyObserver.IsUnderSC || StrategyObserver.IsSafetyCarMovingInPitane;
+                        LatestPitInfo.IsCPSStop = true;
+                        LatestPitInfo.SafetyCarPeriodNumber = StrategyObserver.SafetyCarPeriodCount;
+                        LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
+                        PitStore.Instance.AddStop(LatestPitInfo);
+                        
                     }
                 }
                 else {
@@ -186,6 +187,8 @@ namespace APR.DashSupport {
 
                         }
                         PitStore.Instance.UpdateLastStop(LatestPitInfo);
+
+                        
                     }
 
                     if (!IsCarInPitLane) {
@@ -197,6 +200,10 @@ namespace APR.DashSupport {
                         LatestPitInfo.CurrentPitLaneTimeSeconds = 0;
 
                         PitStore.Instance.UpdateLastStop(LatestPitInfo);
+                        PitStop newStop = new PitStop();
+                        newStop.DriverName = DriverName;
+                        newStop.CarIdx = CarIdx;
+                        PitStore.Instance.AddStop(newStop);
 
                         // Reset
                         LatestPitInfo.PitLaneEntryTime = null;
@@ -452,13 +459,13 @@ namespace APR.DashSupport {
                     if (PitStops_CPS1Served) {
                         return Color_Green;
                     }
-                    else if (IsApproachingPits) {
+                    else if (IsCarInPitLane) {
                         return Color_Blue;
                     }
                     else if (IsInPitStall) {
                         return Color_Purple;
                     }
-                    return Color_DarkGrey;
+                    return Color_DarkBackground;
                 }
             }
 
@@ -467,27 +474,27 @@ namespace APR.DashSupport {
                     if (PitStops_CPS2Served) {
                         return Color_Green;
                     }
-                    if (PitStops_CPS1Served) {
-                        if (IsApproachingPits) {
+                    else if (PitStops_CPS1Served) {
+                        if (IsCarInPitLane) {
                             return Color_Blue;
                         }
                         else if (IsInPitStall) {
                             return Color_Purple;
                         }
                     }
-                    return Color_DarkGrey;
+                    return Color_DarkBackground;
                 }
             }
 
             public string PitStops_PitStatusColor {
                 get {
-                     if (IsApproachingPits) {
+                    if (IsCarInPitLane) {
                         return Color_Blue;
-                     }
-                     if (IsInPitStall) {
+                    }
+                    else if (IsInPitStall) {
                         return Color_Purple;
-                     }
-                    return Color_DarkGrey;
+                    }
+                    return Color_DarkBackground;
                 }
             }
 

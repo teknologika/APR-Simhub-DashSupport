@@ -71,7 +71,7 @@ namespace APR.DashSupport {
 
                     case "homestead roadb-Road Course B":  return double.MaxValue;
 
-                    case "longbeach": return 2.0;
+                    case "longbeach": return 2.7;
 
                     default: return double.MaxValue;
                        
@@ -166,7 +166,7 @@ namespace APR.DashSupport {
             StrategyObserver.TrackNameWithConfig =  data.NewData.TrackNameWithConfig;
             StrategyObserver.TrackLength = data.NewData.TrackLength;
 
-
+            // Get the Vets SC  FIXME
 
 
         }
