@@ -284,20 +284,21 @@ namespace APR.DashSupport {
                        
                     // track our fuel usage
                     double trackRange = range;
-
-                    estimatedRange.Add(range.ToString("0.0"));
+                    int LastPitLap = 12;
+                    estimatedRange.Add(range.ToString("0"));
 
                     for (int i = 0; i < Stops.Count; i++)
                     {
                         // How much did we burn
-                        double fuelBurnt = (Stops[i].CurrentStint * StrategyBundle.Instance.FuelLitersPerLap);
-                            
+                        double fuelBurnt = (Stops[i].LastPitLap - LastPitLap * StrategyBundle.Instance.FuelLitersPerLap);
+                        LastPitLap = Stops[i].LastPitLap;
+
                         // How much did we add
                         double fuelAdded = (Stops[i].LastPitStallTimeSeconds * StrategyObserver.FuelFillRateLitresPerSecond);
                            
                         // push to the array
                         trackRange = trackRange - fuelBurnt + fuelAdded;
-                        estimatedRange.Add(trackRange.ToString("0.0"));
+                        estimatedRange.Add(trackRange.ToString("0"));
                     }
 
                     return string.Join(",", estimatedRange);
@@ -315,9 +316,10 @@ namespace APR.DashSupport {
                     double range = StrategyObserver.StartingFuel / StrategyObserver.FuelLitersPerLap;
 
                     // track our fuel usage
-                    double trackRangePct = range/StrategyObserver.EstimatedTotalFuel;
+                    double trackRange = range;
 
-                    estimatedRangePct.Add(range.ToString("0.0"));
+                    double trackRangePct = range / StrategyObserver.EstimatedTotalFuel;
+                    estimatedRangePct.Add((trackRangePct).ToString("0.0"));
 
                     for (int i = 0; i < Stops.Count; i++) {
                         // How much did we burn
@@ -327,8 +329,9 @@ namespace APR.DashSupport {
                         double fuelAdded = (Stops[i].LastPitStallTimeSeconds * StrategyObserver.FuelFillRateLitresPerSecond);
 
                         // push to the array
-                        trackRangePct = StrategyObserver.EstimatedTotalFuel / (trackRangePct - fuelBurnt + fuelAdded);
-                        estimatedRangePct.Add(trackRangePct.ToString("0.0"));
+                        trackRange = (trackRangePct - fuelBurnt + fuelAdded);
+                        trackRangePct = trackRange / StrategyObserver.FuelLitersPerLap;
+                        estimatedRangePct.Add((trackRangePct).ToString("0.0"));
                     }
 
                     return string.Join(",", estimatedRangePct);
