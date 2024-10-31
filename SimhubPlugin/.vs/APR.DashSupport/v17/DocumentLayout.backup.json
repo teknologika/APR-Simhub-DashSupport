@@ -1,0 +1,196 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\standings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:standings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\relative.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:relative.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|c:\\users\\bruce\\documents\\github\\apr-simhub-dashsupport\\simhubplugin\\extendedopponent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:extendedopponent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\pitstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:pitstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\aprdashplugin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:aprdashplugin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\pitstrategycalculations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:pitstrategycalculations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\ratingscalculations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:ratingscalculations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|c:\\users\\bruce\\documents\\github\\apr-simhub-dashsupport\\simhubplugin\\customcontrols.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:customcontrols.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|c:\\users\\bruce\\documents\\github\\apr-simhub-dashsupport\\simhubplugin\\iracingrelative.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:iracingrelative.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\dashpluginsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833040C9-FE5E-4CCF-B21D-71979E049B6B}|APR.DashSupport.csproj|solutionrelative:dashpluginsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "DashPluginSettings.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\DashPluginSettings.cs",
+              "RelativeDocumentMoniker": "DashPluginSettings.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\DashPluginSettings.cs",
+              "RelativeToolTip": "DashPluginSettings.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAhwBwAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-22T05:03:37.195Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Relative.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\Relative.cs",
+              "RelativeDocumentMoniker": "Relative.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\Relative.cs",
+              "RelativeToolTip": "Relative.cs",
+              "ViewState": "AgIAAL4CAAAAAAAAAAASwKYDAABJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-22T12:07:23.098Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "PitStrategyCalculations.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\PitStrategyCalculations.cs",
+              "RelativeDocumentMoniker": "PitStrategyCalculations.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\PitStrategyCalculations.cs",
+              "RelativeToolTip": "PitStrategyCalculations.cs",
+              "ViewState": "AgIAAE0AAAAAAAAAAAAhwFgAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-27T10:46:12.894Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "APRDashPlugin.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\APRDashPlugin.cs",
+              "RelativeDocumentMoniker": "APRDashPlugin.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\APRDashPlugin.cs",
+              "RelativeToolTip": "APRDashPlugin.cs",
+              "ViewState": "AgIAAMwCAAAAAAAAAAAhwNcCAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T01:56:09.537Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Standings.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\Standings.cs",
+              "RelativeDocumentMoniker": "Standings.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\Standings.cs",
+              "RelativeToolTip": "Standings.cs",
+              "ViewState": "AgIAAGoBAAAAAAAAAAAiwHwBAABmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-23T00:50:51.613Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "PitStore.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\PitStore.cs",
+              "RelativeDocumentMoniker": "PitStore.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\PitStore.cs",
+              "RelativeToolTip": "PitStore.cs",
+              "ViewState": "AgIAAFcAAAAAAAAAAAAhwGIAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-27T03:50:07.163Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ExtendedOpponent.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\ExtendedOpponent.cs",
+              "RelativeDocumentMoniker": "ExtendedOpponent.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\ExtendedOpponent.cs",
+              "RelativeToolTip": "ExtendedOpponent.cs",
+              "ViewState": "AgIAAOMAAAAAAAAAAAAiwG0BAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-27T03:21:39.253Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "RatingsCalculations.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\RatingsCalculations.cs",
+              "RelativeDocumentMoniker": "RatingsCalculations.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\RatingsCalculations.cs",
+              "RelativeToolTip": "RatingsCalculations.cs",
+              "ViewState": "AgIAACIAAAAAAAAAAAAhwC0AAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-29T08:22:37.062Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "CustomControls.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\CustomControls.cs",
+              "RelativeDocumentMoniker": "CustomControls.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\CustomControls.cs",
+              "RelativeToolTip": "CustomControls.cs",
+              "ViewState": "AgIAADYAAAAAAAAAAAAhwEEAAABHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-30T22:08:46.789Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "iRacingRelative.cs",
+              "DocumentMoniker": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\iRacingRelative.cs",
+              "RelativeDocumentMoniker": "iRacingRelative.cs",
+              "ToolTip": "C:\\Users\\bruce\\Documents\\GitHub\\APR-Simhub-DashSupport\\SimhubPlugin\\iRacingRelative.cs",
+              "RelativeToolTip": "iRacingRelative.cs",
+              "ViewState": "AgIAAEkAAAAAAAAAAAAhwFQAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-30T22:08:49.971Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

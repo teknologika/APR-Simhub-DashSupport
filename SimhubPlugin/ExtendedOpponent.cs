@@ -1,27 +1,11 @@
 ﻿using GameReaderCommon;
 using IRacingReader;
 using iRacingSDK;
-using MahApps.Metro.Controls;
 using SimHub.Plugins;
-using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
-using SimHub.Plugins.OutputPlugins.GraphicalDash.Behaviors.DoubleText.Imp;
-using SimHub.Plugins.OutputPlugins.GraphicalDash.BitmapDisplay.TurnTDU;
-using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media.Animation;
-using static APR.DashSupport.APRDashPlugin;
-using static iRacingSDK.SessionData._DriverInfo;
 
 namespace APR.DashSupport {
 
@@ -229,39 +213,6 @@ namespace APR.DashSupport {
                 }
             }
 
-            public string PitStops_AllStopsStopLastStopOnLapDelimitedString {
-                get {
-                    List<double> stopLap = new List<double>();
-                    if (LatestPitInfo.NumberOfPitstops == 0)
-                        return "";
-                    else {
-
-                        var Stops = PitStore.Instance.GetAllStopsForCar(CarIdx);
-
-                        foreach (PitStop stop in Stops) {
-                            stopLap.Add(stop.LastPitLap);
-                        }
-                        return string.Join(",", stopLap);
-                    }
-                }
-            }
-
-            public string PitStops_AllCPSStopsStopLastStopOnLapDelimitedString {
-                get {
-                    List<double> stopLap = new List<double>();
-                    if (LatestPitInfo.NumberOfPitstops == 0)
-                        return "";
-                    else {
-
-                        var Stops = PitStore.Instance.GetAllCPSStopsForCar(CarIdx);
-
-                        foreach (PitStop stop in Stops) {
-                            stopLap.Add(stop.Lap);
-                        }
-                        return string.Join(",", stopLap);
-                    }
-                }
-            }
 
             public double PitStops_LastStopTimeInPitBox {
                 get {
@@ -322,20 +273,65 @@ namespace APR.DashSupport {
                 }
             }
 
-            public string PitStops_AllStopsStopTimeInPitBoxDelimitedString {
+            public string PitStops_AllStopsEstimatedRangeDelimitedString {
                 get {
-                    List<double> stopTimes = new List<double>();
-                    if (LatestPitInfo.NumberOfPitstops == 0)
-                        return "";
-                    else {
-                        
-                        var Stops = PitStore.Instance.GetAllStopsForCar(CarIdx);
+                    List<string> estimatedRange = new List<string>();
+                    
+                    var Stops = PitStore.Instance.GetAllStopsForCar(CarIdx);
 
-                        foreach (PitStop stop in Stops) {
-                            stopTimes.Add(stop.LastPitStallTimeSeconds);
-                        }
-                        return string.Join(",", stopTimes);
+                    // Add the starting fuel
+                    double range = StrategyObserver.StartingFuel / StrategyObserver.FuelLitersPerLap;
+                       
+                    // track our fuel usage
+                    double trackRange = range;
+
+                    estimatedRange.Add(range.ToString("0.0"));
+
+                    for (int i = 0; i < Stops.Count; i++)
+                    {
+                        // How much did we burn
+                        double fuelBurnt = (Stops[i].CurrentStint * StrategyBundle.Instance.FuelLitersPerLap);
+                            
+                        // How much did we add
+                        double fuelAdded = (Stops[i].LastPitStallTimeSeconds * StrategyObserver.FuelFillRateLitresPerSecond);
+                           
+                        // push to the array
+                        trackRange = trackRange - fuelBurnt + fuelAdded;
+                        estimatedRange.Add(trackRange.ToString("0.0"));
                     }
+
+                    return string.Join(",", estimatedRange);
+                }
+            }
+
+            public string PitStops_AllStopsEstimatedRangeDelimitedStringPct {
+                get {
+
+                    List<string> estimatedRangePct = new List<string>();
+
+                    var Stops = PitStore.Instance.GetAllStopsForCar(CarIdx);
+                   
+                    // Add the starting fuel
+                    double range = StrategyObserver.StartingFuel / StrategyObserver.FuelLitersPerLap;
+
+                    // track our fuel usage
+                    double trackRangePct = range/StrategyObserver.EstimatedTotalFuel;
+
+                    estimatedRangePct.Add(range.ToString("0.0"));
+
+                    for (int i = 0; i < Stops.Count; i++) {
+                        // How much did we burn
+                        double fuelBurnt = (Stops[i].CurrentStint * StrategyObserver.FuelLitersPerLap);
+
+                        // How much did we add
+                        double fuelAdded = (Stops[i].LastPitStallTimeSeconds * StrategyObserver.FuelFillRateLitresPerSecond);
+
+                        // push to the array
+                        trackRangePct = StrategyObserver.EstimatedTotalFuel / (trackRangePct - fuelBurnt + fuelAdded);
+                        estimatedRangePct.Add(trackRangePct.ToString("0.0"));
+                    }
+
+                    return string.Join(",", estimatedRangePct);
                 }
             }
 
@@ -345,6 +341,59 @@ namespace APR.DashSupport {
                         return 0;
                     else {
                         return (PitStops_AllStopsStopTimeInPitBox * (StrategyObserver.FuelFillRateLitresPerSecond) + StrategyObserver.StartingFuel / StrategyObserver.FuelLitersPerLap);
+                    }
+                }
+            }
+
+            public string PitStops_AllStopsLapDelimitedString {
+                get {
+                    List<string> stopLap = new List<string>();
+                    if (LatestPitInfo.NumberOfPitstops == 0)
+                        stopLap.Add("0");
+                    else {
+
+                        var Stops = PitStore.Instance.GetAllStopsForCar(CarIdx);
+
+                        foreach (PitStop stop in Stops) {
+                            stopLap.Add(stop.LastPitLap.ToString("0"));
+                        }
+
+                    }
+                    return string.Join(",", stopLap);
+                }
+            }
+
+            public string PitStops_AllStopsLastDelimitedStringPct {
+                get {
+                    List<string> stopLapPct = new List<string>();
+                    if (LatestPitInfo.NumberOfPitstops == 0)
+                        stopLapPct.Add("0");
+                    else {
+
+                        int totalLaps = StrategyObserver.TotaLaps;
+                        var Stops = PitStore.Instance.GetAllStopsForCar(CarIdx);
+                        foreach (PitStop stop in Stops) {
+                            stopLapPct.Add((stop.LastPitLap / totalLaps).ToString("0"));
+                        }
+
+                    }
+                    return string.Join(",", stopLapPct);
+                }
+            }
+
+            public string PitStops_AllStopsCPSLapDelimitedString {
+                get {
+                    List<double> stopLap = new List<double>();
+                    if (LatestPitInfo.NumberOfPitstops == 0)
+                        return "";
+                    else {
+
+                        var Stops = PitStore.Instance.GetAllCPSStopsForCar(CarIdx);
+
+                        foreach (PitStop stop in Stops) {
+                            stopLap.Add(stop.Lap);
+                        }
+                        return string.Join(",", stopLap);
                     }
                 }
             }
@@ -395,6 +444,52 @@ namespace APR.DashSupport {
                     return false;
                 }
             }
+
+            public string PitStops_CPS1IndicatorColor {
+                get {
+                    if (PitStops_CPS1Served) {
+                        return Color_Green;
+                    }
+                    else if (IsApproachingPits) {
+                        return Color_Blue;
+                    }
+                    else if (IsInPitStall) {
+                        return Color_Purple;
+                    }
+                    return Color_DarkGrey;
+                }
+            }
+
+            public string PitStops_CPS2IndicatorColor {
+                get {
+                    if (PitStops_CPS2Served) {
+                        return Color_Green;
+                    }
+                    if (PitStops_CPS1Served) {
+                        if (IsApproachingPits) {
+                            return Color_Blue;
+                        }
+                        else if (IsInPitStall) {
+                            return Color_Purple;
+                        }
+                    }
+                    return Color_DarkGrey;
+                }
+            }
+
+            public string PitStops_PitStatusColor {
+                get {
+                     if (IsApproachingPits) {
+                        return Color_Blue;
+                     }
+                     if (IsInPitStall) {
+                        return Color_Purple;
+                     }
+                    return Color_DarkGrey;
+                }
+            }
+
+
 
 
             // FIXME
@@ -1099,6 +1194,7 @@ namespace APR.DashSupport {
             public string Color_LightGrey = "#FF808080";
             public string Color_Purple = "#Ff990099";
             public string Color_Green = "#FF009933";
+            public string Color_Blue = "#FF0000ff";
             public string Color_White = "#FFFFFFFF";
             public string Color_Black = "#FF000000";
             public string Color_Yellow = "#FFFFFF70";

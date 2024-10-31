@@ -26,6 +26,7 @@ namespace APR.DashSupport
         public string Color_LightGrey = "#FF808080";
         public string Color_Purple = "#Ff990099";
         public string Color_Green = "#FF009933";
+        public string Color_Blue = "#FF0000ff";
         public string Color_White = "#FFFFFFFF";
         public string Color_Black = "#FF000000";
         public string Color_Yellow = "#FFFFFF00";
