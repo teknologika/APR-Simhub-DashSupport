@@ -19,7 +19,7 @@ namespace APR.DashSupport {
 
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
 
-        public string FormatName(string DriverFullName) {
+        public string FormatName(string DriverFullName, string DriverTeamName) {
             // chop up the drivers name(s)
             // TODO: Don't store everything, just chop once and store what we need ... maybe
             string[] names = DriverFullName.Split(' ');
@@ -70,42 +70,15 @@ namespace APR.DashSupport {
                     case 6: // LAS
                         return DriverLastNameShort;
 
+                    case 7:
+                        return DriverTeamName;
+
                     default: //   Firstname Middle Lastname
                         return DriverFullName;
                 }
                 
             }
             return DriverFullName;
-        }
-
-        public void UpdateStandingsNameSetting() {
-            if (Settings.SettingsUpdated) {
-                if (Settings.DriverNameStyle_0) {
-                    Settings.DriverNameStyle = 0;
-                }
-                else if (Settings.DriverNameStyle_1) {
-                    Settings.DriverNameStyle = 1;
-                }
-                else if (Settings.DriverNameStyle_2) {
-                    Settings.DriverNameStyle = 2;
-                }
-                else if (Settings.DriverNameStyle_3) {
-                    Settings.DriverNameStyle = 3;
-                }
-                else if (Settings.DriverNameStyle_4) {
-                    Settings.DriverNameStyle = 4;
-                }
-                else if (Settings.DriverNameStyle_5) {
-                    Settings.DriverNameStyle = 5;
-                }
-                else if (Settings.DriverNameStyle_6) {
-                    Settings.DriverNameStyle = 6;
-                }
-                else {
-                    Settings.DriverNameStyle = 0;
-                }
-                Settings.SettingsUpdated = false;
-            }
         }
 
 
@@ -123,6 +96,16 @@ namespace APR.DashSupport {
         }
 
         public void UpdateStandingsRelatedProperties(ref GameData data) {
+
+        if (Settings.SettingsUpdated) {
+                // This is to fire a delegate
+                var bob = Settings.Standings_MiscDataToShow;
+                bob = Settings.DriverNameStyle;
+                bob = 0;
+            Settings.SettingsUpdated = false;
+        }
+            
+
 
             // Is this a Vets session?
             CheckIfLeagueSession();
@@ -171,6 +154,10 @@ namespace APR.DashSupport {
                 SetProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
                 SetProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
                 SetProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
+
+                SetProp("Standings.Columns.MiscData.Left", Settings.ColumnStartMiscData);
+                SetProp("Standings.Columns.MiscData.Visible", Settings.ColumnShowMiscData);
+                SetProp("Standings.Columns.MiscData.Width", Settings.ColumnWidthMiscData);
 
                 SetProp("Standings.Columns.LastLap.Left", Settings.ColumnStartLastLap);
                 SetProp("Standings.Columns.LastLap.Width", Settings.ColumnWidthLastLap);
@@ -230,7 +217,7 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".Class.GapToLeader", item.GapToClassLeaderString);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.GapToCarAhead", item.ClassAheadInClassGapString);
                         SetProp("Standings.Position" + counter.ToString() + ".Number", item.CarNumber);
-                        SetProp("Standings.Position" + counter.ToString() + ".Name", FormatName(item.Name));
+                        SetProp("Standings.Position" + counter.ToString() + ".Name", FormatName(item.Name, item.TeamName));
                         SetProp("Standings.Position" + counter.ToString() + ".DriverName", item.DriverName);
                         SetProp("Standings.Position" + counter.ToString() + ".TeamName", item.TeamName);
                         SetProp("Standings.Position" + counter.ToString() + ".GapToLeader", item.GapToClassLeaderString);
@@ -311,6 +298,10 @@ namespace APR.DashSupport {
                 AddProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
                 AddProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
                 AddProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
+                
+                AddProp("Standings.Columns.MiscData.Left", Settings.ColumnStartMiscData);
+                AddProp("Standings.Columns.MiscData.Visible", Settings.ColumnShowMiscData);
+                AddProp("Standings.Columns.MiscData.Width", Settings.ColumnWidthMiscData);
 
                 AddProp("Standings.Columns.LastLap.Left", Settings.ColumnStartLastLap);
                 AddProp("Standings.Columns.LastLap.Width", Settings.ColumnWidthLastLap);

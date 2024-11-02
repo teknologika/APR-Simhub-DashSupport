@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.Runtime;
 using System.Runtime.CompilerServices;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using Color = System.Drawing.Color;
 
@@ -61,7 +63,8 @@ namespace APR.DashSupport
         public bool AdjustBiteRecommendationForTrackTemp { get; set; } = false;
         public bool LaunchUsingDualClutchPaddles { get; set; } = false;
 
-        public string Strategy_SelectedStrategy { get; set; } = "A";
+        public string Strategy_SelectedStrategy { get; set; } = "A"; // can be A, B, C or D
+        public string Strategy_SelectedRiskLevel { get; set; } = "med"; // can be Low, Med, Higi
         public int Strategy_CPS_Completed { get; set; } = 0;
         public bool Strategy_UnderSC { get; set; } = false;
         public bool Strategy_RCMode { get; set; } = false;
@@ -145,8 +148,40 @@ namespace APR.DashSupport
 
         public bool SettingsUpdated { get; set; } = false;
 
-        public int DriverNameStyle { get; set; } = 0;
         
+        // The driver name style dropdown
+        public int DriverNameStyle {
+            get {
+                if (DriverNameStyle_0) {
+                    return 0;
+                }
+                else if (DriverNameStyle_1) {
+                    return 1;
+                }
+                else if (DriverNameStyle_2) {
+                    return 2;
+                }
+                else if (DriverNameStyle_3) {
+                    return 3;
+                }
+                else if (DriverNameStyle_4) {
+                    return 4;
+                }
+                else if (DriverNameStyle_5) {
+                    return 5;
+                }
+                else if (DriverNameStyle_6) {
+                    return 6;
+                }
+                else if (DriverNameStyle_7) {
+                    return 7;
+                }
+                else {
+                    return 0;
+                }
+            }
+        }
+         
         public bool DriverNameStyle_0 { get; set; } = true;
         public bool DriverNameStyle_1 { get; set; } = false;
         public bool DriverNameStyle_2 { get; set; } = false;
@@ -154,6 +189,55 @@ namespace APR.DashSupport
         public bool DriverNameStyle_4 { get; set; } = false;
         public bool DriverNameStyle_5 { get; set; } = false;
         public bool DriverNameStyle_6 { get; set; } = false;
+        public bool DriverNameStyle_7 { get; set; } = false;
+
+
+        // The data so show dropdown 
+
+        // The driver name style dropdown
+        public int Standings_MiscDataToShow {
+            get {
+                if (Standings_MiscDataToShow_0) {
+                    return 0;
+                }
+                else if (Standings_MiscDataToShow_0) {
+                    return 1;
+                }
+                else if (Standings_MiscDataToShow_0) {
+                    return 2;
+                }
+                else if (Standings_MiscDataToShow_0) {
+                    return 3;
+                }
+                else if (Standings_MiscDataToShow_0) {
+                    return 4;
+                }
+                else if (Standings_MiscDataToShow_0) {
+                    return 5;
+                }
+                else if (Standings_MiscDataToShow_0) {
+                    return 6;
+                }
+                else if (Standings_MiscDataToShow_0) {
+                    return 7;
+                }
+                else {
+                    return 0;
+                }
+            }
+        }
+
+
+
+        public bool Standings_MiscDataToShow_0 { get; set; } = true;   // CPS Indicators
+        public bool Standings_MiscDataToShow_1 { get; set; } = false;  // Gain / loss 
+        public bool Standings_MiscDataToShow_2 { get; set; } = false;  // Number of Stops
+        public bool Standings_MiscDataToShow_3 { get; set; } = false;  // Number of CPS
+        public bool Standings_MiscDataToShow_4 { get; set; } = false;  // not used
+        public bool Standings_MiscDataToShow_5 { get; set; } = false;  // not used
+        public bool Standings_MiscDataToShow_6 { get; set; } = false;  // not usedd
+ 
+
 
         public bool ShowGapToLeader { get; set; } = true;
         public bool ShowGapToCarInFront { get; set; } = true;

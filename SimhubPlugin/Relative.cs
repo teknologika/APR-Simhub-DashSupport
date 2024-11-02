@@ -597,7 +597,7 @@ namespace APR.DashSupport {
                 }
 
                 // Grab the slow poke
-                var _slowOpponent = OpponentsAhead.Find(x => x.IsOffTrack || (x.IsOnTrack && x.Speed < 30.0)) ?? null;
+                var _slowOpponent = OpponentsAhead.Find(x => x.IsOffTrack || (x.IsOnTrack && x.Speed < 30.0) && x.IsConnected && !x.IsCarInPitLane && !x.IsCarInPitBox) ?? null;
                 if (_slowOpponent != null && spectator.Speed > 40) {
                     StrategicObserer.SlowOpponentIdx = _slowOpponent.CarIdx;
                     StrategicObserer.SlowOpponentLapDistPct = _slowOpponent.TrackPositionPercent;

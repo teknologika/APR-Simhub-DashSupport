@@ -92,6 +92,7 @@ namespace APR.DashSupport {
                     this.scrlRotary = 12;
             }));
 
+
         }
 
         public void InitRotaryButtons(PluginManager pluginManager) {
@@ -140,12 +141,33 @@ namespace APR.DashSupport {
                 SetProp("Strategy.Indicator.StratMode", Settings.Strategy_SelectedStrategy);
             }));
 
+            pluginManager.AddAction("Strategy.btnRiskLow", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                Settings.Strategy_SelectedRiskLevel = "low";
+                SetProp("Strategy.Indicator.RiskLevel", Settings.Strategy_SelectedRiskLevel);
+            }));
+
+            pluginManager.AddAction("Strategy.btnRiskMedium", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                Settings.Strategy_SelectedRiskLevel = "med";
+                SetProp("Strategy.Indicator.RiskLevel", Settings.Strategy_SelectedRiskLevel);
+            }));
+
+            pluginManager.AddAction("Strategy.btnRiskHigh", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                Settings.Strategy_SelectedRiskLevel = "high";
+                SetProp("Strategy.Indicator.RiskLevel", Settings.Strategy_SelectedRiskLevel);
+            }));
+
+
             pluginManager.AddAction("Strategy.btnPaceCarPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
                 if (Settings.Strategy_UnderSC) {
                     Settings.Strategy_UnderSC = false;
+
+                    // set the rotaty menu to 1 - Race
+                    this.menuRotary = 1;
                 }
                 else {
                     Settings.Strategy_UnderSC = true;
+                    // set the rotaty menu to 3 = pacing
+                    this.menuRotary = 3;
                 }
                 SetProp("Strategy.Indicator.UnderSC", Settings.Strategy_UnderSC);
 
@@ -267,16 +289,16 @@ namespace APR.DashSupport {
         private void SetCPSIndicators() {
             switch (Settings.Strategy_CPS_Completed) {
                 case 1:
-                    SetProp("Spectated.CPS1Served", true);
-                    SetProp("Spectated.CPS2Served", false);
+                    SetProp("APRDashPlugin.Spectated.PitStops.CPS1Served", true);
+                    SetProp("APRDashPlugin.Spectated.PitStops.CPS2Served", false);
                     break;
                 case 2:
-                    SetProp("Spectated.CPS1Served", true);
-                    SetProp("Spectated.CPS2Served", true);
+                    SetProp("APRDashPlugin.Spectated.PitStops.CPS1Served", true);
+                    SetProp("APRDashPlugin.Spectated.PitStops.CPS2Served", true);
                     break;
                 default:
-                    SetProp("Spectated.CPS1Served", false);
-                    SetProp("Spectated.CPS2Served", false);
+                    SetProp("APRDashPlugin.Spectated.PitStops.CPS1Served", false);
+                    SetProp("APRDashPlugin.Spectated.PitStops.CPS2Served", false);
                     break;
             }
         }

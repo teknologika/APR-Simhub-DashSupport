@@ -759,7 +759,7 @@ namespace APR.DashSupport {
                     if (LapDistSafetyCar > 0) {
                         return  LapDistSafetyCar.ToString("0") + "m AHEAD";
                     }
-                    return  LapDistSafetyCar.ToString("0") + "m BEHIND";
+                    return  Math.Abs(LapDistSafetyCar).ToString("0") + "m BEHIND";
                 }
             }
 

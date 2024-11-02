@@ -142,6 +142,7 @@
                                 <RowDefinition Height="1*" MinHeight="30"/>
                                 <RowDefinition Height="1*" MinHeight="30"/>
                                 <RowDefinition Height="1*" MinHeight="30"/>
+                                <RowDefinition Height="1*" MinHeight="30"/>
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Enable Standings" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
                             <styles:SHToggleButton Grid.Row="0" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding EnableStandings}" RenderTransformOrigin="0.45,0.2"/>
@@ -177,7 +178,15 @@
                             <styles:SHToggleButton Grid.Row="6" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnSlideOutFastestLap}" RenderTransformOrigin="0.45,0.2"/>
                             <TextBlock Grid.Row="6" Grid.Column="2" Text="Show fastest lap for N seconds." HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
                             <TextBox Grid.Row="6" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="50" RenderTransformOrigin="0.45,0.2" Text="{Binding ColumnSlideOutDuration,ValidatesOnDataErrors=True,ValidatesOnExceptions=True, StringFormat={}{0:#0.0}}"/>
-
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Show Data Column" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <styles:SHToggleButton Grid.Row="7" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnShowMiscData}" RenderTransformOrigin="0.45,0.2"/>
+                            <TextBlock Grid.Row="7" Grid.Column="2" Text="Data Column Shows" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
+                            <ComboBox Grid.Row="7" Grid.Column="3" SelectionChanged="SettingsUpdated_Click" HorizontalAlignment="Left" VerticalAlignment="Center" Width="200" Margin="0,10,-15,0">
+                                <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_0}">CPS Indicators</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_1}">Gain or loss</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_2}">Number of Stops</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_3}">Number of CPS</ComboBoxItem>
+                            </ComboBox>
                         </Grid>
                     </styles:SHSection>
                 </StackPanel>

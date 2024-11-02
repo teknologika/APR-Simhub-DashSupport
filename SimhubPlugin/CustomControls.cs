@@ -3,6 +3,7 @@ using System;
 
 namespace APR.DashSupport {
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
+      
         public string MainMenuValue() {
             string selectedMenu;
             switch (this.menuRotary) {
@@ -20,8 +21,11 @@ namespace APR.DashSupport {
                 case 4:
                     selectedMenu = "settings";
                     break;
-
                 case 5:
+                    selectedMenu = "pit";
+                    break;
+
+                case 6:
                     selectedMenu = "launch";
                     break;
                 default:
