@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Reflection;
+using System.Runtime;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Documents;
 using System.Windows.Markup;
@@ -91,7 +92,12 @@ namespace APR.DashSupport {
 
         public void InitStandings(ref GameData data) {
             if (Settings.EnableStandings) {
-              
+                if (SessionType == "Race" && Settings.ShowGapToCarInFront) {
+                    Settings.ColumnShowGapToCarInFront = true;
+                }
+                else {
+                    Settings.ColumnShowGapToCarInFront = false;
+                }
             }
         }
 
@@ -136,23 +142,23 @@ namespace APR.DashSupport {
                 SetProp("Standings.Columns.CarNumber.Visible", Settings.ColumnShowCarNumber);
 
                 SetProp("Standings.Columns.DriverName.Left", Settings.ColumnStartDriverName);
-               // SetProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
                 SetProp("Standings.Columns.DriverName.Visible", Settings.ColumnShowDriverName);
 
+                SetProp("Standings.Columns.GapToLeader.Visible", Settings.ColumnShowGapToLeader);
                 SetProp("Standings.Columns.GapToLeader.Left", Settings.ColumnStartGapToLeader);
                 SetProp("Standings.Columns.GapToLeader.Width", Settings.ColumnWidthGapToLeader);
-                SetProp("Standings.Columns.GapToLeader.Visible", Settings.ColumnShowGapToLeader);
+
 
                 // in practice the leader has the fastest time in the race it is P1
-               // if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
-                    //Settings.ColumnShowGapToCarInFront = true;
-               // }
-              //  else {
-                    //Settings.ColumnShowGapToCarInFront = false;
-              //  }
-
-                SetProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
+                // if ((SessionType == "Practice" || SessionType == "Open Qualify" || SessionType == "Lone Qualify") && sessionState > 3) {
+                //Settings.ColumnShowGapToCarInFront = true;
+                // }
+                //  else {
+                //Settings.ColumnShowGapToCarInFront = false;
+                //  }
+    
                 SetProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
+                SetProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
                 SetProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
 
                 SetProp("Standings.Columns.MiscData.Left", Settings.ColumnStartMiscData);
@@ -199,7 +205,7 @@ namespace APR.DashSupport {
                     }
 
 
-                    classOpponents = classOpponents.FindAll(x => x.IsConnected).OrderBy(x => x.Position).ToList();
+                    classOpponents = classOpponents.FindAll(x => x.IsConnected && x.Position > 0).OrderBy(x => x.Position).ToList();
                     int counter = 1;
                     for (int i = 0; i < classOpponents.Count; i++) {
                         ExtendedOpponent item = classOpponents[i];
@@ -214,14 +220,27 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".Class.Position", item.Position);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.PositionsGained", item._opponent.RacePositionClassGain);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.LivePosition", item.LivePosition);
-                        SetProp("Standings.Position" + counter.ToString() + ".Class.GapToLeader", item.GapToClassLeaderString);
-                        SetProp("Standings.Position" + counter.ToString() + ".Class.GapToCarAhead", item.ClassAheadInClassGapString);
+                        if (StrategyBundle.Instance.SessionType != "Race") {
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.GapToLeader", item._opponent.DeltaToBest );
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.GapToCarAhead", item._opponent.DeltaToPlayer);
+                        }
+                        else {
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.GapToLeader", item.GapToClassLeaderString);
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.GapToCarAhead", item.ClassAheadInClassGapString);
+                        }
                         SetProp("Standings.Position" + counter.ToString() + ".Number", item.CarNumber);
                         SetProp("Standings.Position" + counter.ToString() + ".Name", FormatName(item.Name, item.TeamName));
                         SetProp("Standings.Position" + counter.ToString() + ".DriverName", item.DriverName);
                         SetProp("Standings.Position" + counter.ToString() + ".TeamName", item.TeamName);
-                        SetProp("Standings.Position" + counter.ToString() + ".GapToLeader", item.GapToClassLeaderString);
-                        SetProp("Standings.Position" + counter.ToString() + ".GapToCarAhead", item.ClassAheadInClassGapString);
+                        if (StrategyBundle.Instance.SessionType != "Race") {
+                            SetProp("Standings.Position" + counter.ToString() + ".GapToLeader", item._opponent.DeltaToBest);
+                            SetProp("Standings.Position" + counter.ToString() + ".GapToCarAhead", item._opponent.DeltaToPlayer);
+                        }
+                        else {
+                            SetProp("Standings.Position" + counter.ToString() + ".GapToLeader", item.GapToClassLeaderString);
+                            SetProp("Standings.Position" + counter.ToString() + ".GapToCarAhead", item.ClassAheadInClassGapString);
+                        }
+
                         SetProp("Standings.Position" + counter.ToString() + ".GapToCarBehind", item.CarBehindInClassGapString);
                         SetProp("Standings.Position" + counter.ToString() + ".IsInPit", item.IsCarInPitBox);
                         SetProp("Standings.Position" + counter.ToString() + ".IsPlayer", item.IsSpectator);
@@ -290,15 +309,15 @@ namespace APR.DashSupport {
                 AddProp("Standings.Columns.DriverName.Left", Settings.ColumnStartDriverName);
                 //AddProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
                 AddProp("Standings.Columns.DriverName.Visible", Settings.ColumnShowDriverName);
-
-                AddProp("Standings.Columns.GapToLeader.Left", Settings.ColumnStartGapToLeader);
-                AddProp("Standings.Columns.GapToLeader.Width", Settings.ColumnWidthGapToLeader);
-                AddProp("Standings.Columns.GapToLeader.Visible", Settings.ColumnShowGapToLeader);
                                   
                 AddProp("Standings.Columns.GapToCarInFront.Left", Settings.ColumnStartGapToCarInFront);
                 AddProp("Standings.Columns.GapToCarInFront.Width", Settings.ColumnWidthGapToCarInFront);
                 AddProp("Standings.Columns.GapToCarInFront.Visible", Settings.ColumnShowGapToCarInFront);
-                
+
+                AddProp("Standings.Columns.GapToLeader.Left", Settings.ColumnStartGapToLeader);
+                AddProp("Standings.Columns.GapToLeader.Width", Settings.ColumnWidthGapToLeader);
+                AddProp("Standings.Columns.GapToLeader.Visible", Settings.ColumnShowGapToLeader);
+
                 AddProp("Standings.Columns.MiscData.Left", Settings.ColumnStartMiscData);
                 AddProp("Standings.Columns.MiscData.Visible", Settings.ColumnShowMiscData);
                 AddProp("Standings.Columns.MiscData.Width", Settings.ColumnWidthMiscData);

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Drawing.Printing;
+using System.Net.Configuration;
 using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
@@ -314,7 +315,7 @@ namespace APR.DashSupport
        
         public int ColumnWidthPosition { get; set; } = 30;
         public int ColumnWidthCarNumber { get; set; } = 30;
-        public int ColumnWidthDriverName { get; set; } = 200;
+        public int ColumnWidthDriverName { get { return DriverNameWidth; } }
         public int ColumnWidthGapToLeader { get; set; } = 60;
         public int ColumnWidthGapToCarInFront { get; set; } = 60;
         public int ColumnWidthMiscData { get; set; } = 60;

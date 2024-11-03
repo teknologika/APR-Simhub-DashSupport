@@ -521,14 +521,18 @@ namespace APR.DashSupport
                     UpdateStrategyBundle(data);
                     CheckIfUnderSafetyCar();
                     if (runEvery1Sec) {
-                        if (data != null) {
+                        if (data.GameRunning && data.NewData != null) {
                             try {
-                                UpdateRelativesAndStandings(data);
-                                UpdateCommonProperties(data);
+                                if (data.NewData.SessionTimeLeft.TotalSeconds > 0) {
+                                    UpdateRelativesAndStandings(data);
+                                    UpdateCommonProperties(data);
+                                }
                             }
                             catch (Exception) {
                             }
                         }
+
+                                
                     }
                 }
 

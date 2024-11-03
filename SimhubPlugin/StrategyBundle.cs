@@ -52,6 +52,7 @@ namespace APR.DashSupport {
 
             public static void Reset() { instance = new StrategyBundle(); }
 
+            public bool PlayerIsDriving;
             public int TotaLaps;
             public int CurrentLap;
             public double CoughAllowance = 1.0;
@@ -132,6 +133,8 @@ namespace APR.DashSupport {
 
         public void UpdateStrategyBundle(GameData data) {
             StrategyBundle StrategyObserver = StrategyBundle.Instance;
+
+            StrategyObserver.SessionType = data.NewData.SessionTypeName;
 
             // Get the amount of fuel in the setup aka starting fuel
             if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel") != null) {

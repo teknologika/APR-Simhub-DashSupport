@@ -586,7 +586,7 @@ namespace APR.DashSupport {
             public string DriverName { get { return _opponent.Name; } }
             public string TeamName { get { return _opponent.TeamName; } }
             public string CarClass { get { return _opponent.CarClass; } }
-            public int CarClassID { get { return (int)_competitor.CarClassID; } }
+            public int CarClassID { get {return (int)_competitor.CarClassID;} }
             public double CarClassReferenceLapTime { get; set; }
             public string CarClassColor {
                 get {
@@ -610,15 +610,19 @@ namespace APR.DashSupport {
 
             public int Position {
                 get {
-                    // If we have not completed a lap
-                    if (Lap < 1) {
-                        // If we have start position, use that otherwise use live position
-                        if (_opponent.StartPosition.GetValueOrDefault() < 1) {
-                            return LivePosition;
+
+                    if (StrategyObserver.SessionType == "Race") {
+                        // If we have not completed a lap
+                        if (Lap < 1) {
+                            // If we have start position, use that otherwise use live position
+                            if (_opponent.StartPosition.GetValueOrDefault() < 1) {
+                                return LivePosition;
+                            }
+                            else {
+                                return _opponent.StartPosition.GetValueOrDefault();
+                            }
                         }
-                        else {
-                            return _opponent.StartPosition.GetValueOrDefault();
-                        }
+                        return _opponent.Position;
                     }
                     return _opponent.Position;
                 }
@@ -780,8 +784,10 @@ namespace APR.DashSupport {
 
             public bool IsSlowCarAhead {
                 get {
-                    if (LapDistanceSlowCar > 0)
-                        return true;
+                    if (StrategyObserver.PlayerIsDriving) {
+                        if (LapDistanceSlowCar > 0)
+                            return true;
+                }
                     return false;
                 }
             }
@@ -1232,7 +1238,7 @@ namespace APR.DashSupport {
         }
 
         private ExtendedOpponent SpectatedCar {
-            get { return this.OpponentsExtended.Find(a => a.CarIdx == irData.Telemetry.CamCarIdx); }
+            get { return this.OpponentsExtended.Find(a => a.CarIdx == irData.Telemetry.CamCarIdx) ?? new ExtendedOpponent(); }
         }
 
         private ExtendedOpponent LeadingCar {
@@ -1260,7 +1266,7 @@ namespace APR.DashSupport {
 
         private List<ExtendedOpponent> OpponentsInClass(int CarClassID) {
             try {
-                return OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID);
+                return OpponentsExtended.FindAll(a => a.CarClassID == this.SpectatedCar.CarClassID) ?? new List<ExtendedOpponent>();
             }
             catch (Exception) {
                 return new List<ExtendedOpponent>();
