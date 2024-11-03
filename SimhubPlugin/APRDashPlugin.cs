@@ -294,7 +294,11 @@ namespace APR.DashSupport
             this.AttachDelegate("EnableFuelPopup", () => Settings.EnableFuelPopup);
 
             this.AttachDelegate("Standings.DriverNameStyle", () => Settings.DriverNameStyle);
+            this.AttachDelegate("Standings.Columns.DriverName.Width", () => Settings.DriverNameWidth);
+            
             this.AttachDelegate("Standings.DataToShowInColumn", () => Settings.Standings_MiscDataToShow);
+            this.AttachDelegate("Standings.DataToShowInColumnString", () => Settings.Standings_MiscDataToShowString);
+
 
             this.AttachDelegate("Common.EnableStandings", () => Settings.EnableStandings);
             this.AttachDelegate("Common.EnableRelative", () => Settings.EnableRelatives);

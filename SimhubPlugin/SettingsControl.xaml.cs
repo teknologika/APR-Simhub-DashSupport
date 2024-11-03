@@ -13,8 +13,7 @@ namespace APR.DashSupport
 
         public SettingsControl()
         {
-            InitializeComponent();           
-
+            InitializeComponent();
         }
 
         public SettingsControl(APRDashPlugin plugin) : this()

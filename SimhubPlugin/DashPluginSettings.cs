@@ -148,7 +148,34 @@ namespace APR.DashSupport
 
         public bool SettingsUpdated { get; set; } = false;
 
-        
+        public int DriverNameWidth {
+            get {
+                // Update the driver's display name
+                switch (DriverNameStyle) {
+                    case 0: // Firstname Middle Lastname
+                    case 7: // Best team name on the planet
+                        return 200;
+
+                    case 1: // Firstname Lastname
+                    case 2: // Lastname, Firstname
+                        return 150;
+
+                    case 3: // F. Lastname
+                    case 4: // Firstname L.
+                    case 5: // Lastname, F.
+                        return 100;
+
+                    case 6: // LAS
+                        return 50;
+
+
+                    default: //   Firstname Middle Lastname
+                        return 150;
+                }
+            }
+        }
+
+
         // The driver name style dropdown
         public int DriverNameStyle {
             get {
@@ -200,26 +227,23 @@ namespace APR.DashSupport
                 if (Standings_MiscDataToShow_0) {
                     return 0;
                 }
-                else if (Standings_MiscDataToShow_0) {
+                else if (Standings_MiscDataToShow_1) {
                     return 1;
                 }
-                else if (Standings_MiscDataToShow_0) {
+                else if (Standings_MiscDataToShow_2) {
                     return 2;
                 }
-                else if (Standings_MiscDataToShow_0) {
+                else if (Standings_MiscDataToShow_3) {
                     return 3;
                 }
-                else if (Standings_MiscDataToShow_0) {
+                else if (Standings_MiscDataToShow_4) {
                     return 4;
                 }
-                else if (Standings_MiscDataToShow_0) {
+                else if (Standings_MiscDataToShow_5) {
                     return 5;
                 }
-                else if (Standings_MiscDataToShow_0) {
+                else if (Standings_MiscDataToShow_6) {
                     return 6;
-                }
-                else if (Standings_MiscDataToShow_0) {
-                    return 7;
                 }
                 else {
                     return 0;
@@ -227,15 +251,42 @@ namespace APR.DashSupport
             }
         }
 
+        public string Standings_MiscDataToShowString {
+            get {
+                if (Standings_MiscDataToShow_0) {
+                    return "None";
+                }
+                else if (Standings_MiscDataToShow_1) {
+                    return "GainLoss";
+                }
+                else if (Standings_MiscDataToShow_2) {
+                    return "NumberOfStops";
+                }
+                else if (Standings_MiscDataToShow_3) {
+                    return "NumberOfCPS";
+                }
+                else if (Standings_MiscDataToShow_4) {
+                    return "CPSIndicators";
+                }
+                else if (Standings_MiscDataToShow_5) {
+                    return "";
+                }
+                else if (Standings_MiscDataToShow_6) {
+                    return "";
+                }
+                else {
+                    return "";
+                }
+            }
+        }
 
-
-        public bool Standings_MiscDataToShow_0 { get; set; } = true;   // CPS Indicators
+        public bool Standings_MiscDataToShow_0 { get; set; } = true;   // None
         public bool Standings_MiscDataToShow_1 { get; set; } = false;  // Gain / loss 
-        public bool Standings_MiscDataToShow_2 { get; set; } = false;  // Number of Stops
+        public bool Standings_MiscDataToShow_2 { get; set; } = false;  // CPS Indicators
         public bool Standings_MiscDataToShow_3 { get; set; } = false;  // Number of CPS
-        public bool Standings_MiscDataToShow_4 { get; set; } = false;  // not used
+        public bool Standings_MiscDataToShow_4 { get; set; } = false;  // Number of Stops
         public bool Standings_MiscDataToShow_5 { get; set; } = false;  // not used
-        public bool Standings_MiscDataToShow_6 { get; set; } = false;  // not usedd
+        public bool Standings_MiscDataToShow_6 { get; set; } = false;  // not used
  
 
 

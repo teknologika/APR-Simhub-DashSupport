@@ -182,10 +182,11 @@
                             <styles:SHToggleButton Grid.Row="7" Grid.Column="1"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" IsChecked="{Binding ColumnShowMiscData}" RenderTransformOrigin="0.45,0.2"/>
                             <TextBlock Grid.Row="7" Grid.Column="2" Text="Data Column Shows" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Height="18"></TextBlock>
                             <ComboBox Grid.Row="7" Grid.Column="3" SelectionChanged="SettingsUpdated_Click" HorizontalAlignment="Left" VerticalAlignment="Center" Width="200" Margin="0,10,-15,0">
-                                <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_0}">CPS Indicators</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_0}">None</ComboBoxItem>
                                 <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_1}">Gain or loss</ComboBoxItem>
                                 <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_2}">Number of Stops</ComboBoxItem>
                                 <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_3}">Number of CPS</ComboBoxItem>
+                                <ComboBoxItem IsSelected="{Binding Standings_MiscDataToShow_4}">CPS Indicators</ComboBoxItem>
                             </ComboBox>
                         </Grid>
                     </styles:SHSection>
@@ -195,6 +196,7 @@
 
 
     </styles:SHTabControl>
+    
 </UserControl>
 <!--
                 <ui:ControlsEditor FriendlyName="Menu Rotary Increment" ActionName="APRDashPlugin.MenuRotaryIncremented"></ui:ControlsEditor>

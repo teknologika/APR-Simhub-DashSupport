@@ -70,7 +70,7 @@ namespace APR.DashSupport {
                     case 6: // LAS
                         return DriverLastNameShort;
 
-                    case 7:
+                    case 7: // Best team name on the planet
                         return DriverTeamName;
 
                     default: //   Firstname Middle Lastname
@@ -136,7 +136,7 @@ namespace APR.DashSupport {
                 SetProp("Standings.Columns.CarNumber.Visible", Settings.ColumnShowCarNumber);
 
                 SetProp("Standings.Columns.DriverName.Left", Settings.ColumnStartDriverName);
-                SetProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
+               // SetProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
                 SetProp("Standings.Columns.DriverName.Visible", Settings.ColumnShowDriverName);
 
                 SetProp("Standings.Columns.GapToLeader.Left", Settings.ColumnStartGapToLeader);
@@ -288,7 +288,7 @@ namespace APR.DashSupport {
                 AddProp("Standings.Columns.CarNumber.Visible", Settings.ColumnShowCarNumber);
 
                 AddProp("Standings.Columns.DriverName.Left", Settings.ColumnStartDriverName);
-                AddProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
+                //AddProp("Standings.Columns.DriverName.Width", Settings.ColumnWidthDriverName);
                 AddProp("Standings.Columns.DriverName.Visible", Settings.ColumnShowDriverName);
 
                 AddProp("Standings.Columns.GapToLeader.Left", Settings.ColumnStartGapToLeader);
