@@ -41,9 +41,9 @@ namespace APR.DashSupport {
         public void ClearPitCalculations() {
             if (Settings.EnableStrategyCalculation) {
 
-                AddProp("Strategy.Dahl.FuelDelta", 0);
-                AddProp("Strategy.Dahl.FuelDeltaAverage", 0);
-                AddProp("Strategy.Dahl.FuelDeltaOG", 0);
+                SetProp("Strategy.Dahl.FuelDelta", 0);
+                SetProp("Strategy.Dahl.FuelDeltaAverage", 0);
+                SetProp("Strategy.Dahl.FuelDeltaOG", 0);
 
                 SetProp("Strategy.Basic.TotalLaps", 0);
                 SetProp("Strategy.Basic.AverageFuelPerLap", 0);
@@ -56,12 +56,57 @@ namespace APR.DashSupport {
                 SetProp("Strategy.Basic.EarliestStopToMakeFinish", 0);
                 SetProp("Strategy.Basic.LatestStopToMakeFinish", 0);
                 SetProp("Strategy.Basic.LastStopFuelToAdd", 0);
+
+                SetProp("Strategy.A.EarlyStopLaps", "");
+                SetProp("Strategy.B.EarlyStopLaps", "");
+                SetProp("Strategy.C.EarlyStopLaps", "");
+                SetProp("Strategy.D.EarlyStopLaps", "");
+               
+                SetProp("Strategy.A.LateStopLaps", "");
+                SetProp("Strategy.B.LateStopLaps", "");
+                SetProp("Strategy.C.LateStopLaps", "");
+                SetProp("Strategy.D.LateStopLaps", "");
+               
+                SetProp("Strategy.A.FuelPerStop", "");
+                SetProp("Strategy.B.FuelPerStop", "");
+                SetProp("Strategy.C.FuelPerStop", "");
+                SetProp("Strategy.D.FuelPerStop", "");
+            
+                SetProp("Strategy.A.FuelModes", ""); // F or A where fixed or auto
+                SetProp("Strategy.B.FuelModes", "");
+                SetProp("Strategy.C.FuelModes", "");
+                SetProp("Strategy.D.FuelModes", "");
+
             }
         }
 
         public void InitPitCalculations() {
             if (Settings.EnableStrategyCalculation) {
-               
+
+                AddProp("Strategy.A.EarlyStopLaps", "");
+                AddProp("Strategy.B.EarlyStopLaps", "");
+                AddProp("Strategy.C.EarlyStopLaps", "");
+                AddProp("Strategy.D.EarlyStopLaps", "");
+
+                AddProp("Strategy.A.LateStopLaps", "");
+                AddProp("Strategy.B.LateStopLaps", "");
+                AddProp("Strategy.C.LateStopLaps", "");
+                AddProp("Strategy.D.LateStopLaps", "");
+
+                AddProp("Strategy.A.FuelPerStop", "");
+                AddProp("Strategy.B.FuelPerStop", "");
+                AddProp("Strategy.C.FuelPerStop", "");
+                AddProp("Strategy.D.FuelPerStop", "");
+
+                AddProp("Strategy.A.FuelModes", ""); // F or A where fixed or auto
+                AddProp("Strategy.B.FuelModes", "");
+                AddProp("Strategy.C.FuelModes", "");
+                AddProp("Strategy.D.FuelModes", "");
+
+                AddProp("Strategy.NextStop.FuelToAdd", "");
+                AddProp("Strategy.NextStop.FuelMode", ""); // Auto or Fixed Manual
+                AddProp("Strategy.AutoFuelMargin", ""); // Auto fuel margin based on risk mode
+
                 AddProp("Strategy.Dahl.FuelDelta",0);
                 AddProp("Strategy.Dahl.FuelDeltaAverage",0);
                 AddProp("Strategy.Dahl.FuelDeltaOG", 0);
@@ -96,95 +141,117 @@ namespace APR.DashSupport {
             if (Settings.EnableStrategyCalculation) {
 
                 // Setup all the values for our calculations
+                if (1==2) {
+                    // Total Number of race laps
+                    double RomainRob_laps = GetProp("IRacingExtraProperties.iRacing_TotalLaps");
+                    if (RomainRob_laps == double.NaN) {
+                        Strategy_NumberOfRaceLaps = data.NewData.TotalLaps;
+                    }
+                    else {
+                        Strategy_NumberOfRaceLaps = RomainRob_laps;
+                    }
 
-                // Total Number of race laps
-                double RomainRob_laps = GetProp("IRacingExtraProperties.iRacing_TotalLaps");
-                if (RomainRob_laps == double.NaN) {
-                    Strategy_NumberOfRaceLaps = data.NewData.TotalLaps;
+                    double Strategy_NumberOfRaceLapsRemaining = GetProp("IRacingExtraProperties.iRacing_LapsRemainingFloat");
+
+                    // Fuel used per lap
+                    Strategy_AverageFuelPerLap = GetProp("DataCorePlugin.Computed.Fuel_LitersPerLap");
+                    if (Settings.Strategy_OverrideFuelPerLap > 0) {
+                        Strategy_AverageFuelPerLap = Settings.Strategy_OverrideFuelPerLap;
+                    }
+
+                    // Available tank size
+                    var AvailableFuelTankPercent = irData.SessionData.DriverInfo.DriverCarMaxFuelPct;
+                    var UnrestrictedTankSizeInLtr = irData.SessionData.DriverInfo.DriverCarFuelMaxLtr;
+                    Strategy_AvailableTankSize = AvailableFuelTankPercent * UnrestrictedTankSizeInLtr;
+
+                    if (Settings.Strategy_OverrideAvailableTankSize > 0) {
+                        Strategy_AvailableTankSize = Settings.Strategy_OverrideAvailableTankSize;
+                    }
+
+                    // Get the amount of fuel in the setup aka starting fuel
+                    if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel") != null) {
+                        string setupFuelString = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel");
+                        Strategy_SetupFuel = double.Parse(setupFuelString.Replace(" L", ""));
+                    }
+
+                    // Get the average fuel per lap
+                    Strategy_AverageFuelPerLap = GetProp("DataCorePlugin.Computed.Fuel_LitersPerLap");
+                    if (Settings.Strategy_OverrideFuelPerLap > 0) {
+                        Strategy_AverageFuelPerLap = Settings.Strategy_OverrideFuelPerLap;
+                    }
+
+                    // Calculate the fuel needed for the entire race
+                    Strategy_TotalFuelNeeded = Math.Ceiling(Strategy_NumberOfRaceLaps * Strategy_AverageFuelPerLap);
+
+                    // Calculate the fuel that we need to add to the tank across the race 
+                    Strategy_FuelToAdd = ((Strategy_NumberOfRaceLaps * Strategy_AverageFuelPerLap) - Strategy_SetupFuel);
+                    if (Strategy_FuelToAdd > 0) {
+                        Strategy_LastStopFuelToAdd = Strategy_FuelToAdd % Strategy_AvailableTankSize;
+                        Strategy_LastStopFuelToAdd = Strategy_LastStopFuelToAdd + Strategy_CoughAllowance + (Strategy_LapsMargin * Strategy_AverageFuelPerLap);
+                    }
+                    else {
+                        Strategy_LastStopFuelToAdd = 0;
+                    }
+
+                    // Calculate the number of stops
+                    if (Strategy_SetupFuel > Strategy_TotalFuelNeeded) {
+                        Strategy_NumberOfStops = 0;
+                    }
+                    else {
+                        Strategy_NumberOfStops = Math.Ceiling((Strategy_TotalFuelNeeded - Strategy_SetupFuel) / Strategy_AvailableTankSize);
+                    }
+
+                    // Calculate the earliest stop to make the finish
+                    Strategy_EarliestStopToMakeFinish = 1 + (Strategy_AvailableTankSize - Strategy_SetupFuel + Strategy_CoughAllowance + (Strategy_LapsMargin * Strategy_AverageFuelPerLap)) / Strategy_AverageFuelPerLap;
+                    //Strategy_EarliestStopToMakeFinish = (Strategy_FuelToAdd / Strategy_AverageFuelPerLap);
+
+                    // Calculate the last stop to make the finsh
+                    Strategy_LatestStopToMakeFinish = Strategy_NumberOfRaceLaps - (Strategy_LastStopFuelToAdd / Strategy_AverageFuelPerLap);
+
+                    // Calculate the minimum amount of fuel to add per stop
+                    Strategy_MinimumPerStop = (Strategy_FuelToAdd / Strategy_NumberOfStops);
+
+                    // update session properties
+                    CalculateAverageDelta(ref data);
+
+                    SetProp("Strategy.Basic.TotalLaps", Strategy_NumberOfRaceLaps);
+                    SetProp("Strategy.Basic.TotalLapsRemaining", Strategy_NumberOfRaceLapsRemaining);
+                    SetProp("Strategy.Basic.AverageFuelPerLap", Strategy_AverageFuelPerLap);
+                    SetProp("Strategy.Basic.StartingFuel", Strategy_SetupFuel);
+                    SetProp("Strategy.Basic.AvailableTankSize", Strategy_AvailableTankSize);
+                    SetProp("Strategy.Basic.TotalFuelRequired", Strategy_TotalFuelNeeded);
+                    SetProp("Strategy.Basic.TotalFuelToAdd", Strategy_FuelToAdd);
+                    SetProp("Strategy.Basic.MinimumFuelPerStop", Strategy_MinimumPerStop);
+                    SetProp("Strategy.Basic.NumberOfStops", Strategy_NumberOfStops);
+                    SetProp("Strategy.Basic.EarliestStopToMakeFinish", Strategy_EarliestStopToMakeFinish);
+                    SetProp("Strategy.Basic.LatestStopToMakeFinish", Strategy_LatestStopToMakeFinish);
+                    SetProp("Strategy.Basic.LastStopFuelToAdd", Strategy_LastStopFuelToAdd);
                 }
-                else {
-                    Strategy_NumberOfRaceLaps = RomainRob_laps;
-                }
 
-                double Strategy_NumberOfRaceLapsRemaining = GetProp("IRacingExtraProperties.iRacing_LapsRemainingFloat");
-            
-                // Fuel used per lap
-                Strategy_AverageFuelPerLap =  GetProp("DataCorePlugin.Computed.Fuel_LitersPerLap");
-                if (Settings.Strategy_OverrideFuelPerLap > 0) {
-                    Strategy_AverageFuelPerLap = Settings.Strategy_OverrideFuelPerLap;
-                }
+                StrategyBundle.Update();
 
-                // Available tank size
-                var AvailableFuelTankPercent = irData.SessionData.DriverInfo.DriverCarMaxFuelPct;
-                var UnrestrictedTankSizeInLtr = irData.SessionData.DriverInfo.DriverCarFuelMaxLtr;
-                Strategy_AvailableTankSize = AvailableFuelTankPercent * UnrestrictedTankSizeInLtr;
-              
-                if (Settings.Strategy_OverrideAvailableTankSize > 0 ) {
-                    Strategy_AvailableTankSize = Settings.Strategy_OverrideAvailableTankSize;
-                }
+                AddProp("Strategy.A.EarlyStopLaps", StrategyBundle.Instance.StratA_Stops);
+                AddProp("Strategy.B.EarlyStopLaps", "");
+                AddProp("Strategy.C.EarlyStopLaps", "");
+                AddProp("Strategy.D.EarlyStopLaps", "");
 
-                // Get the amount of fuel in the setup aka starting fuel
-                if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel") != null) {
-                    string setupFuelString = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel");
-                    Strategy_SetupFuel = double.Parse(setupFuelString.Replace(" L", ""));
-                }
-                
-                // Get the average fuel per lap
-                Strategy_AverageFuelPerLap = GetProp("DataCorePlugin.Computed.Fuel_LitersPerLap");
-                if (Settings.Strategy_OverrideFuelPerLap > 0) {
-                    Strategy_AverageFuelPerLap = Settings.Strategy_OverrideFuelPerLap;
-                }
+                AddProp("Strategy.A.LateStopLaps", StrategyBundle.Instance.StratA_Stops);
+                AddProp("Strategy.B.LateStopLaps", "");
+                AddProp("Strategy.C.LateStopLaps", "");
+                AddProp("Strategy.D.LateStopLaps", "");
 
-                // Calculate the fuel needed for the entire race
-                Strategy_TotalFuelNeeded = Math.Ceiling(Strategy_NumberOfRaceLaps *  Strategy_AverageFuelPerLap);
+                AddProp("Strategy.A.FuelPerStop", StrategyBundle.Instance.StratA_FuelToAdd);
+                AddProp("Strategy.B.FuelPerStop", "");
+                AddProp("Strategy.C.FuelPerStop", "");
+                AddProp("Strategy.D.FuelPerStop", "");
 
-                // Calculate the fuel that we need to add to the tank across the race 
-                Strategy_FuelToAdd = ((Strategy_NumberOfRaceLaps * Strategy_AverageFuelPerLap) - Strategy_SetupFuel);
-                if (Strategy_FuelToAdd > 0) {
-                    Strategy_LastStopFuelToAdd = Strategy_FuelToAdd % Strategy_AvailableTankSize;
-                    Strategy_LastStopFuelToAdd = Strategy_LastStopFuelToAdd + Strategy_CoughAllowance + (Strategy_LapsMargin * Strategy_AverageFuelPerLap);
-                }
-                else {
-                    Strategy_LastStopFuelToAdd = 0;
-                }
-
-                // Calculate the number of stops
-                if (Strategy_SetupFuel > Strategy_TotalFuelNeeded) {
-                    Strategy_NumberOfStops = 0;
-                }
-                else {
-                    Strategy_NumberOfStops = Math.Ceiling((Strategy_TotalFuelNeeded - Strategy_SetupFuel) / Strategy_AvailableTankSize);
-                }
-
-                // Calculate the earliest stop to make the finish
-                Strategy_EarliestStopToMakeFinish = 1 + (Strategy_AvailableTankSize - Strategy_SetupFuel + Strategy_CoughAllowance + (Strategy_LapsMargin * Strategy_AverageFuelPerLap)) / Strategy_AverageFuelPerLap;
-                //Strategy_EarliestStopToMakeFinish = (Strategy_FuelToAdd / Strategy_AverageFuelPerLap);
-
-                // Calculate the last stop to make the finsh
-                Strategy_LatestStopToMakeFinish = Strategy_NumberOfRaceLaps - (Strategy_LastStopFuelToAdd / Strategy_AverageFuelPerLap);
-  
-                // Calculate the minimum amount of fuel to add per stop
-                Strategy_MinimumPerStop = (Strategy_FuelToAdd / Strategy_NumberOfStops);
-
-                // update session properties
-                CalculateAverageDelta(ref data);
-
-                SetProp("Strategy.Basic.TotalLaps", Strategy_NumberOfRaceLaps);
-                SetProp("Strategy.Basic.TotalLapsRemaining", Strategy_NumberOfRaceLapsRemaining);
-                SetProp("Strategy.Basic.AverageFuelPerLap", Strategy_AverageFuelPerLap);
-                SetProp("Strategy.Basic.StartingFuel", Strategy_SetupFuel);
-                SetProp("Strategy.Basic.AvailableTankSize", Strategy_AvailableTankSize);
-                SetProp("Strategy.Basic.TotalFuelRequired", Strategy_TotalFuelNeeded);
-                SetProp("Strategy.Basic.TotalFuelToAdd", Strategy_FuelToAdd);
-                SetProp("Strategy.Basic.MinimumFuelPerStop", Strategy_MinimumPerStop);
-                SetProp("Strategy.Basic.NumberOfStops", Strategy_NumberOfStops);
-                SetProp("Strategy.Basic.EarliestStopToMakeFinish", Strategy_EarliestStopToMakeFinish);
-                SetProp("Strategy.Basic.LatestStopToMakeFinish", Strategy_LatestStopToMakeFinish);
-                SetProp("Strategy.Basic.LastStopFuelToAdd", Strategy_LastStopFuelToAdd);
+                AddProp("Strategy.A.FuelModes", ""); // F or A where fixed or auto
+                AddProp("Strategy.B.FuelModes", "");
+                AddProp("Strategy.C.FuelModes", "");
+                AddProp("Strategy.D.FuelModes", "");
 
 
-
-                StratA();
+               // StratA();
             }
         }
 

@@ -691,7 +691,7 @@ namespace APR.DashSupport {
                     }
                 }
 
-                if (SpectatedCar.PositionString != null) {
+                if (! String.IsNullOrEmpty(SpectatedCar.PositionString) ) {
 
                     SetProp("Spectated.DistanceToSC", SpectatedCar.LapDistSafetyCarString);
                     SetProp("Spectated.Position", SpectatedCar.PositionString);

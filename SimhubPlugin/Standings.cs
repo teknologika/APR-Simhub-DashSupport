@@ -104,15 +104,12 @@ namespace APR.DashSupport {
         public void UpdateStandingsRelatedProperties(ref GameData data) {
 
         if (Settings.SettingsUpdated) {
-                // This is to fire a delegate
-                var bob = Settings.Standings_MiscDataToShow;
-                bob = Settings.DriverNameStyle;
-                bob = 0;
+            // This is to fire a delegate
+            var bob = Settings.Standings_MiscDataToShow;
+            bob = Settings.DriverNameStyle;
             Settings.SettingsUpdated = false;
         }
             
-
-
             // Is this a Vets session?
             CheckIfLeagueSession();
             SetProp("Common.IsLeagueSession", IsLeagueSession);

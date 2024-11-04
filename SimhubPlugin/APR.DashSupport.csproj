@@ -131,6 +131,9 @@
     <Compile Include="ExtendedOpponent.cs" />
     <Compile Include="iRacingRelative.cs" />
     <Compile Include="LapDataStore.cs" />
+    <Compile Include="Models\Round.cs" />
+    <Compile Include="Models\VetsRounds.cs" />
+    <Compile Include="PitStopStrategy.cs" />
     <Compile Include="PitStore.cs" />
     <Compile Include="PitStrategyCalculations.cs" />
     <Compile Include="Playground.cs" />

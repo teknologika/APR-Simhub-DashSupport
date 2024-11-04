@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -34,6 +35,7 @@ namespace APR.DashSupport {
 
         public class StrategyBundle {
             private static readonly object padlock = new object();
+            public PitStopStrategy StrategyCalculator;
 
             StrategyBundle() {
             }
@@ -44,20 +46,50 @@ namespace APR.DashSupport {
                         if (instance == null) {
                             instance = new StrategyBundle();
                             instance.FirstSCPeriodBreaksEarlySCRule = false;
+                            instance.StrategyCalculator = new PitStopStrategy();
+                           
                         }
                         return instance;
                     }
                 }
             }
 
-            public static void Reset() { instance = new StrategyBundle(); }
+            public static void Reset() {
+                instance = new StrategyBundle();
+            }
+
+            public static void Update() {
+                instance.StrategyCalculator = new PitStopStrategy();
+                VetsRounds rounds = new VetsRounds();
+                
+                var rnd = rounds.GetRound(21, 8);
+                
+                instance.StrategyCalculator.CalculateStrategyA(rnd);
+            }
+
+            // Strategy Strings
+            public string StratA_Stops ;
+            public string StratA_FuelToAdd ;
+            public string StratA_StopDuration ;
+
+            public void PerformStrategyCalulations() {
+                
+               
+            }
 
             public bool PlayerIsDriving;
             public int TotaLaps;
             public int CurrentLap;
-            public double CoughAllowance = 1.0;
-            public double FuelFillRateLitresPerSecond;
-            public double StartingFuel;
+            public double CoughAllowance = 0.4;
+
+            public double MaxTankSize { get; set; } = 110.6; // FIXME = Get from Settings GEN3
+            public double RestrictedFuelPercent { get; set; } = 1.00; // FIXME = Get from Settings 
+            public double StartingFuel { get; set; } = 80; // FIXME = Get from Settings 
+
+            //Supercar Gen2 hardcode FIXME
+            public double FuelFillRateLitresPerSecond = 2.4;// Supercar Gen2
+            public double FourTyresPitstopTime = 10;// // Supercar Gen2 FIXME - Gen3 individual tyres
+
             public double SimHubFuelLitersPerLap;
             private double _fuelLitersPerLap;
 
@@ -129,6 +161,10 @@ namespace APR.DashSupport {
             public int SlowOpponentIdx;
             public double SlowOpponentLapDistPct;
 
+
+            public double TankSize { get { return MaxTankSize * RestrictedFuelPercent; } }
+            public double AvailableSpaceInTankAtStart { get { return TankSize - StartingFuel; } }
+
         }
 
         public void UpdateStrategyBundle(GameData data) {
@@ -136,18 +172,17 @@ namespace APR.DashSupport {
 
             StrategyObserver.SessionType = data.NewData.SessionTypeName;
 
+            // Fuel Calcs
+
             // Get the amount of fuel in the setup aka starting fuel
             if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel") != null) {
                 string setupFuelString = GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel");
                 StrategyObserver.StartingFuel = double.Parse(setupFuelString.Replace(" L", ""));
             }
 
-
             // Get the average fuel per lap - don't default to zero >> fuel measuremet calcs need go here.
             StrategyObserver.SimHubFuelLitersPerLap = GetProp("DataCorePlugin.Computed.Fuel_LitersPerLap") ?? 0.0;
 
-            //Supercar Gen2 hardcode FIXME
-            StrategyObserver.FuelFillRateLitresPerSecond = 2.4; // Supercar Gen2
 
             StrategyObserver.TotaLaps = data.NewData.TotalLaps; // Might break for timed races
 
@@ -155,7 +190,7 @@ namespace APR.DashSupport {
 
             // SC Rule
             if (StrategyObserver.CurrentLap < 2) {
-                if (StrategyObserver.IsUnderSC ) {
+                if (StrategyObserver.IsUnderSC) {
                     StrategyObserver.FirstSCPeriodBreaksEarlySCRule = true;
                 }
             }
@@ -166,14 +201,8 @@ namespace APR.DashSupport {
             StrategyObserver.AvailableTankSize = AvailableFuelTankPercent * UnrestrictedTankSizeInLtr;
 
             // Trackdata
-            StrategyObserver.TrackNameWithConfig =  data.NewData.TrackNameWithConfig;
+            StrategyObserver.TrackNameWithConfig = data.NewData.TrackNameWithConfig;
             StrategyObserver.TrackLength = data.NewData.TrackLength;
-
-            // Get the Vets SC  FIXME
-
-
-        }
-
-       
+        }   
     }
 }

@@ -70,6 +70,9 @@ namespace APR.DashSupport
         public bool Strategy_UnderSC { get; set; } = false;
         public bool Strategy_RCMode { get; set; } = false;
 
+        public int Strategy_BarsWidth { get; set; } = 450;
+        public int Strategy_BarsStart { get; set; } = 100;
+
         public string AudioSamplesOutputDevice { get; set; } = "Sample (TC-HELICON GoXLR Mini)";
         public string AudioSamplesFolder { get; set; } = "./RCSamples/";
 
@@ -83,12 +86,10 @@ namespace APR.DashSupport
         public bool EnableStandings { get; set; } = true;
 
         
-
         public bool Standinds_Options_ShowTeamName { get; set; } = true;
         public int Standings_Layout_FontSize { get; set; } = 14;
      
-        
-
+   
         // Enable Multi-class in standings
         public bool Multiclass { get; set; } = false;
         public int NumberOfMulticlassDrivers { get; set; } = 3;

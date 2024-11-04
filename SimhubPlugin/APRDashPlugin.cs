@@ -295,7 +295,8 @@ namespace APR.DashSupport
 
             this.AttachDelegate("Standings.DriverNameStyle", () => Settings.DriverNameStyle);
             this.AttachDelegate("Standings.Columns.DriverName.Width", () => Settings.DriverNameWidth);
-            
+
+
             this.AttachDelegate("Standings.DataToShowInColumn", () => Settings.Standings_MiscDataToShow);
             this.AttachDelegate("Standings.DataToShowInColumnString", () => Settings.Standings_MiscDataToShowString);
 
@@ -326,6 +327,10 @@ namespace APR.DashSupport
             AddProp("Dash.Styles.Colors.Lap.PersonalBest", Settings.Color_Green); // Green
             AddProp("Dash.Styles.Colors.Lap.Latest", Settings.Color_White); // white
             AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow); // yellow
+
+
+            AddProp("Dash.Styles.Strategy.BarsWidth", Settings.Strategy_BarsWidth);
+            AddProp("Dash.Styles.BarsStart", Settings.Strategy_BarsStart);
 
             AddProp("Dash.Mode.NightMode", false);
 

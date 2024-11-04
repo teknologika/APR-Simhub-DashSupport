@@ -624,6 +624,7 @@ namespace APR.DashSupport {
                         }
                         return _opponent.Position;
                     }
+                    if (_opponent == null) return 0;
                     return _opponent.Position;
                 }
             }
