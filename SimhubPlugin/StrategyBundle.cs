@@ -70,7 +70,8 @@ namespace APR.DashSupport {
             // Strategy Strings
             public string StratA_Stops ;
             public string StratA_FuelToAdd ;
-            public string StratA_StopDuration ;
+            public string StratA_StopDuration;
+            public string StratA_StopsPct;
 
             public void PerformStrategyCalulations() {
                 
@@ -153,14 +154,14 @@ namespace APR.DashSupport {
 
             public string SessionType;
 
-            // Car being driven / spectating from
-            public long SpectatedCarIdx;
-            public float SpecatedCarLapDistPct;
-            public int SpectatedCarCurrentLap;
+            // Car being driven / spectating from aka the camera car
+
+            public long CameraCarIdx;
+            public float CameraCarLapDistPct;
+            public int CameraCarCurrentLap;
 
             public int SlowOpponentIdx;
             public double SlowOpponentLapDistPct;
-
 
             public double TankSize { get { return MaxTankSize * RestrictedFuelPercent; } }
             public double AvailableSpaceInTankAtStart { get { return TankSize - StartingFuel; } }
@@ -168,11 +169,18 @@ namespace APR.DashSupport {
         }
 
         public void UpdateStrategyBundle(GameData data) {
+            
+            
+            
             StrategyBundle StrategyObserver = StrategyBundle.Instance;
+           
+            //var camCarIdx = irData.Telemetry.CamCarIdx;
+           // var playerCarIdx = (int)irData.SessionData.DriverInfo.DriverCarIdx;
+
+            //StrategyObserver.PlayerIsDriving = (camCarIdx == playerCarIdx);
+            StrategyObserver.PlayerIsDriving = irData.Telemetry.IsOnTrack;
 
             StrategyObserver.SessionType = data.NewData.SessionTypeName;
-
-            // Fuel Calcs
 
             // Get the amount of fuel in the setup aka starting fuel
             if (GetProp("DataCorePlugin.GameRawData.SessionData.CarSetup.Chassis.Rear.FuelLevel") != null) {

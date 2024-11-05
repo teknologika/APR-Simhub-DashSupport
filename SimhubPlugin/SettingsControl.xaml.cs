@@ -1,5 +1,7 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Markup;
+using SimHub.Plugins.Styles;
+using SimHub.Plugins.UI;
 
 namespace APR.DashSupport
 {

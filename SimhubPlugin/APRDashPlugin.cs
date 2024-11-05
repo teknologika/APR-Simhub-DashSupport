@@ -330,7 +330,7 @@ namespace APR.DashSupport
 
 
             AddProp("Dash.Styles.Strategy.BarsWidth", Settings.Strategy_BarsWidth);
-            AddProp("Dash.Styles.BarsStart", Settings.Strategy_BarsStart);
+            AddProp("Dash.Styles.Strategy.BarsStart", Settings.Strategy_BarsStart);
 
             AddProp("Dash.Mode.NightMode", false);
 

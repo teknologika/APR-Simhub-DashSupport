@@ -372,9 +372,9 @@ namespace APR.DashSupport {
                 this.OpponentsExtended = new List<ExtendedOpponent>();
 
                 // Get the Spectated car info
-                StrategicObserer.SpectatedCarIdx = irData.Telemetry.CamCarIdx;
-                StrategicObserer.SpecatedCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[StrategicObserer.SpectatedCarIdx];
-                StrategicObserer.SpectatedCarCurrentLap = irData.Telemetry.CarIdxLap[StrategicObserer.SpectatedCarIdx];
+                StrategicObserer.CameraCarIdx = irData.Telemetry.CamCarIdx;
+                StrategicObserer.CameraCarLapDistPct = irData.Telemetry.CarIdxLapDistPct[StrategicObserer.CameraCarIdx];
+                StrategicObserer.CameraCarCurrentLap = irData.Telemetry.CarIdxLap[StrategicObserer.CameraCarIdx];
 
                 // TODO: make LastLapIsPersonalBest work
 
@@ -412,7 +412,7 @@ namespace APR.DashSupport {
                 }
 
                 // Create the spectator
-                ExtendedOpponent spectator = OpponentsExtended.Find(a => a.CarIdx == StrategicObserer.SpectatedCarIdx);
+                ExtendedOpponent spectator = OpponentsExtended.Find(a => a.CarIdx == StrategicObserer.CameraCarIdx);
 
                 // update car reference lap time
                 foreach (var item in OpponentsExtended) {
@@ -597,7 +597,7 @@ namespace APR.DashSupport {
                 }
 
                 // Grab the slow poke
-                var _slowOpponent = OpponentsAhead.Find(x => x.IsOffTrack || (x.IsOnTrack && x.Speed < 30.0) && x.IsConnected && !x.IsCarInPitLane && !x.IsCarInPitBox) ?? null;
+                var _slowOpponent = OpponentsAhead.Find(x => x.IsSlow) ?? null;
                 if (_slowOpponent != null && spectator.Speed > 40) {
                     StrategicObserer.SlowOpponentIdx = _slowOpponent.CarIdx;
                     StrategicObserer.SlowOpponentLapDistPct = _slowOpponent.TrackPositionPercent;
@@ -698,7 +698,6 @@ namespace APR.DashSupport {
                     SetProp("Spectated.Name", SpectatedCar.DriverName);
                     SetProp("Spectated.Lap", SpectatedCar.Lap);
                     SetProp("Spectated.Speed", SpectatedCar._opponent.Speed);
-                    SetProp("Spectated.IsSlowCarAhead", SpectatedCar.IsSlow);
                     SetProp("Spectated.IsSlowCarAhead", SpectatedCar.IsSlowCarAhead);
                     SetProp("Spectated.SlowCarAheadString", SpectatedCar.LapDistanceSlowCarAheadString);
 

@@ -34,6 +34,7 @@ namespace APR.DashSupport {
                 
 
                 List<string> stopLap = new List<string>();
+                List<string> stopLapPct = new List<string>();
                 List<string> stopDuration = new List<string>();
                 List<string> fuelToAdd = new List<string>();
 
@@ -46,6 +47,9 @@ namespace APR.DashSupport {
                 var pitstops = strategy.CalculateEvenStops();
                 foreach (var item in pitstops) {
                     stopLap.Add(item.Lap.ToString("0"));
+                    var pct = (item.Lap / (double)strategy.TotalLapsForStrategyCalc) * 100;
+
+                    stopLapPct.Add(pct.ToString("0"));
                     stopDuration.Add(item.StopDuration.ToString("0.0"));
                     fuelToAdd.Add(item.FuelToAdd.ToString("0.0"));
 
@@ -53,6 +57,7 @@ namespace APR.DashSupport {
                 StrategyBundle.Instance.StratA_Stops = string.Join(",", stopLap);
                 StrategyBundle.Instance.StratA_FuelToAdd = string.Join(",", stopDuration);
                 StrategyBundle.Instance.StratA_StopDuration = string.Join(",", fuelToAdd);
+                StrategyBundle.Instance.StratA_StopsPct = string.Join(",", stopLapPct);
             }
 
 

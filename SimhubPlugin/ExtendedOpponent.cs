@@ -538,7 +538,10 @@ namespace APR.DashSupport {
 
             public bool IsSlow {
                 get {
-                    return ( IsOnTrack && (Speed < 20.0)) || (IsOffTrack && (Speed > 20.0));
+                    if ((IsOffTrack || (IsOnTrack && Speed < 30.0)) && IsConnected && !IsCarInPitLane && !IsCarInPitBox) {
+                        return true;
+                    }
+                    return false;
                 }
             }
 
@@ -546,8 +549,9 @@ namespace APR.DashSupport {
             public bool IsCarInGarage { get { return _opponent.IsCarInGarage.GetValueOrDefault(); } }
             public bool IsOutlap { get { return _opponent.IsOutLap; } }
 
-            public bool IsSpectator { get { return this.CarIdx == StrategyObserver.SpectatedCarIdx; } }
+            public bool IsCameraCar { get { return this.CarIdx == StrategyObserver.CameraCarIdx; } }
             public bool IsPlayer { get { return _opponent.IsPlayer; } }
+           
 
             public double Speed { get { return _opponent.Speed.GetValueOrDefault(); } }
 
@@ -673,7 +677,7 @@ namespace APR.DashSupport {
             // Relative specific fields
             public int CappedLapToSpectatedCar(ExtendedOpponent opponent) {
 
-                var lapDifference = Convert.ToInt32(StrategyObserver.SpectatedCarCurrentLap - opponent.CurrentLap);
+                var lapDifference = Convert.ToInt32(StrategyObserver.CameraCarCurrentLap - opponent.CurrentLap);
                 var cappedLapDifference = Math.Max(Math.Min(lapDifference, 1), -1);
 
                 // -1 is behind, 0 same, +1 ahead  
@@ -696,10 +700,10 @@ namespace APR.DashSupport {
 
             public int LapAheadBehind {
                 get {
-                    if (StrategyObserver.SpectatedCarCurrentLap > Lap) {
+                    if (StrategyObserver.CameraCarCurrentLap > Lap) {
                         return 1;
                     }
-                    else if (StrategyObserver.SpectatedCarCurrentLap == Lap) {
+                    else if (StrategyObserver.CameraCarCurrentLap == Lap) {
                         return 0;
                     }
                     return -1;
@@ -713,7 +717,7 @@ namespace APR.DashSupport {
             public double LapDistPctSpectatedCar {
                 get {
                     // calculate the difference between the two cars
-                    var pctGap = StrategyObserver.SpecatedCarLapDistPct - _opponent.TrackPositionPercent.Value;
+                    var pctGap = StrategyObserver.CameraCarLapDistPct - _opponent.TrackPositionPercent.Value;
                     if (pctGap > 50.0) {
                         pctGap -= 50.0;
                     }
@@ -805,7 +809,7 @@ namespace APR.DashSupport {
             public double LapDistSpectatedCar {
                 get {
                      // calculate the difference between the two cars
-                     var distance = (StrategyObserver.SpecatedCarLapDistPct * StrategyObserver.TrackLength) - (_opponent.TrackPositionPercent.Value * StrategyObserver.TrackLength);
+                     var distance = (StrategyObserver.CameraCarLapDistPct * StrategyObserver.TrackLength) - (_opponent.TrackPositionPercent.Value * StrategyObserver.TrackLength);
                      if (distance > StrategyObserver.TrackLength /2) {
                         distance -= StrategyObserver.TrackLength;
                      }
@@ -1025,7 +1029,7 @@ namespace APR.DashSupport {
 
             public int LapSpectatedCar {
                 get {
-                    return StrategyObserver.SpectatedCarCurrentLap;
+                    return StrategyObserver.CameraCarCurrentLap;
                 }
             }
 
@@ -1037,10 +1041,10 @@ namespace APR.DashSupport {
 
                     if (StrategyObserver.SessionType == "Race") {
 
-                        if (CurrentLap > StrategyObserver.SpectatedCarCurrentLap) {
+                        if (CurrentLap > StrategyObserver.CameraCarCurrentLap) {
                             return IsCarInPitLane ? "#7F1818" : "#FE3030"; // Lapping you
                         }
-                        else if (CurrentLap == StrategyObserver.SpectatedCarCurrentLap) {
+                        else if (CurrentLap == StrategyObserver.CameraCarCurrentLap) {
                             return IsCarInPitLane ? "#7F7F7F" : "#FFFFFF"; // Same lap as you
                         }
                         else {

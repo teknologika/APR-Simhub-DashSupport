@@ -240,7 +240,7 @@ namespace APR.DashSupport {
 
                         SetProp("Standings.Position" + counter.ToString() + ".GapToCarBehind", item.CarBehindInClassGapString);
                         SetProp("Standings.Position" + counter.ToString() + ".IsInPit", item.IsCarInPitBox);
-                        SetProp("Standings.Position" + counter.ToString() + ".IsPlayer", item.IsSpectator);
+                        SetProp("Standings.Position" + counter.ToString() + ".IsPlayer", item.IsCameraCar);
                         SetProp("Standings.Position" + counter.ToString() + ".Lap.LastLap", item.LastLapTimeString);
                         SetProp("Standings.Position" + counter.ToString() + ".Lap.BestLap", item.BestLapTimeString);
                         SetProp("Standings.Position" + counter.ToString() + ".Lap.Colors.LastLap", item.LastLapDynamicColor);
@@ -271,7 +271,7 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".PitStops.Delimited.EstimatedRange", item.PitStops_AllStopsEstimatedRangeDelimitedString);
 
 
-                        if (item.IsPlayer || item.IsSpectator) {
+                        if (item.IsPlayer || item.IsCameraCar) {
                             SetProp("Standings.Position" + counter.ToString() + ".Class.Color", Settings.Color_Black);
                             SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", Settings.Color_White);
                             SetProp("Standings.Position" + counter.ToString() + ".Row.Background", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
