@@ -1,4 +1,5 @@
-﻿using GameReaderCommon;
+﻿using APR.DashSupport.Themes;
+using GameReaderCommon;
 using IRacingReader;
 using iRacingSDK;
 using SimHub.Plugins;
@@ -594,7 +595,23 @@ namespace APR.DashSupport {
             public double CarClassReferenceLapTime { get; set; }
             public string CarClassColor {
                 get {
-                    return _competitor.CarClassColor.ToLower().Replace("0x", "#FF"); ;
+                    if (_competitor != null) {
+                        return _competitor.CarClassColor.ToLower().Replace("0x", "#FF"); ;
+                    }
+                    else {
+                        return IRacing.Colors.Transparent;
+                    }
+                }
+            }
+            public string CarClassColorSemiTransparent {
+                get {
+                    if (_competitor != null) {
+                        return _competitor.CarClassColor.ToLower().Replace("0x", "#96");
+                    }
+                    else {
+                        return IRacing.Colors.Transparent;
+                    }
+                    
                 }
             }
             public string CarClassTextColor {
@@ -1036,23 +1053,23 @@ namespace APR.DashSupport {
             public string DriverNameColour {
                 get {
                     if (IsCarInPitBox || IsCarInPitLane || IsCarInGarage || !IsConnected) {
-                        return "#FF808080";
+                        return IRacing.Colors.GreyLightText;
                     }
 
                     if (StrategyObserver.SessionType == "Race") {
 
                         if (CurrentLap > StrategyObserver.CameraCarCurrentLap) {
-                            return IsCarInPitLane ? "#7F1818" : "#FE3030"; // Lapping you
+                            return IsCarInPitLane ? IRacing.Colors.GreyLightText : IRacing.Colors.RelativeTextRed; // Lapping you
                         }
                         else if (CurrentLap == StrategyObserver.CameraCarCurrentLap) {
-                            return IsCarInPitLane ? "#7F7F7F" : "#FFFFFF"; // Same lap as you
+                            return IsCarInPitLane ? IRacing.Colors.GreyLightText : IRacing.Colors.RelativeTextWhite; // Same lap as you
                         }
                         else {
-                            return IsCarInPitLane ? "#00607F" : "#00C0FF"; // Being lapped by you
+                            return IsCarInPitLane ? IRacing.Colors.GreyLightText : IRacing.Colors.RelativeTextBlue; // Being lapped by you
                         }
                     }
                     else {
-                        return "#ffffffff";
+                        return IRacing.Colors.RelativeTextWhite;
                     }
                 }
             }
@@ -1068,6 +1085,9 @@ namespace APR.DashSupport {
                 }
             }
             public string LicenseColor { get; set; }
+            public string LicenseTextColor { get; set; }
+            public string LicenseBorderColor { get; set; }
+
             public int iRating {
                 get {
                     return (int)_competitor.IRating;

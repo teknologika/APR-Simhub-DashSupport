@@ -25,13 +25,9 @@ namespace APR.DashSupport {
             public int CompulsoryStopsRemaining { get; set; } = 0;
             public double FuelPerLap { get; set; }
             public double FuelFillRateLitresPerSecond { get { return StrategyBundle.Instance.FuelFillRateLitresPerSecond; } }
-            public double FourTyresPitstopTime { get { return StrategyBundle.Instance.FuelFillRateLitresPerSecond; } }
+            public double FourTyresPitstopTime { get { return StrategyBundle.Instance.FourTyresPitstopTime; } }
 
-            public void CalculateStrategyA(Round rnd) {
-
-                // Hard Coded for testing to be read from a season file matching track
-                //totalLaps = 50;
-                
+            public void CalculateStrategy(string strat, Round rnd) {
 
                 List<string> stopLap = new List<string>();
                 List<string> stopLapPct = new List<string>();
@@ -43,8 +39,30 @@ namespace APR.DashSupport {
                 strategy.TotalLapsForStrategyCalc = rnd.NumberOfLaps;
                 strategy.CompulsoryStopsRemaining = rnd.MinStops;
                 strategy.FuelPerLap = rnd.Gen2FuelBurn;
+                List<PredictedPitStop> pitstops;
+                
+                switch (strat) {
+                    case "A":
+                        pitstops = strategy.Strat_A_CalculateEvenStops();
+                        break;
 
-                var pitstops = strategy.CalculateEvenStops();
+                    case "B":
+                        pitstops = strategy.Strat_B_CalculateMaxFillEarlyStops();
+                        break;
+
+                    case "C":
+                        pitstops = strategy.Strat_C_CalculateMaxFillLateStops();
+                        break;
+
+                    case "D":
+                        pitstops = strategy.Strat_D_EvenWithLap1Stop();
+                        break;
+
+                    default:
+                        pitstops = strategy.Strat_A_CalculateEvenStops();
+                        break;
+                }
+
                 foreach (var item in pitstops) {
                     stopLap.Add(item.Lap.ToString("0"));
                     var pct = (item.Lap / (double)strategy.TotalLapsForStrategyCalc) * 100;
@@ -54,12 +72,45 @@ namespace APR.DashSupport {
                     fuelToAdd.Add(item.FuelToAdd.ToString("0.0"));
 
                 }
-                StrategyBundle.Instance.StratA_Stops = string.Join(",", stopLap);
-                StrategyBundle.Instance.StratA_FuelToAdd = string.Join(",", stopDuration);
-                StrategyBundle.Instance.StratA_StopDuration = string.Join(",", fuelToAdd);
-                StrategyBundle.Instance.StratA_StopsPct = string.Join(",", stopLapPct);
-            }
 
+                switch (strat) {
+                    case "A":
+                        StrategyBundle.Instance.StratA_Stops = string.Join(",", stopLap);
+                        StrategyBundle.Instance.StratA_FuelToAdd = string.Join(",", fuelToAdd);
+                        StrategyBundle.Instance.StratA_StopDuration = string.Join(",", stopDuration);
+                        StrategyBundle.Instance.StratA_StopsPct = string.Join(",", stopLapPct);
+                        break;
+
+                    case "B":
+                        StrategyBundle.Instance.StratB_Stops = string.Join(",", stopLap);
+                        StrategyBundle.Instance.StratB_FuelToAdd = string.Join(",", fuelToAdd);
+                        StrategyBundle.Instance.StratB_StopDuration = string.Join(",", stopDuration);
+                        StrategyBundle.Instance.StratB_StopsPct = string.Join(",", stopLapPct);
+                        break;
+
+                    case "C":
+                        StrategyBundle.Instance.StratC_Stops = string.Join(",", stopLap);
+                        StrategyBundle.Instance.StratC_FuelToAdd = string.Join(",", fuelToAdd);
+                        StrategyBundle.Instance.StratC_StopDuration = string.Join(",", stopDuration);
+                        StrategyBundle.Instance.StratC_StopsPct = string.Join(",", stopLapPct);
+                        break;
+
+                    case "D":
+                        StrategyBundle.Instance.StratD_Stops = string.Join(",", stopLap);
+                        StrategyBundle.Instance.StratD_FuelToAdd = string.Join(",", fuelToAdd);
+                        StrategyBundle.Instance.StratD_StopDuration = string.Join(",", stopDuration);
+                        StrategyBundle.Instance.StratD_StopsPct = string.Join(",", stopLapPct);
+                        break;
+
+                    default:
+                        StrategyBundle.Instance.StratA_Stops = string.Join(",", stopLap);
+                        StrategyBundle.Instance.StratA_FuelToAdd = string.Join(",", fuelToAdd);
+                        StrategyBundle.Instance.StratA_StopDuration = string.Join(",", stopDuration);
+                        StrategyBundle.Instance.StratA_StopsPct = string.Join(",", stopLapPct);
+                        break;
+                }
+
+            }
 
             public double RoundUpToPointFive(double d) {
                 return Math.Ceiling(d * 2) / 2;
@@ -126,7 +177,6 @@ namespace APR.DashSupport {
                     }
                 }
             }
-
 
             private bool OneMoreLap(double fuelInTank) {
                 bool canGoOneMoreLap = false;
@@ -236,12 +286,18 @@ namespace APR.DashSupport {
                 return new PredictedPitStop() { Lap = lapsOfRange, FuelToAdd = FuelToAdd };
             }
 
+            private PredictedPitStop CalculateMaxFillLap1Stop() {
+                int FirstLapStop = 1;
+                double FuelToAdd = Math.Round(CalculateSpaceInTankInNLaps(StartingFuel, FirstLapStop), 1);
+                return new PredictedPitStop() { Lap = FirstLapStop, FuelToAdd = FuelToAdd };
+            }
+
             private int CriticalLapFirstStop() {
                 // =(F11-(MaxTankSize-MaxStartingFuel)+CoughAllowance)/F7
                 return RoundDownToInt((CalculateEvenStopsFuel() - (TankSize - StartingFuel) + CoughAllowance) / FuelPerLap);
             }
 
-            private List<PredictedPitStop> CalculateEvenStops() {
+            private List<PredictedPitStop> Strat_A_CalculateEvenStops() {
                 var stops = new List<PredictedPitStop>();
                 bool needOneLongerStint = false;
                 double minStops = CalculateMinimumStopsPrecise();
@@ -265,7 +321,7 @@ namespace APR.DashSupport {
                 return stops;
             }
 
-            private List<PredictedPitStop> CalculateMaxFillEarlyStops() {
+            private List<PredictedPitStop> Strat_B_CalculateMaxFillEarlyStops() {
                 var stops = new List<PredictedPitStop>();
                 double minStops = CalculateMinimumStopsPrecise();
                 double totalFuelNeeded = CalculateTotalFuelNeededToAddForRace();
@@ -273,8 +329,7 @@ namespace APR.DashSupport {
                 double fuelInTank = StartingFuel - CoughAllowance;
                 int lastStopOnLap = 0;
                 int nextStintLength = 0;
-
-
+               
                 for (int i = 1; i < minStops + 1; i++) {
                     if (i == 1) {
                         PredictedPitStop firstStop = CalculateMaxFillFirstStop();
@@ -331,10 +386,9 @@ namespace APR.DashSupport {
                 return stops;
             }
 
+            private List<PredictedPitStop> Strat_C_CalculateMaxFillLateStops() {
 
-            private List<PredictedPitStop> CalculateMaxFillLateStops() {
-
-                var EarlyMaxStops = CalculateMaxFillEarlyStops();
+                var EarlyMaxStops = Strat_B_CalculateMaxFillEarlyStops();
                 var stops = new List<PredictedPitStop>();
                 double minStops = CalculateMinimumStopsPrecise();
                 double totalFuelNeeded = CalculateTotalFuelNeededToAddForRace();
@@ -376,6 +430,30 @@ namespace APR.DashSupport {
                             fuelInTank = fuelInTank - CalculateFuelNeededForLaps(nextStintLength) + stop.FuelToAdd;
                             remainingFuelNeeded = remainingFuelNeeded - fuelInTank - stop.FuelToAdd;
                         }
+                    }
+                }
+                return stops;
+            }
+
+            private List<PredictedPitStop> Strat_D_EvenWithLap1Stop() {
+                var stops = new List<PredictedPitStop>();
+                bool needOneLongerStint = false;
+                double minStops = CalculateMinimumStopsPrecise();
+                int numberOfStints = CalculateMinimumStops()+1;
+                double fuelPerStop = CalculateEvenStopsFuel();
+                int stintLength = RoundDownToInt(TotalLapsForStrategyCalc / numberOfStints);
+
+                // work out if we have an odd sequence so we can go one more lap on the second stop.
+                if (TotalLapsForStrategyCalc % CalculateMinimumStops() != 0) {
+                    needOneLongerStint = true;
+                }
+                for (int i = 1; i < minStops + 1; i++) {
+                    PredictedPitStop stop = new PredictedPitStop() { Lap = 2, FuelToAdd = fuelPerStop };
+                    stops.Add(stop);
+
+                    // if it is the second stop, and we have an odd number of laps, go one lap longer.
+                    if (i == 2 && needOneLongerStint) {
+                        stops[1].Lap = stops[1].Lap + 1;
                     }
                 }
                 return stops;

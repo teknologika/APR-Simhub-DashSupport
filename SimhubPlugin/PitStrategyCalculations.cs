@@ -142,34 +142,27 @@ namespace APR.DashSupport {
 
                 StrategyBundle.Update();
 
-                AddProp("Strategy.A.EarlyStopLaps", StrategyBundle.Instance.StratA_Stops);
-                AddProp("Strategy.B.EarlyStopLaps", "");
-                AddProp("Strategy.C.EarlyStopLaps", "");
-                AddProp("Strategy.D.EarlyStopLaps", "");
-
                 AddProp("Strategy.A.StopLaps", StrategyBundle.Instance.StratA_Stops);
-                AddProp("Strategy.B.StopLaps", "");
-                AddProp("Strategy.C.StopLaps", "");
-                AddProp("Strategy.D.StopLaps", "");
-
                 AddProp("Strategy.A.StopLapsPct", StrategyBundle.Instance.StratA_StopsPct);
-                AddProp("Strategy.B.StopLapsPct", "");
-                AddProp("Strategy.C.StopLapsPct", "");
-                AddProp("Strategy.D.StopLapsPct", "");
-
-
                 AddProp("Strategy.A.FuelPerStop", StrategyBundle.Instance.StratA_FuelToAdd);
-                AddProp("Strategy.B.FuelPerStop", "");
-                AddProp("Strategy.C.FuelPerStop", "");
-                AddProp("Strategy.D.FuelPerStop", "");
+                AddProp("Strategy.A.FuelModes", StrategyBundle.Instance.StratA_FuelMode);
 
-                AddProp("Strategy.A.FuelModes", ""); // F or A where fixed or auto
-                AddProp("Strategy.B.FuelModes", "");
-                AddProp("Strategy.C.FuelModes", "");
-                AddProp("Strategy.D.FuelModes", "");
+                AddProp("Strategy.B.StopLaps", StrategyBundle.Instance.StratB_Stops);
+                AddProp("Strategy.B.StopLapsPct", StrategyBundle.Instance.StratB_StopsPct);
+                AddProp("Strategy.B.FuelPerStop", StrategyBundle.Instance.StratB_FuelToAdd);
+                AddProp("Strategy.B.FuelModes", StrategyBundle.Instance.StratB_FuelMode);
 
+                AddProp("Strategy.C.StopLaps", StrategyBundle.Instance.StratC_Stops);
+                AddProp("Strategy.C.StopLapsPct", StrategyBundle.Instance.StratC_StopsPct);
+                AddProp("Strategy.C.FuelPerStop", StrategyBundle.Instance.StratC_FuelToAdd);
+                AddProp("Strategy.C.FuelModes", StrategyBundle.Instance.StratC_FuelMode);
 
-               // StratA();
+                AddProp("Strategy.D.StopLaps", StrategyBundle.Instance.StratD_Stops);
+                AddProp("Strategy.D.StopLapsPct", StrategyBundle.Instance.StratD_StopsPct);
+                AddProp("Strategy.D.FuelPerStop", StrategyBundle.Instance.StratD_FuelToAdd);
+                AddProp("Strategy.D.FuelModes", StrategyBundle.Instance.StratD_FuelMode);
+
+                // StratA();
             }
         }
 

@@ -1,5 +1,6 @@
 using SimHub.Plugins;
 using System;
+using APR.DashSupport.Themes;
 
 namespace APR.DashSupport {
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
@@ -50,7 +51,7 @@ namespace APR.DashSupport {
             // If we need to pit this lap .. shout it out
             if (ddFuelAlert) {
                 SetProp("PitWindowMessage", "BOX");
-                SetProp("PitWindowTextColour", Settings.Color_White);
+                SetProp("PitWindowTextColour", IRacing.Colors.White);
                 SetProp("pitWindowBackGroundColour", "Red");
             }
             else {

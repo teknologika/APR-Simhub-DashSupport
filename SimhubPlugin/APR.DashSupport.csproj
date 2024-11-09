@@ -132,6 +132,7 @@
     <Compile Include="iRacingRelative.cs" />
     <Compile Include="LapDataStore.cs" />
     <Compile Include="Models\Round.cs" />
+    <Compile Include="Models\Theme.iRacing.cs" />
     <Compile Include="Models\VetsRounds.cs" />
     <Compile Include="PitStopStrategy.cs" />
     <Compile Include="PitStore.cs" />

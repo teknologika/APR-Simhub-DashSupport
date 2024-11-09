@@ -1,4 +1,5 @@
-﻿using SimHub.Plugins;
+﻿using APR.DashSupport.Themes;
+using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,26 +55,38 @@ namespace APR.DashSupport {
 
         private string LicenseColor(string licenseString) {
             if (licenseString.Contains("A")) // Blue
-                return "#FF0153db";
+                return IRacing.Colors.BlueTransparent;
             if (licenseString.Contains("B")) // Green
-                return "#FF00c702";
+                return IRacing.Colors.GreenTransparent;
             if (licenseString.Contains("C")) // Yellow
-                return "#FFfeec04";
+                return IRacing.Colors.YellowTransparent;
             if (licenseString.Contains("D")) // Orange
-                return "#FFFC8A27";
-            return !licenseString.Contains("R") ? "Black" : "#FFB40800"; // red
+                return IRacing.Colors.OrangeTransparent;
+            return !licenseString.Contains("R") ? "Black" : IRacing.Colors.RedTransparent; // red
         }
 
         private string LicenseTextColor(string licenseString) {
-            if (licenseString.Contains("A")) // White
-                return "#FFFFFFFF";
-            if (licenseString.Contains("B")) // white
-                return "#FFFFFFFF";
-            if (licenseString.Contains("C")) // Black
-                return "#FF000000";
-            if (licenseString.Contains("D")) // Black
-                return "#FF000000";
-            return !licenseString.Contains("R") ? "Black" : "#FF000000"; // White
+            if (licenseString.Contains("A")) // Blue
+                return IRacing.Colors.BlueText;
+            if (licenseString.Contains("B")) // Green
+                return IRacing.Colors.GreenText;
+            if (licenseString.Contains("C")) // Yellow
+                return IRacing.Colors.YellowText;
+            if (licenseString.Contains("D")) // Orange
+                return IRacing.Colors.OrangeText;
+            return !licenseString.Contains("R") ? "Black" : IRacing.Colors.RedText; // White
+        }
+
+        private string LicenseBorderColor(string licenseString) {
+            if (licenseString.Contains("A")) // Blue
+                return IRacing.Colors.Blue;
+            if (licenseString.Contains("B")) // Green
+                return IRacing.Colors.Green;
+            if (licenseString.Contains("C")) // Yellow
+                return IRacing.Colors.Yellow;
+            if (licenseString.Contains("D")) // Orange
+                return IRacing.Colors.Orange;
+            return !licenseString.Contains("R") ? "Black" : IRacing.Colors.Red; // White
         }
     }
 

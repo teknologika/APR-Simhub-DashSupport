@@ -23,23 +23,6 @@ namespace APR.DashSupport
     {
         public int MaxCars = 64;
 
-        // General colours and layout settings
-        public string Color_VeryDarkGrey = "#FF292929";
-        public string Color_DarkGrey = "#FF898989";
-        public string Color_LightGrey = "#FF808080";
-        public string Color_Purple = "#Ff990099";
-        public string Color_Green = "#FF009933";
-        public string Color_Blue = "#FF0000ff";
-        public string Color_White = "#FFFFFFFF";
-        public string Color_Black = "#FF000000";
-        public string Color_Yellow = "#FFFFFF00";
-        public string Color_Red = "#FFFF0000";
-        public string Color_RedLineFlash = "#FF800000"; // Maroon
-        public string Color_Transparent = "#00000000";
-        public string Color_DarkBackground = "#FF2D2D2D";
-        public string Color_LightBlue = "DeepSkyBlue";
-
-
         // Relative Settings
         public int RelativeNumberOfCarsAheadToShow { get; set; } = 5;
         public int RelativeNumberOfCarsBehindToShow { get; set; } = 5;

@@ -64,7 +64,10 @@ namespace APR.DashSupport {
                 
                 var rnd = rounds.GetRound(21, 8);
                 
-                instance.StrategyCalculator.CalculateStrategyA(rnd);
+                instance.StrategyCalculator.CalculateStrategy("A",rnd);
+                instance.StrategyCalculator.CalculateStrategy("B", rnd);
+                instance.StrategyCalculator.CalculateStrategy("C", rnd);
+                instance.StrategyCalculator.CalculateStrategy("D", rnd);
             }
 
             // Strategy Strings
@@ -72,11 +75,25 @@ namespace APR.DashSupport {
             public string StratA_FuelToAdd ;
             public string StratA_StopDuration;
             public string StratA_StopsPct;
+            public string StratA_FuelMode;
 
-            public void PerformStrategyCalulations() {
-                
-               
-            }
+            public string StratB_Stops;
+            public string StratB_FuelToAdd;
+            public string StratB_StopDuration;
+            public string StratB_StopsPct;
+            public string StratB_FuelMode;
+
+            public string StratC_Stops;
+            public string StratC_FuelToAdd;
+            public string StratC_StopDuration;
+            public string StratC_StopsPct;
+            public string StratC_FuelMode;
+
+            public string StratD_Stops;
+            public string StratD_FuelToAdd;
+            public string StratD_StopDuration;
+            public string StratD_StopsPct;
+            public string StratD_FuelMode;
 
             public bool PlayerIsDriving;
             public int TotaLaps;

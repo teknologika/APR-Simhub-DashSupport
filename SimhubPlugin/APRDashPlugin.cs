@@ -28,6 +28,7 @@ using FMOD;
 using static SimHub.Plugins.DataPlugins.PersistantTracker.PersistantTrackerPluginAttachedData;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models;
 using NAudio.Dmo;
+using APR.DashSupport.Themes;
 
 namespace APR.DashSupport
 {
@@ -313,20 +314,20 @@ namespace APR.DashSupport
             SetProp("Common.IsLeagueSession", false);
 
             // Dashboard specific properties > move to a dashboard Styles Class
-            AddProp("Dash.Styles.BoxWithBorder.Border.Color", Settings.Color_LightGrey); // Gray
+            AddProp("Dash.Styles.BoxWithBorder.Border.Color", IRacing.Colors.GreyLight); // Gray
             AddProp("Dash.Styles.BoxWithBorder.Border.LineThickness", 4); 
             AddProp("Dash.Styles.BoxWithBorder.Border.CornerRadius", 12);
-            AddProp("Dash.Styles.BoxWithBorder.Background.Color", Settings.Color_Transparent); // Transparent
-            AddProp("Dash.Styles.BoxWithOutBorder.Border.Color", Settings.Color_Transparent); // Transparent
+            AddProp("Dash.Styles.BoxWithBorder.Background.Color", IRacing.Colors.Transparent); // Transparent
+            AddProp("Dash.Styles.BoxWithOutBorder.Border.Color", IRacing.Colors.Transparent); // Transparent
 
             AddProp("Dash.Styles.BoxWithOutBorder.Border.LineThickness", 0);
             AddProp("Dash.Styles.BoxWithOutBorder.Border.CornerRadius", 12);
 
-            AddProp("Dash.Styles.BoxWithOutBorder.Background.Color", Settings.Color_DarkBackground); // Transparent
-            AddProp("Dash.Styles.Colors.Lap.SessionBest", Settings.Color_Purple); // Purple
-            AddProp("Dash.Styles.Colors.Lap.PersonalBest", Settings.Color_Green); // Green
-            AddProp("Dash.Styles.Colors.Lap.Latest", Settings.Color_White); // white
-            AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow); // yellow
+            AddProp("Dash.Styles.BoxWithOutBorder.Background.Color", IRacing.Colors.GreyBackgroundVeryDarkGrey); // Transparent
+            AddProp("Dash.Styles.Colors.Lap.SessionBest", IRacing.Colors.Purple); // Purple
+            AddProp("Dash.Styles.Colors.Lap.PersonalBest", IRacing.Colors.GreenText); // Green
+            AddProp("Dash.Styles.Colors.Lap.Latest", IRacing.Colors.YellowText); // white
+            AddProp("Dash.Styles.Colors.Lap.Default", IRacing.Colors.YellowText); // yellow
 
 
             AddProp("Dash.Styles.Strategy.BarsWidth", Settings.Strategy_BarsWidth);
@@ -339,33 +340,33 @@ namespace APR.DashSupport
             AddProp("Common.Bias.Delta", "0.0");
             AddProp("Common.Bias.Color", "");
 
-            AddProp("BrakeBarColour", Settings.Color_Red);
-            AddProp("BrakeBiasColour", Settings.Color_DarkBackground);
+            AddProp("BrakeBarColour", IRacing.Colors.Red);
+            AddProp("BrakeBiasColour", IRacing.Colors.GreyBackgroundVeryDarkGrey);
             AddProp("BrakeBarTargetTrailPercentage",0);
             AddProp("BrakeBarTargetPercentage", 0);
 
-            AddProp("ARBColourFront", Settings.Color_White);
-            AddProp("ARBColourRear", Settings.Color_White);
-            AddProp("JackerColour", Settings.Color_White);
+            AddProp("ARBColourFront", IRacing.Colors.White);
+            AddProp("ARBColourRear", IRacing.Colors.White);
+            AddProp("JackerColour", IRacing.Colors.White);
 
             AddProp("TCHighValueLabel", "HI AID");
             AddProp("TCLowValueLabel", "OFF");
             AddProp("TCIsOff", false);
-            AddProp("TCColour", Settings.Color_White);
+            AddProp("TCColour", IRacing.Colors.White);
 
-            AddProp("ABSColour", Settings.Color_White);
+            AddProp("ABSColour", IRacing.Colors.White);
             AddProp("ABSHighValueLabel", "OFF");
             AddProp("ABSLowValueLabel", "HI AID");
             AddProp("ABSIsOff", false);
 
-            AddProp("MAPLabelColour", Settings.Color_White);
+            AddProp("MAPLabelColour", IRacing.Colors.White);
             AddProp("MAPLabel", "1");
             AddProp("MAPHighValueLabel", "RACE");
             AddProp("MAPLowValueLabel", "SAVE           SC");
 
             AddProp("PitWindowMessage", "");
-            AddProp("PitWindowTextColour", Settings.Color_Transparent);
-            AddProp("pitWindowBackGroundColour", Settings.Color_Transparent);
+            AddProp("PitWindowTextColour", IRacing.Colors.Transparent);
+            AddProp("pitWindowBackGroundColour", IRacing.Colors.Transparent);
 
             AddProp("FuelPopupPercentage", Settings.FuelPopupPercentage);
             AddProp("PitWindowPopupPercentage", Settings.PitWindowPopupPercentage);

@@ -15,6 +15,8 @@ using GameReaderCommon;
 using System.Windows.Controls;
 using SimHub.Plugins.DataPlugins.PersistantTracker;
 using SimHub.Plugins.OutputPlugins.GraphicalDash.Models.BuiltIn;
+using APR.DashSupport.Themes;
+using iRacingSDK;
 
 namespace APR.DashSupport {
 
@@ -109,32 +111,40 @@ namespace APR.DashSupport {
             AddProp("Common.PersonalBestLapTime", "");
             AddProp("Common.EstimatedLapTime", "");
 
-            AddProp("Dash.Styles.Colors.Lap.SingleDynamic", Settings.Color_LightGrey); 
-            AddProp("Dash.Styles.Colors.Lap.SessionBest", Settings.Color_LightGrey); 
-            AddProp("Dash.Styles.Colors.Lap.PersonalBest", Settings.Color_LightGrey); 
-            AddProp("Dash.Styles.Colors.Lap.Latest", Settings.Color_White);
-            AddProp("Dash.Styles.Colors.Lap.Estimated", Settings.Color_White); 
-            AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow); 
-            AddProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow);
+            AddProp("Dash.Styles.Colors.Lap.SingleDynamic", IRacing.Colors.GreyLightText); 
+            AddProp("Dash.Styles.Colors.Lap.SessionBest", IRacing.Colors.GreyLightText); 
+            AddProp("Dash.Styles.Colors.Lap.PersonalBest", IRacing.Colors.GreyLightText); 
+            AddProp("Dash.Styles.Colors.Lap.Latest", IRacing.Colors.RelativeTextWhite);
+            AddProp("Dash.Styles.Colors.Lap.Estimated", IRacing.Colors.RelativeTextWhite); 
+            AddProp("Dash.Styles.Colors.Lap.Default", IRacing.Colors.Yellow); 
+            AddProp("Dash.Styles.Colors.Lap.Default", IRacing.Colors.Yellow);
 
+            AddProp("Dash.Styles.Colors.VeryDarkGrey", IRacing.Colors.GreyBackgroundVeryDarkGrey);
+            AddProp("Dash.Styles.Colors.DarkGrey", IRacing.Colors.GreyBackgroundDarkGrey);
+            AddProp("Dash.Styles.Colors.MidGrey", IRacing.Colors.GreyBackgroundMidGrey);
+            AddProp("Dash.Styles.Colors.LightGrey", IRacing.Colors.GreyLight);
+            AddProp("Dash.Styles.Colors.GreyText", IRacing.Colors.GreyLightText);
+            AddProp("Dash.Styles.Colors.Purple", IRacing.Colors.Purple);
+            AddProp("Dash.Styles.Colors.Green", IRacing.Colors.Green);
+            AddProp("Dash.Styles.Colors.GreenText", IRacing.Colors.GreenText);
 
-            AddProp("Dash.Styles.Colors.VeryDarkGrey", Settings.Color_VeryDarkGrey);
-            AddProp("Dash.Styles.Colors.DarkGrey", Settings.Color_DarkGrey);
-            AddProp("Dash.Styles.Colors.LightGrey", Settings.Color_LightGrey);
-            AddProp("Dash.Styles.Colors.Purple", Settings.Color_Purple);
-            AddProp("Dash.Styles.Colors.Green", Settings.Color_Green);
-            AddProp("Dash.Styles.Colors.White", Settings.Color_White);
-            AddProp("Dash.Styles.Colors.Black", Settings.Color_Black);
-            AddProp("Dash.Styles.Colors.Yellow", Settings.Color_Yellow);
-            AddProp("Dash.Styles.Colors.Red", Settings.Color_Red);
-            AddProp("Dash.Styles.Colors.RedLineFlash", Settings.Color_RedLineFlash);
-            AddProp("Dash.Styles.Colors.Transparent", Settings.Color_Transparent);
-            AddProp("Dash.Styles.Colors.DarkBackground", Settings.Color_DarkBackground);
-            AddProp("Dash.Styles.Colors.LightBlue", Settings.Color_LightBlue);
-            AddProp("Dash.Styles.Colors.LimiterOn", Settings.Color_LightBlue);
-            AddProp("Dash.Styles.Colors.LimiterWarning", Settings.Color_Red);
-            AddProp("Dash.Styles.Colors.IgnitionOff", Settings.Color_Yellow);
-            AddProp("Dash.Styles.Colors.EngineOff", Settings.Color_RedLineFlash);
+            AddProp("Dash.Styles.Colors.White", IRacing.Colors.RelativeTextWhite);
+            
+            AddProp("Dash.Styles.Colors.Black", IRacing.Colors.Black);
+            AddProp("Dash.Styles.Colors.Yellow", IRacing.Colors.Yellow);
+            AddProp("Dash.Styles.Colors.YellowText", IRacing.Colors.YellowText);
+            AddProp("Dash.Styles.Colors.Red", IRacing.Colors.Red);
+            AddProp("Dash.Styles.Colors.RedLineFlash", IRacing.Colors.RelativeTextRed);
+            AddProp("Dash.Styles.Colors.Transparent", IRacing.Colors.Transparent);
+            AddProp("Dash.Styles.Colors.DarkBackground", IRacing.Colors.GreyBackgroundVeryDarkGrey);
+            AddProp("Dash.Styles.Colors.LightBlue", IRacing.Colors.LightBlue);
+            AddProp("Dash.Styles.Colors.LimiterOn", IRacing.Colors.LightBlue);
+            AddProp("Dash.Styles.Colors.LimiterWarning", IRacing.Colors.RelativeTextBlue);
+            AddProp("Dash.Styles.Colors.IgnitionOff", IRacing.Colors.YellowText);
+            AddProp("Dash.Styles.Colors.EngineOff", IRacing.Colors.RelativeTextRed);
+
+            
+
 
             AddProp("Common.IsLeagueSession", false);
 
@@ -152,12 +162,12 @@ namespace APR.DashSupport {
             SetProp("Common.EstimatedLapTime", NiceTime(EstimatedLapTime));
 
             SetProp("Dash.Styles.Colors.Lap.SingleDynamic", LastLapDynamicColor);
-            SetProp("Dash.Styles.Colors.Lap.SessionBest", Settings.Color_Purple); // Purple
-            SetProp("Dash.Styles.Colors.Lap.PersonalBest", Settings.Color_Green); // Green
+            SetProp("Dash.Styles.Colors.Lap.SessionBest", IRacing.Colors.Purple); // Purple
+            SetProp("Dash.Styles.Colors.Lap.PersonalBest", IRacing.Colors.Green); // Green
             SetProp("Dash.Styles.Colors.Lap.Latest", "#FFFFFFFF"); // white
             SetProp("Dash.Styles.Colors.Lap.Estimated", "#FFFFFFFF"); // white
-            SetProp("Dash.Styles.Colors.Lap.Default", Settings.Color_Yellow); // yellow
-
+            SetProp("Dash.Styles.Colors.Lap.Default", IRacing.Colors.Yellow); // yellow
+            
             SetProp("Common.IsLeagueSession", IsLeagueSession);
         }
     }

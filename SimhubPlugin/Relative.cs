@@ -18,6 +18,7 @@ using System.Windows.Markup;
 using System.Windows.Media.Animation;
 using static SimHub.Plugins.UI.SupportedGamePicker;
 using static System.Net.Mime.MediaTypeNames;
+using APR.DashSupport.Themes;
 
 namespace APR.DashSupport {
 
@@ -397,7 +398,9 @@ namespace APR.DashSupport {
                                 _carBestLapTime = bestLapTimes[competitors[i].CarIdx],
                                 _carLastLapTime = lastLapTimes[competitors[i].CarIdx],
                                 _trackSurface = (int)irData.Telemetry.CarIdxTrackSurface[competitors[i].CarIdx],
-                                LicenseColor = LicenseColor(opponents[j].LicenceString)
+                                LicenseColor = LicenseColor(opponents[j].LicenceString),
+                                LicenseTextColor = LicenseTextColor(opponents[j].LicenceString),
+                                LicenseBorderColor = LicenseBorderColor(opponents[j].LicenceString),
                             };
                             
                             driver.CalculatePitInfo(SessionTime);
@@ -647,8 +650,11 @@ namespace APR.DashSupport {
                         SetProp("Relative.Ahead." + count + ".LapAheadBehind", opponent.LapAheadBehind.ToString());
                         SetProp("Relative.Ahead." + count + ".DriverNameColor", opponent.DriverNameColour);
                         SetProp("Relative.Ahead." + count + ".CarClassColor", opponent.CarClassColor);
+                        SetProp("Relative.Ahead." + count + ".CarClassColorSemiTransparent", opponent.CarClassColorSemiTransparent);
                         SetProp("Relative.Ahead." + count + ".CarClassTextColor", opponent.CarClassTextColor);
                         SetProp("Relative.Ahead." + count + ".LicenseColor", opponent.LicenseColor);
+                        SetProp("Relative.Ahead." + count + ".LicenseTextColor", opponent.LicenseTextColor);
+                        SetProp("Relative.Ahead." + count + ".LicenseBorderColor", opponent.LicenseBorderColor);
 
                         SetProp("Relative.Ahead." + count + ".SR", opponent.SafetyRating);
                         SetProp("Relative.Ahead." + count + ".IR", opponent.iRatingString);
@@ -677,8 +683,11 @@ namespace APR.DashSupport {
 
                         SetProp("Relative.Behind." + count + ".DriverNameColor", opponent.DriverNameColour);
                         SetProp("Relative.Behind." + count + ".CarClassColor", opponent.CarClassColor);
+                        SetProp("Relative.Behind." + count + ".CarClassColorSemiTransparent", opponent.CarClassColorSemiTransparent);
                         SetProp("Relative.Behind." + count + ".CarClassTextColor", opponent.CarClassTextColor);
                         SetProp("Relative.Behind." + count + ".LicenseColor", opponent.LicenseColor);
+                        SetProp("Relative.Behind." + count + ".LicenseTextColor", opponent.LicenseTextColor);
+                        SetProp("Relative.Behind." + count + ".LicenseBorderColor", opponent.LicenseBorderColor);
 
                         SetProp("Relative.Behind." + count + ".SR", opponent.SafetyRating);
                         SetProp("Relative.Behind." + count + ".SRSimple", opponent.SafetyRatingSimple);
@@ -767,6 +776,9 @@ namespace APR.DashSupport {
                     SetProp("Spectated.CarClassColor", SpectatedCar.CarClassColor);
                     SetProp("Spectated.CarClassTextColor", SpectatedCar.CarClassTextColor);
                     SetProp("Spectated.LicenseColor", SpectatedCar.LicenseColor);
+                    SetProp("Spectated.LicenseTextColor", SpectatedCar.LicenseTextColor);
+                    SetProp("Spectated.LicenseBorderColor", SpectatedCar.LicenseBorderColor);
+
                     SetProp("Specteted.IsPlayer", SpectatedCar.IsPlayer);
 
                     SetProp("Spectated.LastLap", SpectatedCar.LastLapTimeString);
@@ -826,9 +838,12 @@ namespace APR.DashSupport {
                     AddProp("Relative.Ahead." + i + ".Gap", "");
                     AddProp("Relative.Ahead." + i + ".AheadBehind", "");
                     AddProp("Relative.Ahead." + i + ".CarClassTextColor", "");
+                    AddProp("Relative.Ahead." + i + ".CarClassColorSemiTransparent", "");
                     AddProp("Relative.Ahead." + i + ".DriverNameColor", "");
                     AddProp("Relative.Ahead." + i + ".CarClassColor", "");
                     AddProp("Relative.Ahead." + i + ".LicenseColor", "");
+                    AddProp("Relative.Ahead." + i + ".LicenseTextColor", "");
+                    AddProp("Relative.Ahead." + i + ".LicenseBorderColor", "");
                     AddProp("Relative.Ahead." + i + ".Show", "");
                     AddProp("Relative.Ahead." + i + ".SR", "");
                     AddProp("Relative.Ahead." + i + ".SRSimple", "");
@@ -848,7 +863,11 @@ namespace APR.DashSupport {
                     AddProp("Relative.Behind." + i + ".CarClassTextColor", "");
                     AddProp("Relative.Behind." + i + ".DriverNameColor", "");
                     AddProp("Relative.Behind." + i + ".CarClassColor", "");
+                    AddProp("Relative.Behind." + i + ".CarClassColorSemiTransparent", "");
                     AddProp("Relative.Behind." + i + ".LicenseColor", "");
+                    AddProp("Relative.Behind." + i + ".LicenseTextColor", "");
+                    AddProp("Relative.Behind." + i + ".LicenseBorderColor", "");
+
                     AddProp("Relative.Behind." + i + ".Show", "False");
                     AddProp("Relative.Behind." + i + ".SR", "");
                     AddProp("Relative.Behind." + i + ".SRSimple", "");
@@ -886,9 +905,13 @@ namespace APR.DashSupport {
                 AddProp("Spectated.AheadBehind", "");
                 AddProp("Spectated.CarClassTextColor", "");
                 AddProp("Spectated.Distance", "0.0");
-                AddProp("Spectated.DriverNameColor", "#FFFFFF");
-                AddProp("Spectated.CarClassColor", "#000000");
-                AddProp("Spectated.LicenseColor", "#FFFFFF");
+                AddProp("Spectated.DriverNameColor", IRacing.Colors.White);
+                AddProp("Spectated.CarClassColor", IRacing.Colors.White);
+                AddProp("Spectated.CarClassColorTransparent", "#96FFFFFF");
+
+                AddProp("Spectated.LicenseColor", IRacing.Colors.Transparent);
+                AddProp("Spectated.LicenseTextColor", IRacing.Colors.Transparent);
+                AddProp("Spectated.LicenseBorderColor", IRacing.Colors.Transparent);
                 AddProp("Specteted.IsPlayer", true);
 
                 AddProp("Spectated.IsInPitLane", false);
@@ -920,8 +943,8 @@ namespace APR.DashSupport {
                 AddProp("Spectated.CarAhead.Gap","");
                 AddProp("Spectated.CarBehind.Gap","");
 
-                AddProp("Spectated.Lap.Colors.LastLap",Settings.Color_LightGrey);
-                AddProp("Spectated.Lap.Colors.BestLap", Settings.Color_LightGrey);
+                AddProp("Spectated.Lap.Colors.LastLap",IRacing.Colors.GreyLightText);
+                AddProp("Spectated.Lap.Colors.BestLap", IRacing.Colors.GreyLightText);
                 AddProp("Spectated.LastLapIsPersonalBestLap","");
                 AddProp("Spectated.BestLapIsClassBestLap", "");
                 AddProp("Spectated.BestLapIsOverallBestLap", "");
@@ -940,7 +963,7 @@ namespace APR.DashSupport {
                 AddProp("Spectated.PitStops.Delimited.EstimatedRangePct", "");
 
 
-                int totalRowHeight = (Settings.RelativeRowHeight + Settings.RelativeRowOffset);
+                int totalRowHeight = (Settings.RelativeRowHeight + Settings.RelativeRowOffset );
                 int headerHeight = 50;
                 int headerTop = 0;
                 int aheadTop = (totalRowHeight * Settings.RelativeNumberOfCarsAheadToShow);
@@ -975,6 +998,8 @@ namespace APR.DashSupport {
                     SetProp("Relative.Ahead." + i + ".DriverNameColor", "");
                     SetProp("Relative.Ahead." + i + ".CarClassColor", "");
                     SetProp("Relative.Ahead." + i + ".LicenseColor", "");
+                    SetProp("Relative.Ahead." + i + ".LicenseTextColor", "");
+                    SetProp("Relative.Ahead." + i + ".LicenseBorderColor", "");
                     SetProp("Relative.Ahead." + i + ".Show", false);
                     SetProp("Relative.Ahead." + i + ".SR", "");
                     SetProp("Relative.Ahead." + i + ".SRSimple", "");
@@ -994,6 +1019,8 @@ namespace APR.DashSupport {
                     SetProp("Relative.Behind." + i + ".DriverNameColor", "");
                     SetProp("Relative.Behind." + i + ".CarClassColor", "");
                     SetProp("Relative.Behind." + i + ".LicenseColor", "");
+                    SetProp("Relative.Behind." + i + ".LicenseTextColor", "");
+                    SetProp("Relative.Behind." + i + ".LicenseBorderColor", "");
                     SetProp("Relative.Behind." + i + ".Show", false);
                     SetProp("Relative.Behind." + i + ".SR", "");
                     SetProp("Relative.Behind." + i + ".SRSimple", "");
@@ -1010,9 +1037,14 @@ namespace APR.DashSupport {
                 SetProp("Spectated.AheadBehind", "");
                 SetProp("Spectated.CarClassTextColor", "");
                 SetProp("Spectated.Distance", "0.0");
-                SetProp("Spectated.DriverNameColor", "#FFFFFFFF");
-                SetProp("Spectated.CarClassColor", "#FF000000");
-                SetProp("Spectated.LicenseColor", "#FFFFFFFF");
+                SetProp("Spectated.DriverNameColor", IRacing.Colors.YellowText);
+                if (SpectatedCar != null) {
+                    SetProp("Spectated.CarClassColor", SpectatedCar.CarClassColor);
+                    SetProp("Spectated.CarClassColorTransparent", SpectatedCar.CarClassColorSemiTransparent);
+                }
+                SetProp("Spectated.LicenseColor", IRacing.Colors.Transparent);
+                SetProp("Spectated.LicenseTextColor", IRacing.Colors.Transparent);
+                SetProp("Spectated.LicenseBorderColor", IRacing.Colors.Transparent);
 
                 SetProp("Spectated.Position", "");
                 SetProp("Spectated.Show", false);

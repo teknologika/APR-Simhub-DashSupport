@@ -1,4 +1,5 @@
-﻿using FMOD;
+﻿using APR.DashSupport.Themes;
+using FMOD;
 using GameReaderCommon;
 using IRacingReader;
 using iRacingSDK;
@@ -12,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Windows.Documents;
 using System.Windows.Markup;
 using Opponent = GameReaderCommon.Opponent;
@@ -214,6 +216,7 @@ namespace APR.DashSupport {
                         SetProp("Standings.Position" + counter.ToString() + ".Class.Name", item.CarClass);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.Color", item.CarClassColor);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", item.CarClassTextColor);
+                        SetProp("Standings.Position" + counter.ToString() + ".Class.TextColorSemiTransparent", item.CarClassColorSemiTransparent);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.Position", item.Position);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.PositionsGained", item._opponent.RacePositionClassGain);
                         SetProp("Standings.Position" + counter.ToString() + ".Class.LivePosition", item.LivePosition);
@@ -272,13 +275,13 @@ namespace APR.DashSupport {
 
 
                         if (item.IsPlayer || item.IsCameraCar) {
-                            SetProp("Standings.Position" + counter.ToString() + ".Class.Color", Settings.Color_Black);
-                            SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", Settings.Color_White);
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.Color", IRacing.Colors.Black);
+                            SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", IRacing.Colors.White);
                             SetProp("Standings.Position" + counter.ToString() + ".Row.Background", Settings.StandingsBackgroundDriverReferenceRowColourWithTransparency);
                         }
                         else {
-                            //SetProp("Standings.Position" + counter.ToString() + ".Class.Color", Settings.Color_Black);
-                           // SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", Settings.Color_White);        
+                            //SetProp("Standings.Position" + counter.ToString() + ".Class.Color", IRacing.Colors.Black);
+                           // SetProp("Standings.Position" + counter.ToString() + ".Class.TextColor", IRacing.Colors.White);        
                            SetProp("Standings.Position" + counter.ToString() + ".Row.Background", Settings.StandingsBackgroundRowColourWithTransparency);
                         }
 
@@ -335,9 +338,10 @@ namespace APR.DashSupport {
                     AddProp("Standings.Position" + iString + ".PositionsGained", 0);
                     AddProp("Standings.Position" + iString + ".LivePosition", 0);
                     AddProp("Standings.Position" + iString + ".Class.ClassId", 0);
-                    AddProp("Standings.Position" + iString + ".Class.Name", 0);
-                    AddProp("Standings.Position" + iString + ".Class.Color", 0);
-                    AddProp("Standings.Position" + iString + ".Class.TextColor", 0);
+                    AddProp("Standings.Position" + iString + ".Class.Name", string.Empty);
+                    AddProp("Standings.Position" + iString + ".Class.Color", string.Empty);
+                    AddProp("Standings.Position" + iString + ".Class.TextColor", string.Empty);
+                    AddProp("Standings.Position" + iString + ".Class.TextColorSemiTransparent", string.Empty);
                     AddProp("Standings.Position" + iString + ".Class.Position", 0);
                     AddProp("Standings.Position" + iString + ".Class.PositionsGained", 0);
                     AddProp("Standings.Position" + iString + ".Class.LivePosition", 0);
@@ -355,8 +359,8 @@ namespace APR.DashSupport {
                     AddProp("Standings.Position" + iString + ".IsPlayer", false);
                     AddProp("Standings.Position" + iString + ".Lap.LastLap", "-:--:---");
                     AddProp("Standings.Position" + iString + ".Lap.BestLap", "-:--:---");
-                    AddProp("Standings.Position" + iString + ".Lap.Colors.LastLap", Settings.Color_LightGrey);
-                    AddProp("Standings.Position" + iString + ".Lap.Colors.BestLap", Settings.Color_LightGrey);
+                    AddProp("Standings.Position" + iString + ".Lap.Colors.LastLap", IRacing.Colors.GreyLightText);
+                    AddProp("Standings.Position" + iString + ".Lap.Colors.BestLap", IRacing.Colors.GreyLightText);
 
                     AddProp("Standings.Position" + iString + ".LapsBehindLeader", "");
                     AddProp("Standings.Position" + iString + ".LastLapIsPersonalBestLap", false);
@@ -371,8 +375,8 @@ namespace APR.DashSupport {
 
                     AddProp("Standings.Position" + iString + ".PitStops.CPS1Served", false);
                     AddProp("Standings.Position" + iString + ".PitStops.CPS2Served", false);
-                    AddProp("Standings.Position" + iString + ".PitStops.CPS1IndicatorColor", Settings.Color_DarkGrey);
-                    AddProp("Standings.Position" + iString + ".PitStops.CPS2IndicatorColor", Settings.Color_DarkGrey);
+                    AddProp("Standings.Position" + iString + ".PitStops.CPS1IndicatorColor", IRacing.Colors.GreyBackgroundDarkGrey);
+                    AddProp("Standings.Position" + iString + ".PitStops.CPS2IndicatorColor", IRacing.Colors.GreyBackgroundDarkGrey);
 
 
                     AddProp("Standings.Position" + iString + ".PitStops.NumberOfCPSStops", "");
