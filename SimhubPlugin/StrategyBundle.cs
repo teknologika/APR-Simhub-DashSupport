@@ -1,4 +1,5 @@
-﻿using GameReaderCommon;
+﻿using APR.DashSupport.Models;
+using GameReaderCommon;
 using IRacingReader;
 using iRacingSDK;
 using MahApps.Metro.Controls;
@@ -47,7 +48,7 @@ namespace APR.DashSupport {
                             instance = new StrategyBundle();
                             instance.FirstSCPeriodBreaksEarlySCRule = false;
                             instance.StrategyCalculator = new PitStopStrategy();
-                           
+
                         }
                         return instance;
                     }
@@ -61,38 +62,72 @@ namespace APR.DashSupport {
             public static void Update() {
                 instance.StrategyCalculator = new PitStopStrategy();
                 VetsRounds rounds = new VetsRounds();
-                
+
                 var rnd = rounds.GetRound(21, 8);
-                
-                instance.StrategyCalculator.CalculateStrategy("A",rnd);
-                instance.StrategyCalculator.CalculateStrategy("B", rnd);
-                instance.StrategyCalculator.CalculateStrategy("C", rnd);
-                instance.StrategyCalculator.CalculateStrategy("D", rnd);
+
+                instance.StrategyCalculator.CalculateStrategy(rnd);
+
             }
 
+
+            private string ConvertStopStringToPct(string stopsString) {
+                // Split the string based on
+                string[] splitter = stopsString.Split(',');
+                string[] outList = new string[splitter.Length];
+
+                //calculate the percentate
+                int i = 0;
+                foreach (string stopLap in splitter) {
+                    var pct = ((Convert.ToDouble(stopLap) / StrategyCalculator.TotalLapsForStrategyCalc)).ToString("0.00");
+                    outList[i] = pct;
+                    i++;
+                }
+
+                // put the string back together
+                return string.Join(",", outList);
+            }
+
+            private string CalculateStopDuration(string fuelToAddString) {
+                // Split the string based on
+                string[] splitter = fuelToAddString.Split(',');
+                string[] outList = new string[splitter.Length];
+
+                //calculate the percentate
+                int i = 0;
+                foreach (string stopFuel in splitter) {
+                    string pct = (Convert.ToDouble(stopFuel) * StrategyCalculator.FuelFillRateLitresPerSecond).ToString("0.0");
+                    outList[i] = pct;
+                    i++;
+                }
+
+                // put the string back together
+                return string.Join(",", outList);
+            }
+
+
             // Strategy Strings
-            public string StratA_Stops ;
-            public string StratA_FuelToAdd ;
-            public string StratA_StopDuration;
-            public string StratA_StopsPct;
+            public string StratA_Stops;
+            public string StratA_FuelToAdd;
+            public string StratA_StopDuration { get { return CalculateStopDuration(StratA_FuelToAdd ); } }
+            public string StratA_StopsPct { get { return ConvertStopStringToPct(StratA_Stops); } }
             public string StratA_FuelMode;
 
             public string StratB_Stops;
             public string StratB_FuelToAdd;
-            public string StratB_StopDuration;
-            public string StratB_StopsPct;
+            public string StratB_StopDuration { get { return CalculateStopDuration(StratB_FuelToAdd); } }
+            public string StratB_StopsPct { get { return ConvertStopStringToPct(StratB_Stops); } }
             public string StratB_FuelMode;
 
             public string StratC_Stops;
             public string StratC_FuelToAdd;
-            public string StratC_StopDuration;
-            public string StratC_StopsPct;
+            public string StratC_StopDuration { get { return CalculateStopDuration(StratC_FuelToAdd); } }
+            public string StratC_StopsPct { get { return ConvertStopStringToPct(StratC_Stops ); } }
             public string StratC_FuelMode;
 
             public string StratD_Stops;
             public string StratD_FuelToAdd;
-            public string StratD_StopDuration;
-            public string StratD_StopsPct;
+            public string StratD_StopDuration { get { return CalculateStopDuration(StratD_FuelToAdd); } }
+            public string StratD_StopsPct { get { return ConvertStopStringToPct(StratD_Stops); } }
             public string StratD_FuelMode;
 
             public bool PlayerIsDriving;
@@ -114,18 +149,18 @@ namespace APR.DashSupport {
             private double GetFuelBurnDefault() {
 
                 switch (StrategyBundle.Instance.TrackNameWithConfig) {
-                    case "aragon moto-Moto Grand Prix":  return double.MaxValue;
+                    case "aragon moto-Moto Grand Prix": return double.MaxValue;
 
                     case "bathurst": return 4.55;
 
                     case "roadamerica full-Full Course": return double.MaxValue;
 
-                    case "homestead roadb-Road Course B":  return double.MaxValue;
+                    case "homestead roadb-Road Course B": return double.MaxValue;
 
                     case "longbeach": return 2.7;
 
                     default: return double.MaxValue;
-                       
+
                 }
             }
 
@@ -186,13 +221,11 @@ namespace APR.DashSupport {
         }
 
         public void UpdateStrategyBundle(GameData data) {
-            
-            
-            
+
             StrategyBundle StrategyObserver = StrategyBundle.Instance;
-           
+
             //var camCarIdx = irData.Telemetry.CamCarIdx;
-           // var playerCarIdx = (int)irData.SessionData.DriverInfo.DriverCarIdx;
+            // var playerCarIdx = (int)irData.SessionData.DriverInfo.DriverCarIdx;
 
             //StrategyObserver.PlayerIsDriving = (camCarIdx == playerCarIdx);
             StrategyObserver.PlayerIsDriving = irData.Telemetry.IsOnTrack;
@@ -228,6 +261,7 @@ namespace APR.DashSupport {
             // Trackdata
             StrategyObserver.TrackNameWithConfig = data.NewData.TrackNameWithConfig;
             StrategyObserver.TrackLength = data.NewData.TrackLength;
-        }   
+        }
+        
     }
 }

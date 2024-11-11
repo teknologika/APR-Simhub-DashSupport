@@ -23,7 +23,6 @@ namespace APR.DashSupport {
         public double PitLaneTransitTime;
         public double Gen2FuelBurn;
 
-
         public Round() { }
 
         public Round(
@@ -44,6 +43,19 @@ namespace APR.DashSupport {
             ChanceOfSC = chanceOfSC;
             PitLaneTransitTime = pitLaneTransitTime;
             Gen2FuelBurn = gen2FuelBurn;
+        }
+
+        public string GetStopsForStrategy(StrategyType StratType) {
+           
+
+            switch (StratType) {
+
+                case StrategyType.FillEarly:
+                    break;
+                default:
+                    break;
+            }
+            return "";
         }
     }
 }

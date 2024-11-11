@@ -19,25 +19,25 @@ namespace APR.DashSupport.Themes {
             public static string YellowTransparent = "#96FFCC00";
             public static string YellowRowHighlight = "FF231D18";
 
-            public static string Green = "#FF4BBC27";
-            public static string GreenText= "#FF8FD96E";
-            public static string GreenTransparent = "#964BBC27";
+            public static string Green = "#FF47FF33";
+            public static string GreenText= "#FF47FF33";
+            public static string GreenTransparent = "#754BBC27";
 
             public static string Red = "#FFB81E19";
-            public static string RedText = "#FFD95851";
-            public static string RedTransparent = "#96B81E19";
+            public static string RedText = "#FFFF2222";
+            public static string RedTransparent = "#75B81E19";
 
             public static string LightBlue = "#FF1468DB";
             public static string White = "#FFFFFFFF";
             public static string Black = "#FF000000";
 
             public static string Blue = "#FF1468DB";
-            public static string BlueText = "#FF6192D1";
-            public static string BlueTransparent = "#961468DB";
+            public static string BlueText = "#FF22A1FF";
+            public static string BlueTransparent = "#751468DB";
 
-            public static string Orange = "#FFE5631D";
-            public static string OrangeText = "#FFEAA97A";
-            public static string OrangeTransparent = "#961468DB";
+            public static string Orange = "#FFDD7E00";
+            public static string OrangeText = "#FFFF7109";
+            public static string OrangeTransparent = "#75DD7E00";
 
             public static string GreyLightText = "#FF3F3C40";
             public static string GreyLight = "#FF3F3C40";
