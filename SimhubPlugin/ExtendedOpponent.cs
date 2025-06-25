@@ -367,7 +367,6 @@ namespace APR.DashSupport {
                         foreach (PitStop stop in Stops) {
                             stopLap.Add(stop.LastPitLap.ToString("0"));
                         }
-
                     }
                     return string.Join(",", stopLap);
                 }
@@ -499,9 +498,6 @@ namespace APR.DashSupport {
                 }
             }
 
-
-
-
             // FIXME
             public bool _showTeamNames = false;
 
@@ -510,6 +506,8 @@ namespace APR.DashSupport {
             public double _carEstTime;
             public double _carBestLapTime;
             public double _carLastLapTime;
+            public int    _carGear;
+            public double _carRPM;
 
             public double CarEstTime { get { return _carEstTime; } }
             public double _CarIdxF2Time;
@@ -591,7 +589,16 @@ namespace APR.DashSupport {
             public string DriverName { get { return _opponent.Name; } }
             public string TeamName { get { return _opponent.TeamName; } }
             public string CarClass { get { return _opponent.CarClass; } }
-            public int CarClassID { get {return (int)_competitor.CarClassID;} }
+            public double RPM { get { return _carRPM; } }
+            public int Gear { get { return _carGear; } }
+
+            public int CarClassID {
+                get {
+                    if (_competitor != null)
+                        return (int)_competitor.CarClassID;
+                    return -1;
+                }
+            }
             public double CarClassReferenceLapTime { get; set; }
             public string CarClassColor {
                 get {
@@ -658,8 +665,6 @@ namespace APR.DashSupport {
                     return Position.ToString();
                 }
             }
-
-
 
             public int PositionInClass {
                 get {
@@ -1218,7 +1223,7 @@ namespace APR.DashSupport {
                 }
             }
 
-            public override string ToString() {
+            public string aToString() {
                 return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " L:" + Lap + " A:" + LapAheadBehind +" Gap:" + ClassAheadInClassGapString + " Ldr:" + GapToClassLeaderString + " lst:" + LastLapTime;
             }
 
@@ -1226,8 +1231,8 @@ namespace APR.DashSupport {
                 return "Idx: " + CarIdx + " " + DriverName + " P:" + Position + " Gap" + ClassAheadInClassGapString + " Ldr" +  GapToClassLeaderString + "lst" + LastLapTime;
             }
 
-            public string RelativeToString() {
-                return "Idx: " + CarIdx + " " + DriverName + " A:" + LapAheadBehind +  " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " d1:";
+            public override string ToString() {
+                return "Idx: " + CarIdx + " " + DriverName + " A:" + LapAheadBehind +  " P:" + Position + " PL::" + LivePosition + " %:" + TrackPositionPercent.ToString("0.00") + " %S:" + LapDistPctSpectatedCar.ToString("0.00") + " d:" + LapDistSpectatedCar.ToString("0.00") + " G:" + GapSpectatedCar.ToString("0.0");
             }
 
             public string Color_DarkGrey = "#FF898989";
@@ -1286,7 +1291,11 @@ namespace APR.DashSupport {
             }
         }
         private List<ExtendedOpponent> OpponentsInClass() {
-            return this.OpponentsInClass(this.SpectatedCar.CarClassID);
+            if (SpectatedCar != null) {
+                return this.OpponentsInClass(this.SpectatedCar.CarClassID);
+            }
+            else
+                return new List<ExtendedOpponent>();
         }
 
         private List<ExtendedOpponent> OpponentsInClass(int CarClassID) {

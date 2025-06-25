@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,7 +64,7 @@ namespace APR.DashSupport {
                 instance.StrategyCalculator = new PitStopStrategy();
                 VetsRounds rounds = new VetsRounds();
 
-                var rnd = rounds.GetRound(21, 8);
+                var rnd = rounds.GetRound(22, 1);
 
                 instance.StrategyCalculator.CalculateStrategy(rnd);
 
@@ -130,18 +131,34 @@ namespace APR.DashSupport {
             public string StratD_StopsPct { get { return ConvertStopStringToPct(StratD_Stops); } }
             public string StratD_FuelMode;
 
+            public string StratMode = "A";
+
+            public string FirstStopFuel;
+            public string SecondStopFuel;
+            public string FirstStopLap;
+            public string SecondStopLap;
+            public string FirstStopMode = "M";
+            public string SecondStopMode = "A";
+            public bool CPS1Complete = false;
+            public bool CPS2Complete = false;
+
+            public string NextStopFuel;
+            public string NextStopLap;
+            public string NextStopMode = "A";
+            public string NextStopChatString;
+
             public bool PlayerIsDriving;
             public int TotaLaps;
             public int CurrentLap;
             public double CoughAllowance = 0.4;
 
-            public double MaxTankSize { get; set; } = 110.6; // FIXME = Get from Settings GEN3
+            public double MaxTankSize { get; set; } = 133; // FIXME = Get from Settings GEN3
             public double RestrictedFuelPercent { get; set; } = 1.00; // FIXME = Get from Settings 
             public double StartingFuel { get; set; } = 80; // FIXME = Get from Settings 
 
             //Supercar Gen2 hardcode FIXME
-            public double FuelFillRateLitresPerSecond = 2.4;// Supercar Gen2
-            public double FourTyresPitstopTime = 10;// // Supercar Gen2 FIXME - Gen3 individual tyres
+            public double FuelFillRateLitresPerSecond = 2.0;// Supercar Gen3
+            public double FourTyresPitstopTime = 9;// // Supercar Gen3 FIXME - Gen3 individual tyres
 
             public double SimHubFuelLitersPerLap;
             private double _fuelLitersPerLap;
@@ -158,6 +175,8 @@ namespace APR.DashSupport {
                     case "homestead roadb-Road Course B": return double.MaxValue;
 
                     case "longbeach": return 2.7;
+
+                    case "watkinsglen 2021 fullnoloop-Classic Boot": return 4.48;
 
                     default: return double.MaxValue;
 
@@ -240,6 +259,9 @@ namespace APR.DashSupport {
 
             // Get the average fuel per lap - don't default to zero >> fuel measuremet calcs need go here.
             StrategyObserver.SimHubFuelLitersPerLap = GetProp("DataCorePlugin.Computed.Fuel_LitersPerLap") ?? 0.0;
+            StrategyObserver.StratMode = GetProp("APRDashPlugin.Strategy.Indicator.StratMode") ?? "A";
+            StrategyObserver.CPS1Complete = GetProp("APRDashPlugin.Strategy.Indicator.CPS1Served") ?? false;
+            StrategyObserver.CPS2Complete = GetProp("APRDashPlugin.Strategy.Indicator.CPS2Served") ?? false;
 
 
             StrategyObserver.TotaLaps = data.NewData.TotalLaps; // Might break for timed races
@@ -261,6 +283,24 @@ namespace APR.DashSupport {
             // Trackdata
             StrategyObserver.TrackNameWithConfig = data.NewData.TrackNameWithConfig;
             StrategyObserver.TrackLength = data.NewData.TrackLength;
+
+            if (!StrategyObserver.CPS1Complete) {
+                StrategyObserver.NextStopFuel = StrategyObserver.FirstStopFuel;
+                StrategyObserver.NextStopLap = StrategyObserver.FirstStopLap;
+                StrategyObserver.NextStopMode = StrategyObserver.FirstStopMode;
+            }
+            else {
+                StrategyObserver.NextStopFuel = StrategyObserver.SecondStopFuel;
+                StrategyObserver.NextStopLap = StrategyObserver.SecondStopLap;
+                StrategyObserver.NextStopMode = StrategyObserver.SecondStopMode;
+            }
+
+            if (StrategyObserver.NextStopMode == "M") {
+                StrategyObserver.NextStopChatString = $"#fuel {StrategyObserver.NextStopFuel}L;";
+            }
+            else {
+                StrategyObserver.NextStopChatString = "#autofuel 0.8;";
+            }
         }
         
     }

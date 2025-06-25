@@ -196,7 +196,6 @@ namespace APR.DashSupport
             }         
         }
 
-
         private void CheckIfV8VetsLeagueSession() {
             var leagueID = irData.SessionData.WeekendInfo.LeagueID;
 
@@ -229,9 +228,11 @@ namespace APR.DashSupport
             }
 
             if (IsV8VetsRaceSession) {
+                StrategyObserver.IsUnderSC = false;
+                StrategyObserver.IsSafetyCarMovingInPitane = false;
                 foreach (var item in OpponentsExtended) {
                     if (V8VetsSafetyCarNames.Contains(item._competitor.CarScreenName)) {
-                        if (!item.IsCarInPitLane && item.Speed > 0.01f && SessionType == "Race") {  
+                        if (!item.IsCarInPitLane && item.Speed > 0.5f && SessionType == "Race") {  
 
                             StrategyObserver.SafetyCarIdx = item.CarIdx;
                             StrategyObserver.SafetyCarTrackDistancePercent = item.TrackPositionPercent;
@@ -240,7 +241,7 @@ namespace APR.DashSupport
                             StrategyObserver.IsSafetyCarMovingInPitane = false;
                         }
 
-                        if (!item.IsCarInPitBox && item.IsCarInPitLane && item.Speed > 0.01f && SessionType == "Race") {
+                        if (!item.IsCarInPitBox && item.IsCarInPitLane && item.Speed > 0.5f && SessionType == "Race") {
 
                             StrategyObserver.IsUnderSC = true;
                             StrategyObserver.IsSafetyCarMovingInPitane = true;
@@ -570,7 +571,7 @@ namespace APR.DashSupport
 
                     // Update driver behind and ahead
                     if (data.NewData.OpponentsAheadOnTrack.Count > 0) {
-                        if (data.NewData.OpponentsAheadOnTrack[0].RelativeGapToPlayer < 1.0) {
+                        if (Math.Abs((double)data.NewData.OpponentsAheadOnTrack[0].RelativeGapToPlayer) < 2.0) {
                             DriverAheadId = data.NewData.OpponentsAheadOnTrack[0].CarNumber;
                             DriverAheadName = data.NewData.OpponentsAheadOnTrack[0].Name.Split(' ')[0];
                         }
@@ -585,7 +586,7 @@ namespace APR.DashSupport
                     }
 
                     if (data.NewData.OpponentsBehindOnTrack.Count > 0 ) {
-                        if (data.NewData.OpponentsBehindOnTrack[0].RelativeGapToPlayer < 1.0) {
+                        if (Math.Abs((double)data.NewData.OpponentsBehindOnTrack[0].RelativeGapToPlayer) < 2.0) {
                             DriverBehindId = data.NewData.OpponentsBehindOnTrack[0].CarNumber;
                             DriverBehindName = data.NewData.OpponentsBehindOnTrack[0].Name.Split(' ')[0];
                         }

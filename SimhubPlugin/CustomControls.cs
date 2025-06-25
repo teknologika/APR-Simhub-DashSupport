@@ -25,9 +25,11 @@ namespace APR.DashSupport {
                 case 5:
                     selectedMenu = "pit";
                     break;
-
                 case 6:
                     selectedMenu = "launch";
+                    break;
+                case 7:
+                    selectedMenu = "qualifying";
                     break;
                 default:
                     selectedMenu = "none";

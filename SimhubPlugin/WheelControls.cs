@@ -3,6 +3,7 @@ using GameReaderCommon.Replays;
 using SimHub.Plugins;
 using System;
 using System.Diagnostics.Eventing.Reader;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace APR.DashSupport {
     public partial class APRDashPlugin : IPlugin, IDataPlugin, IWPFSettingsV2 {
@@ -70,14 +71,14 @@ namespace APR.DashSupport {
             // this.AttachDelegate("Rotary_MenuValue", () => this.menuRotary);
             pluginManager.AddAction("MenuRotaryIncremented", this.GetType(), (Action<PluginManager, string>)((a, b) => {
                 ++this.menuRotary;
-                if (this.menuRotary > 5)
+                if (this.menuRotary > 7)
                     this.menuRotary = 1;
             }));
 
             pluginManager.AddAction("MenuRotaryDecremented", this.GetType(), (Action<PluginManager, string>)((a, b) => {
                 --this.menuRotary;
                 if (this.menuRotary < 1)
-                    this.menuRotary = 5;
+                    this.menuRotary = 7;
             }));
 
             // this.AttachDelegate("Rotary_ScrlValue", () => this.scrlRotary);
@@ -91,8 +92,6 @@ namespace APR.DashSupport {
                 if (this.scrlRotary < 1)
                     this.scrlRotary = 12;
             }));
-
-
         }
 
         public void InitRotaryButtons(PluginManager pluginManager) {
@@ -156,6 +155,10 @@ namespace APR.DashSupport {
                 SetProp("Strategy.Indicator.RiskLevel", Settings.Strategy_SelectedRiskLevel);
             }));
 
+            pluginManager.AddAction("Strategy.SetFuel", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RadioAndTextChat.iRacingChat(StrategyBundle.Instance.NextStopChatString, false);
+            }));
+
 
             pluginManager.AddAction("Strategy.btnPaceCarPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
                 if (Settings.Strategy_UnderSC) {
@@ -173,52 +176,62 @@ namespace APR.DashSupport {
 
             }));
 
+          
+
             /// Race Control specific buttons
             pluginManager.AddAction("RC.SC.Deploy", this.GetType(), (Action<PluginManager, string>)((a, b) => {
                 RaceControlAction("*** SAFETY CAR *** SAFETY CAR *** SAFETY CAR ***", "bruce-SafetyCar.mp3");
             }));
 
             pluginManager.AddAction("RC.SC.PitExitClosed", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                RaceControlAction("*** PIT EXIT IS CLOSED ***", "bruce-PitExitIsNowClosed.mp3");
+                RaceControlAction("*** PIT EXIT IS CLOSED ***", "Bruce-PitExitIsNowClosed.mp3");
             }));
 
             pluginManager.AddAction("RC.SC.PitExitIsOpen", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                RaceControlAction("*** PIT EXIT IS OPEN ***", "bruce-PitExitIsNowOpen.mp3");
+                RaceControlAction("*** PIT EXIT IS OPEN ***", "Bruce-PitExitIsNowOpen.mp3");
             }));
 
-            pluginManager.AddAction("RC.SC.WeWillUnlap", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                RaceControlAction("*** WE WILL UNLAP CARS ***", "bruce-WeWillUnlap.mp3");
+            pluginManager.AddAction("RC.SC.WeWillBeGoingGreen", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** GOING GREEN THIS LAP ***", "Bruce-WeWillBeGoingGreen.mp3");
             }));
 
-            pluginManager.AddAction("RC.SC.LineUp", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                RaceControlAction("*** ALL CARS LINE UP ON THE LEFT ***", "bruce-AllCarsOnTheLeft.mp3");
-                RaceControlAction("*** LAPPED CARS LINE UP ON THE RIGHT ***", "bruce-EligibleCarsOnTheRight.mp3");
+            pluginManager.AddAction("RC.SC.LineUpLeft", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** ALL CARS LINE UP ON THE LEFT ***", "Bruce-AllCarsOnTheLeft.mp3");
+            }));
+
+            pluginManager.AddAction("RC.SC.LineUpRight", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** LAPPED CARS LINE UP ON THE RIGHT ***", "Bruce-EligibleCarsOnTheRight.mp3");
             }));
 
             pluginManager.AddAction("RC.SC.LappedMayPass", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                RaceControlAction("*** ELIGIBLE CARS MAY NOW PASS THE SC ***", "bruce-LappedCarsMayPass.mp3");
+                RaceControlAction("*** ELIGIBLE CARS MAY NOW PASS THE SC ***", "Bruce-LappedCarsMayPass.mp3");
             }));
 
-            pluginManager.AddAction("RC.SC.RestartingThisLap", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                RaceControlAction("*** WE ARE RESTARTING THIS LAP ***", "bruce-RestartCurrentLap.mp3");
+            pluginManager.AddAction("RC.SC.WeWillUnlapCars", this.GetType(), (Action<PluginManager, string>)((a, b) => {
+                RaceControlAction("*** WE WILL UNLAP ELIGIBLE CARS ***", "Bruce-WeWillUnlap.mp3");
             }));
 
             pluginManager.AddAction("RC.SC.SCEnteringPitlane", this.GetType(), (Action<PluginManager, string>)((a, b) => {
                 RaceControlAction("*** SAFETY CAR ENTERING PITLANE ***", "bruce-SafetyCarInTheLane.mp3");
             }));
 
-
             // Opponent chat buttons
             pluginManager.AddAction("Chat.Ahead.BlueFlags", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                PrivateChatCarAheadAction("Can I pass please " + DriverAheadName + "?");
+                if (DriverAheadName != "") {
+                    PrivateChatCarAheadAction("Can I pass please " + DriverAheadName + "?");
+                }
             }));
 
             pluginManager.AddAction("Chat.Behind.PittingIn", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                PrivateChatCarAheadAction("I'm pitting " + DriverBehindName  + "." );
+                if (DriverBehindName != "") {
+                    PrivateChatCarBehindAction("I'm pitting " + DriverBehindName + ".");
+                }
             }));
 
             pluginManager.AddAction("Chat.Behind.Thanks", this.GetType(), (Action<PluginManager, string>)((a, b) => {
-                PrivateChatCarAheadAction("Thanks, " + DriverBehindName + "!!");
+                if (DriverBehindName != "") {
+                    PrivateChatCarBehindAction("Thanks, " + DriverBehindName + "!!");
+                }
             }));
 
 
@@ -241,7 +254,6 @@ namespace APR.DashSupport {
                     Settings.Strategy_UnderSC = true;
                 }
                 SetProp("Strategy.Indicator.UnderSC", Settings.Strategy_UnderSC);
-
             }));
 
 
@@ -360,10 +372,6 @@ namespace APR.DashSupport {
             this.AttachDelegate("Button_PassRightPressed", () => this.passRightPressed);
             pluginManager.AddAction("btnPassRightPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.passRightPressed = true));
             pluginManager.AddAction("btnPassRightPressed", this.GetType(), (Action<PluginManager, string>)((a, b) => this.passRightPressed = false));
-
-
-
-
 
         }
     }

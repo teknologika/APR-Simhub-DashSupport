@@ -1,4 +1,5 @@
 ﻿using APR.DashSupport.Models;
+using FMOD.Studio;
 using GameReaderCommon;
 using SimHub.Plugins;
 using System;
@@ -68,7 +69,61 @@ namespace APR.DashSupport {
                 StrategyBundle.Instance.StratD_Stops = strategyFile.Read("StratDStops", roundNameKey);
                 StrategyBundle.Instance.StratD_FuelToAdd = strategyFile.Read("StratDFuel", roundNameKey);
                 StrategyBundle.Instance.StratD_FuelMode = strategyFile.Read("StratDRefuelMode", roundNameKey);
-           
+
+                string stop1Fuel, stop2Fuel, stop1Lap, stop2Lap, stop1Mode, stop2Mode; 
+                switch (StrategyBundle.Instance.StratMode) {
+
+                    case "A":
+                    default:
+                        stop1Fuel = StrategyBundle.Instance.StratA_FuelToAdd.Split(',')[0];
+                        stop2Fuel = StrategyBundle.Instance.StratA_FuelToAdd.Split(',')[1];
+                        stop1Lap = StrategyBundle.Instance.StratA_Stops.Split(',')[0];
+                        stop2Lap = StrategyBundle.Instance.StratA_Stops.Split(',')[1];
+                        stop1Mode = StrategyBundle.Instance.StratA_FuelMode.Split(',')[0];
+                        stop2Mode = StrategyBundle.Instance.StratA_FuelMode.Split(',')[1];
+
+                        break;
+
+                    case "B":
+                        stop1Fuel = StrategyBundle.Instance.StratB_FuelToAdd.Split(',')[0];
+                        stop2Fuel = StrategyBundle.Instance.StratB_FuelToAdd.Split(',')[1];
+                        stop1Lap = StrategyBundle.Instance.StratB_Stops.Split(',')[0];
+                        stop2Lap = StrategyBundle.Instance.StratB_Stops.Split(',')[1];
+                        stop1Mode = StrategyBundle.Instance.StratB_FuelMode.Split(',')[0];
+                        stop2Mode = StrategyBundle.Instance.StratB_FuelMode.Split(',')[1];
+
+                        break;
+
+                    case "C":
+                        stop1Fuel = StrategyBundle.Instance.StratC_FuelToAdd.Split(',')[0];
+                        stop2Fuel = StrategyBundle.Instance.StratC_FuelToAdd.Split(',')[1];
+                        stop1Lap = StrategyBundle.Instance.StratC_Stops.Split(',')[0];
+                        stop2Lap = StrategyBundle.Instance.StratC_Stops.Split(',')[1];
+                        stop1Mode = StrategyBundle.Instance.StratC_FuelMode.Split(',')[0];
+                        stop2Mode = StrategyBundle.Instance.StratC_FuelMode.Split(',')[1];
+
+                        break;
+
+                    case "D":
+                        stop1Fuel = StrategyBundle.Instance.StratD_FuelToAdd.Split(',')[0];
+                        stop2Fuel = StrategyBundle.Instance.StratD_FuelToAdd.Split(',')[1];
+                        stop1Lap = StrategyBundle.Instance.StratD_Stops.Split(',')[0];
+                        stop2Lap = StrategyBundle.Instance.StratD_Stops.Split(',')[1];
+                        stop1Mode = StrategyBundle.Instance.StratD_FuelMode.Split(',')[0];
+                        stop2Mode = StrategyBundle.Instance.StratD_FuelMode.Split(',')[1];
+
+                        break;
+
+                }
+
+                StrategyBundle.Instance.FirstStopFuel = stop1Fuel;
+                StrategyBundle.Instance.FirstStopLap = stop1Lap;
+                StrategyBundle.Instance.FirstStopMode = stop1Mode;
+
+                StrategyBundle.Instance.SecondStopFuel = stop2Fuel;
+                StrategyBundle.Instance.SecondStopLap = stop2Lap;
+                StrategyBundle.Instance.SecondStopMode = stop2Mode;
+
             }
 
         }

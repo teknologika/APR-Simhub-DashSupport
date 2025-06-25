@@ -62,11 +62,6 @@ namespace APR.DashSupport {
 
         public void InitPitCalculations() {
             if (Settings.EnableStrategyCalculation) {
-
-                AddProp("Strategy.NextStop.FuelToAdd", "");
-                AddProp("Strategy.NextStop.FuelMode", ""); // Auto or Fixed Manual
-                AddProp("Strategy.AutoFuelMargin", ""); // Auto fuel margin based on risk mode
-
                 AddProp("Strategy.Dahl.FuelDelta",0);
                 AddProp("Strategy.Dahl.FuelDeltaAverage",0);
                 AddProp("Strategy.Dahl.FuelDeltaOG", 0);
@@ -111,6 +106,11 @@ namespace APR.DashSupport {
                 AddProp("Strategy.D.FuelPerStop", "" );
                 AddProp("Strategy.D.FuelModes", "" );
                 AddProp("Strategy.D.StopDuration", "" );
+
+                AddProp("Strategy.NextStopLap", "");
+                AddProp("Strategy.NextStopFuel","");
+                AddProp("Strategy.NextStopFuelMode", "");
+                AddProp("Strategy.NextStopChatString", "");
             }
         }
 
@@ -147,6 +147,11 @@ namespace APR.DashSupport {
                 SetProp("Strategy.D.FuelPerStop", StrategyBundle.Instance.StratD_FuelToAdd);
                 SetProp("Strategy.D.FuelModes", StrategyBundle.Instance.StratD_FuelMode);
                 SetProp("Strategy.D.StopDuration", StrategyBundle.Instance.StratC_StopDuration);
+
+                SetProp("Strategy.NextStopLap", StrategyBundle.Instance.NextStopLap);
+                SetProp("Strategy.NextStopFuel", StrategyBundle.Instance.NextStopFuel);
+                SetProp("Strategy.NextStopFuelMode", StrategyBundle.Instance.NextStopMode);
+                SetProp("Strategy.NextStopChatString", StrategyBundle.Instance.NextStopChatString);
             }
         }
 

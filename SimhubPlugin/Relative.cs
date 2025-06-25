@@ -176,7 +176,7 @@ namespace APR.DashSupport {
                     string simpleGapTimeString = TimeToStr_ms(remoteTime - spectatorTime, 1);
                     string numStr = FormatDriverNumber(carIdx, pitRoad);
                     string nameStr = sortedOponents[i].DriverName;
-                    int aheadBehind = DetermineIfLapAheadBedhind(i, spectatorIdx, lap, spectatorLap);
+                    int aheadBehind = DetermineIfLapAheadBedhind(sortedOponents[i].CarIdx, spectatorIdx, lap, spectatorLap);
                     //string color = DetermineColor
 
 
@@ -248,7 +248,10 @@ namespace APR.DashSupport {
 
         public string RelativeDebug() {
             StringBuilder sb = new StringBuilder();
-            foreach (var item in OpponentsExtended) {
+            foreach (var item in OpponentsAhead) {
+                sb.AppendLine(item.ToString());
+            }
+            foreach (var item in OpponentsBehind) {
                 sb.AppendLine(item.ToString());
             }
             return sb.ToString();
@@ -259,7 +262,7 @@ namespace APR.DashSupport {
         private List<ExtendedOpponent> _opponentsBehind = new List<ExtendedOpponent>();
         private List<ExtendedOpponent> _opponentsInPitlane = new List<ExtendedOpponent>();
         private List<ExtendedOpponent> _opponentsInPitBox = new List<ExtendedOpponent>();
-
+        
         public List<ExtendedOpponent> OpponentsAhead {
             get {
                 // if the distance is negative they are ahead
@@ -289,7 +292,7 @@ namespace APR.DashSupport {
                 }
             }
         }
-
+        
         private double GetReferenceClassLaptime() {
             return GetReferenceClassLaptime(this.SpectatedCar.CarClassID);
         }
@@ -390,6 +393,11 @@ namespace APR.DashSupport {
                             float[] bestLapTimes = (float[])irData.Telemetry.FirstOrDefault(x => x.Key == "CarIdxBestLapTime").Value;
                             float[] lastLapTimes = (float[])irData.Telemetry.FirstOrDefault(x => x.Key == "CarIdxLastLapTime").Value;
 
+
+                            int[] gear = (int[])irData.Telemetry.FirstOrDefault(x => x.Key == "CarIdxGear").Value;
+                            float[] rpm = (float[])irData.Telemetry.FirstOrDefault(x => x.Key == "CarIdxRPM").Value;
+
+
                             // Add to the Extended Opponents class
                             var driver = new ExtendedOpponent() {
                                 _opponent = opponents[j],
@@ -397,6 +405,8 @@ namespace APR.DashSupport {
                                 _carEstTime = irData.Telemetry.CarIdxEstTime[competitors[i].CarIdx],
                                 _carBestLapTime = bestLapTimes[competitors[i].CarIdx],
                                 _carLastLapTime = lastLapTimes[competitors[i].CarIdx],
+                                _carGear = gear[competitors[i].CarIdx],
+                                _carRPM = rpm[competitors[i].CarIdx],
                                 _trackSurface = (int)irData.Telemetry.CarIdxTrackSurface[competitors[i].CarIdx],
                                 LicenseColor = LicenseColor(opponents[j].LicenceString),
                                 LicenseTextColor = LicenseTextColor(opponents[j].LicenceString),
@@ -600,12 +610,13 @@ namespace APR.DashSupport {
                 }
 
                 // Grab the slow poke
+                /*
                 var _slowOpponent = OpponentsAhead.Find(x => x.IsSlow) ?? null;
                 if (_slowOpponent != null && spectator.Speed > 40) {
                     StrategicObserer.SlowOpponentIdx = _slowOpponent.CarIdx;
                     StrategicObserer.SlowOpponentLapDistPct = _slowOpponent.TrackPositionPercent;
                 }
-      
+      */
                 UpdateRelativeProperties();
                 UpdateStandingsRelatedProperties(ref data);
 
@@ -706,7 +717,10 @@ namespace APR.DashSupport {
                     SetProp("Spectated.Position", SpectatedCar.PositionString);
                     SetProp("Spectated.Name", SpectatedCar.DriverName);
                     SetProp("Spectated.Lap", SpectatedCar.Lap);
-                    SetProp("Spectated.Speed", SpectatedCar._opponent.Speed);
+                    SetProp("Spectated.Speed", SpectatedCar.Speed);
+                    SetProp("Spectated.RRM", SpectatedCar.RPM);
+                    SetProp("Spectated.Gear", SpectatedCar.Gear);
+
                     SetProp("Spectated.IsSlowCarAhead", SpectatedCar.IsSlowCarAhead);
                     SetProp("Spectated.SlowCarAheadString", SpectatedCar.LapDistanceSlowCarAheadString);
 
@@ -908,6 +922,10 @@ namespace APR.DashSupport {
                 AddProp("Spectated.DriverNameColor", IRacing.Colors.White);
                 AddProp("Spectated.CarClassColor", IRacing.Colors.White);
                 AddProp("Spectated.CarClassColorTransparent", "#96FFFFFF");
+
+                AddProp("Spectated.Speed", 0);
+                AddProp("Spectated.RRM", 0);
+                AddProp("Spectated.Gear", 0);
 
                 AddProp("Spectated.LicenseColor", IRacing.Colors.Transparent);
                 AddProp("Spectated.LicenseTextColor", IRacing.Colors.Transparent);

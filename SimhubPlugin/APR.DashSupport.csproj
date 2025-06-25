@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\..\..\..\Program Files\SimHub\</OutputPath>
+    <OutputPath>..\..\..\..\..\..\..\Program Files (x86)\SimHub\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,27 +33,27 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GameReaderCommon">
-      <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\GameReaderCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\SimHub\GameReaderCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ICarsReader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\ICarsReader.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\SimHub\ICarsReader.dll</HintPath>
     </Reference>
     <Reference Include="InputManagerCS, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\InputManagerCS.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\SimHub\InputManagerCS.dll</HintPath>
     </Reference>
     <Reference Include="iRacingSDK, Version=1.0.8448.28323, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\iRacingSDK.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\SimHub\iRacingSDK.dll</HintPath>
     </Reference>
     <Reference Include="JsonFlatFileDataStore, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\JsonFlatFileDataStore.2.4.2\lib\netstandard2.0\JsonFlatFileDataStore.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\log4net.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\SimHub\log4net.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.5.0.23, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
@@ -92,11 +92,11 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="SimHub.Logging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\SimHub.Logging.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\SimHub\SimHub.Logging.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimHub.Plugins">
-      <HintPath>..\..\..\..\..\..\..\Program Files\SimHub\SimHub.Plugins.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\SimHub\SimHub.Plugins.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -119,7 +119,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="vJoyInterfaceWrap, Version=0.2.1.6, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files\SimHub\vJoyInterfaceWrap.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\vJoyInterfaceWrap.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>

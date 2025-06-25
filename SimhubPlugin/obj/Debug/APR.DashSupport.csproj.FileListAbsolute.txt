@@ -26,3 +26,5 @@ C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\AP
 C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\APR.DashSupport.dll
 C:\Users\bruce\Documents\GitHub\APR-Simhub-DashSupport\SimhubPlugin\obj\Debug\APR.DashSupport.pdb
 C:\Program Files\SimHub\APR.DashSupport.pdb
+C:\Program Files (x86)\SimHub\APR.DashSupport.dll
+C:\Program Files (x86)\SimHub\APR.DashSupport.pdb
